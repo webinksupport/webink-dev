@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-cyan: #14EAEA;
+  --color-pink: #F813BE;
+  --color-lime: #B9FF33;
+  --color-ink: #0A0A0A;
+  --color-black: #000000;
+  --color-white: #FFFFFF;
+  --color-off-white: #F8F8F8;
+  --color-carbon: #333333;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Public Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-syne {
+  font-family: 'Syne', sans-serif;
+}
+
+/* Neon glow utility */
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(20, 234, 234, 0.4), 0 0 40px rgba(20, 234, 234, 0.2);
+}
+.glow-pink {
+  box-shadow: 0 0 20px rgba(248, 19, 190, 0.4), 0 0 40px rgba(248, 19, 190, 0.2);
+}
+.text-glow-cyan {
+  text-shadow: 0 0 20px rgba(20, 234, 234, 0.6);
+}
+
+/* Marquee */
+.marquee-track {
+  display: flex;
+  width: max-content;
+}
+
+/* Underline accent */
+.underline-cyan {
+  position: relative;
+}
+.underline-cyan::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 3px;
+  background: var(--color-cyan);
+}
+
+/* Highlight text */
+.highlight-cyan {
+  color: var(--color-cyan);
+}
+.highlight-pink {
+  color: var(--color-pink);
+}
+.highlight-lime {
+  color: var(--color-lime);
+}
