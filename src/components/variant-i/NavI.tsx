@@ -45,7 +45,7 @@ export default function NavI() {
       >
         <div className="max-w-[1400px] mx-auto px-6 lg:px-20 py-4 flex items-center justify-between">
           {/* Logo — white over hero, black when scrolled */}
-          <Link href="/variant-i" className="relative z-10 flex-shrink-0">
+          <Link href="/" className="relative z-10 flex-shrink-0">
             {scrolled ? (
               <Image
                 src="/images/logos/webink-black-4x1.png"

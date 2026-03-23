@@ -1,50 +1,45 @@
-'use client'
-import NavA from '@/components/variant-a/NavA'
-import HeroA from '@/components/variant-a/HeroA'
-import MarqueeA from '@/components/variant-a/MarqueeA'
-import ServicesA from '@/components/variant-a/ServicesA'
-import AIShowcaseA from '@/components/variant-a/AIShowcaseA'
-import StatsA from '@/components/variant-a/StatsA'
-import PricingA from '@/components/variant-a/PricingA'
-import CTABannerA from '@/components/variant-a/CTABannerA'
-import FooterA from '@/components/variant-a/FooterA'
-import AboutA from '@/components/variant-a/AboutA'
+import NavI from '@/components/variant-i/NavI'
+import HeroI from '@/components/variant-i/HeroI'
+import MarqueeI from '@/components/variant-i/MarqueeI'
+import ServicesI from '@/components/variant-i/ServicesI'
+import AboutI from '@/components/variant-i/AboutI'
+import StatsI from '@/components/variant-i/StatsI'
+import TestimonialsI from '@/components/variant-i/TestimonialsI'
+import PricingI from '@/components/variant-i/PricingI'
+import CTAI from '@/components/variant-i/CTAI'
+import FooterI from '@/components/variant-i/FooterI'
 
-export default function VariantA() {
+export const metadata = {
+  title: 'Digital Marketing Agency Sarasota | Webink Solutions',
+  description:
+    'Webink Solutions is Sarasota\'s premiere digital marketing agency — web design, SEO, paid ads, social media & hosting for local businesses in Sarasota, Tampa & Bradenton, FL.',
+  openGraph: {
+    title: 'Digital Marketing Agency Sarasota | Webink Solutions',
+    description:
+      'Web design, SEO, and digital marketing for local businesses in Sarasota, Tampa & Bradenton. Real results from a local team.',
+    type: 'website',
+    locale: 'en_US',
+    siteName: 'Webink Solutions',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Digital Marketing Agency Sarasota | Webink Solutions',
+  },
+}
+
+export default function HomePage() {
   return (
-    <div className="bg-[#0A0A0A] text-white font-sans antialiased">
-      {/* Fixed Navigation */}
-      <NavA />
-
-      {/* Hero — Full bleed dark with grid + glow */}
-      <HeroA />
-
-      {/* Marquee Band — Services scrolling text */}
-      <MarqueeA />
-
-      {/* Services — 6 cards */}
-      <ServicesA />
-
-      {/* About / Founder Story */}
-      <AboutA />
-
-      {/* Marquee Band reverse — Pink accent */}
-      <MarqueeA reverse accent="#F813BE" />
-
-      {/* AI Tools Showcase */}
-      <AIShowcaseA />
-
-      {/* Stats + Testimonial */}
-      <StatsA />
-
-      {/* Pricing Preview — 3 tiers */}
-      <PricingA />
-
-      {/* CTA Banner — Full width */}
-      <CTABannerA />
-
-      {/* Footer */}
-      <FooterA />
-    </div>
+    <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
+      <NavI />
+      <HeroI />
+      <MarqueeI />
+      <ServicesI />
+      <AboutI />
+      <StatsI />
+      <TestimonialsI />
+      <PricingI />
+      <CTAI />
+      <FooterI />
+    </main>
   )
 }
