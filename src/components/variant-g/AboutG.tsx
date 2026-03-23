@@ -74,14 +74,13 @@ export default function AboutG() {
               className="font-urbanist font-black text-[#0A0A0A] leading-[0.9] mb-8"
               style={{ fontSize: 'clamp(2.5rem, 5vw, 5rem)', letterSpacing: '-0.025em' }}
             >
-              BUILT BY A<br />
-              FIREFIGHTER<br />
-              WHO <span className="text-[#14EAEA]">LEARNED</span><br />
-              TO CODE.
+              DRIVEN BY<br />
+              RESULTS,<br />
+              BUILT ON <span className="text-[#14EAEA]">TRUST.</span>
             </h2>
 
             <p className="font-urbanist text-black/55 text-lg leading-relaxed mb-6">
-              Sean Brennan founded Webink Solutions after years as a firefighter and paramedic in Sarasota. He understands what it means to show up when it counts — and that&apos;s exactly what we do for our clients.
+              Sean Rowe founded Webink Solutions in Sarasota with a clear mission: give local businesses the world-class digital presence they deserve. No templates, no empty promises — just real results.
             </p>
             <p className="font-urbanist text-black/45 leading-relaxed mb-10">
               We&apos;re a boutique full-service digital agency focused on one thing: growing your business. Real results. Real relationships. Local pride.

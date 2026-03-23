@@ -25,7 +25,7 @@ export default function AboutH() {
             <div className="absolute inset-0 overflow-hidden">
               <Image
                 src="/images/photos/sean-about.jpg"
-                alt="Sean Brennan"
+                alt="Sean Rowe — Webink Solutions Founder"
                 fill
                 className="object-cover object-top"
                 sizes="40vw"
@@ -60,7 +60,7 @@ export default function AboutH() {
               </h2>
 
               <p className="font-urbanist text-white/50 text-xl leading-relaxed mb-6">
-                Sean Brennan spent years as a firefighter and paramedic before founding Webink Solutions. He knows what it means to show up when it counts.
+                Sean Rowe founded Webink Solutions in Sarasota with a conviction that local businesses deserve world-class digital marketing — and the results to prove it.
               </p>
               <p className="font-urbanist text-white/35 leading-relaxed mb-12">
                 That same mentality drives everything we do: real results, real relationships, and genuine care for the businesses we serve across Sarasota, Tampa, and Bradenton.

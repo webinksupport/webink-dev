@@ -11,9 +11,9 @@ export default function FooterG() {
             <Image
               src="/images/logos/webink-white.png"
               alt="Webink Solutions"
-              width={130}
-              height={36}
-              className="h-8 w-auto mb-5"
+              width={160}
+              height={44}
+              className="h-10 w-auto mb-5"
             />
             <p className="font-urbanist text-white/35 text-sm leading-relaxed max-w-xs mb-6">
               Sarasota&apos;s premiere digital agency. Web design, SEO, and marketing that drives real growth.
