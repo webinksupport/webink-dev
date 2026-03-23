@@ -42,7 +42,7 @@ export default function CTAI() {
           >
             Ready to
             {' '}
-            <span className="text-[#14EAEA]">Grow</span>
+            <span className="text-[#B9FF33]">Grow</span>
             {' '}
             Your Business?
           </h2>

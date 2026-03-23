@@ -314,7 +314,7 @@ export default function ServicesI() {
 
           {/* Section label */}
           <div className="flex items-center gap-3 mb-6">
-            <span className="w-8 h-[2px] bg-[#14EAEA]" />
+            <span className="w-8 h-[2px] bg-[#F813BE]" />
             <span className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase">Our Services</span>
           </div>
 
@@ -325,7 +325,7 @@ export default function ServicesI() {
               style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)', letterSpacing: '-0.04em' }}
             >
               Full-Service<br />
-              <span className="text-[#14EAEA]">Digital Agency.</span>
+              <span className="text-[#F813BE]">Digital Agency.</span>
             </h2>
             <p className="font-urbanist text-[#333]/50 text-lg leading-relaxed max-w-sm lg:text-right">
               Everything your business needs to dominate the digital landscape — under one roof.

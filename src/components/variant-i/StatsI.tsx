@@ -2,10 +2,10 @@
 import { useEffect, useRef, useState } from 'react'
 
 const stats = [
-  { value: 50, suffix: '+', label: 'Clients Served', sublabel: 'Across Florida' },
-  { value: 6, suffix: '+', label: 'Years in Business', sublabel: 'Est. in Sarasota' },
-  { value: 300, suffix: '%', label: 'Avg Traffic Growth', sublabel: 'For our SEO clients' },
-  { value: 5, suffix: '★', label: 'Google Rating', sublabel: '50+ five-star reviews' },
+  { value: 50, suffix: '+', label: 'Clients Served', sublabel: 'Across Florida', underlineColor: '#14EAEA' },
+  { value: 6, suffix: '+', label: 'Years in Business', sublabel: 'Est. in Sarasota', underlineColor: '#F813BE' },
+  { value: 300, suffix: '%', label: 'Avg Traffic Growth', sublabel: 'For our SEO clients', underlineColor: '#B9FF33' },
+  { value: 5, suffix: '★', label: 'Google Rating', sublabel: '50+ five-star reviews', underlineColor: '#14EAEA' },
 ]
 
 function useCountUp(target: number, duration: number, active: boolean) {
@@ -32,12 +32,13 @@ function useCountUp(target: number, duration: number, active: boolean) {
   return count
 }
 
-function StatCard({ value, suffix, label, sublabel, delay }: {
+function StatCard({ value, suffix, label, sublabel, delay, underlineColor }: {
   value: number
   suffix: string
   label: string
   sublabel: string
   delay: number
+  underlineColor: string
 }) {
   const [active, setActive] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -67,7 +68,7 @@ function StatCard({ value, suffix, label, sublabel, delay }: {
       </div>
       <div className="font-urbanist font-bold text-white text-xl mb-1">{label}</div>
       <div className="font-urbanist text-white/35 text-sm">{sublabel}</div>
-      <div className="mt-4 w-12 h-0.5 bg-[#14EAEA] mx-auto lg:mx-0" />
+      <div className="mt-4 w-12 h-0.5 mx-auto lg:mx-0" style={{ backgroundColor: underlineColor }} />
     </div>
   )
 }
@@ -103,7 +104,7 @@ export default function StatsI() {
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-16">
           {stats.map((s, i) => (
-            <StatCard key={s.label} {...s} delay={i * 100} />
+            <StatCard key={s.label} {...s} delay={i * 100} underlineColor={s.underlineColor} />
           ))}
         </div>
 

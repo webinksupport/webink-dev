@@ -59,13 +59,13 @@ export default function HeroI() {
           </span>
         </motion.div>
 
-        {/* Main headline — ONE clean treatment */}
+        {/* Main headline */}
         <motion.h1
           className="font-urbanist font-black text-white leading-[0.88] mb-8"
           style={{
             fontSize: 'clamp(3.5rem, 9vw, 9rem)',
             letterSpacing: '-0.04em',
-            maxWidth: '75%',
+            maxWidth: '55%',
           }}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -74,7 +74,7 @@ export default function HeroI() {
           Websites That{' '}
           <span className="relative inline-block">
             Work.
-            {/* Single cyan highlight sweep — ONE effect only */}
+            {/* Single cyan highlight sweep */}
             <span
               className="absolute inset-x-0 bottom-0 h-[8px] bg-[#14EAEA] origin-left"
               style={{ animation: 'highlightSweep 0.7s cubic-bezier(0.4,0,0.2,1) 1.1s forwards', transform: 'scaleX(0)', bottom: '6px' }}
@@ -117,29 +117,34 @@ export default function HeroI() {
           </a>
         </motion.div>
 
-        {/* Single founder portrait — clean, positioned right */}
+        {/* Baja landscape photo — large, right side, elegant entrance */}
         <motion.div
           className="absolute hidden lg:block z-10"
-          style={{ right: '12%', top: '50%', transform: 'translateY(-50%)', width: '240px', height: '320px' }}
-          initial={{ opacity: 0, y: 40, scale: 0.92 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1.1, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ right: '6%', top: '50%', transform: 'translateY(-50%)', width: '420px', height: '560px' }}
+          initial={{ opacity: 0, scale: 0.9, rotate: -2, x: 60 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0, x: 0 }}
+          transition={{ duration: 1.2, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-2xl ring-2 ring-white/10">
+          <div
+            className="relative w-full h-full"
+            style={{
+              borderRadius: '24px',
+              overflow: 'hidden',
+              boxShadow: '0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)',
+            }}
+          >
             <Image
-              src="/images/photos/sean-portrait.jpg"
-              alt="Sean Rowe — founder of Webink Solutions"
+              src="/images/photos/baja-6.jpg"
+              alt="Baja California beach — inspiring digital work from anywhere"
               fill
-              className="object-cover object-top"
-              sizes="240px"
+              priority
+              className="object-cover object-center"
+              sizes="420px"
             />
-            {/* Cyan accent bottom bar */}
+            {/* Subtle cyan accent bottom bar */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#14EAEA]" />
-          </div>
-          {/* Name tag */}
-          <div className="absolute -bottom-4 left-4 bg-white rounded-xl px-4 py-2 shadow-lg">
-            <div className="font-urbanist font-black text-sm text-[#0F0F0F]">Sean Rowe</div>
-            <div className="font-urbanist text-xs text-[#0F0F0F]/40">Founder, Webink Solutions</div>
+            {/* Subtle vignette */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
           </div>
         </motion.div>
       </motion.div>
