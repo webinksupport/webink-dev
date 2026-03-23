@@ -104,7 +104,7 @@ export default function HeroH() {
             <div className="relative h-[480px] w-full overflow-hidden">
               <Image
                 src="/images/photos/sean-hero.jpg"
-                alt="Sean Brennan — Webink Founder"
+                alt="Sean Rowe — Webink Founder"
                 fill
                 className="object-cover object-top"
                 sizes="30vw"
@@ -116,7 +116,7 @@ export default function HeroH() {
 
             {/* Caption */}
             <div className="mt-3 text-right">
-              <p className="font-urbanist text-xs text-white/30 tracking-wider">Sean Brennan · Founder</p>
+              <p className="font-urbanist text-xs text-white/30 tracking-wider">Sean Rowe · Founder</p>
             </div>
           </motion.div>
         </div>
