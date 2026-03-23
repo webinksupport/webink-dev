@@ -4,9 +4,25 @@ services:
     build: .
     container_name: webink-dev
     restart: unless-stopped
-    ports:
-      - "3001:3001"
     environment:
       - NODE_ENV=production
       - PORT=3001
       - HOSTNAME=0.0.0.0
+    networks:
+      - traefik_default
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.webink-dev.rule=Host(`dev.webink.solutions`)"
+      - "traefik.http.routers.webink-dev.entrypoints=websecure"
+      - "traefik.http.routers.webink-dev.tls.certresolver=letsencrypt"
+      - "traefik.http.services.webink-dev.loadbalancer.server.port=3001"
+      - "traefik.http.routers.webink-dev-http.rule=Host(`dev.webink.solutions`)"
+      - "traefik.http.routers.webink-dev-http.entrypoints=web"
+      - "traefik.http.routers.webink-dev-http.middlewares=redirect-to-https"
+
+networks:
+  traefik_default:
+    external: true
+  default:
+
