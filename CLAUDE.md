@@ -756,7 +756,10 @@ All products from WEBINK-PRODUCTS.md must be implemented as purchasable items:
 - The old WordPress site had a QBO sync plugin (mw_wc_qbo_sync) that caused DUPLICATE ENTRIES in QuickBooks due to Stripe fees creating separate line items
 - **DO NOT** sync Stripe fee transactions directly to QuickBooks
 - Sync only the WooCommerce/order total (what the customer paid) to QBO
-- Stripe processing fees should be handled as a bank reconciliation item, NOT as per-order line items
+- Record GROSS revenue in QBO (full amount customer paid, e.g. $493.00)
+- Then create a SEPARATE expense entry for the Stripe processing fee (e.g. $14.40 as 'Payment Processing Fee' expense category)
+- This way: books show full revenue + Stripe fee as a business expense = clean reconciliation
+- Do NOT create the fee entry as part of the order sync — run it as a separate post-sync step after payment confirmation webhook
 - This is a hard requirement from the business owner to prevent accounting chaos
 
 ### User Accounts
@@ -776,4 +779,5 @@ All products from WEBINK-PRODUCTS.md must be implemented as purchasable items:
 - Use Prisma ORM with MySQL (consistent with VoltDesk pattern)
 - Reference the exported SQL for existing customer/order data migration path
 - Do NOT import raw WordPress data — use it as reference only for data structure
+
 
