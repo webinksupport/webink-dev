@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 // SVG scribble underline — draws in via CSS stroke-dashoffset
 function ScribbleUnderline({ color = '#14EAEA' }: { color?: string }) {
@@ -35,12 +36,19 @@ function ScribbleUnderline({ color = '#14EAEA' }: { color?: string }) {
 }
 
 export default function HeroF() {
+  const { scrollY } = useScroll()
+  const bgY = useTransform(scrollY, [0, 600], [0, -100])
+
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Full-bleed Baja hero */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: 'url(/baja-hero.jpg)' }}
+      {/* Full-bleed Baja hero with parallax */}
+      <motion.div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
+        style={{
+          backgroundImage: 'url(/baja-hero.jpg)',
+          y: bgY,
+          scale: 1.15,
+        }}
       />
       {/* Cleaner, lighter overlay for a more editorial feel */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/55 to-black/70" />
@@ -48,43 +56,49 @@ export default function HeroF() {
       {/* Minimal centered content */}
       <div className="relative z-10 max-w-6xl mx-auto px-8 lg:px-12 text-center">
         {/* Eyebrow — very minimal */}
-        <p
+        <motion.p
           className="text-xs tracking-[0.5em] text-white/50 uppercase font-urbanist mb-10"
-          style={{ animation: 'fadeInUp 0.6s ease 0.2s both' }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
         >
           Sarasota, Florida
-        </p>
+        </motion.p>
 
         {/* Headline with scribble on key word */}
-        <h1
+        <motion.h1
           className="font-urbanist font-black text-white leading-[0.92] mb-8"
-          style={{
-            fontSize: 'clamp(3.5rem, 9vw, 8rem)',
-            animation: 'fadeInUp 0.7s ease 0.35s both',
-          }}
+          style={{ fontSize: 'clamp(3.5rem, 9vw, 8rem)' }}
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.35 }}
         >
           DESIGN THAT<br />
           <span className="relative inline-block">
             CONVERTS
             <ScribbleUnderline color="#14EAEA" />
           </span>
-        </h1>
+        </motion.h1>
 
-        <p
+        <motion.p
           className="text-white/55 text-lg lg:text-xl leading-relaxed max-w-2xl mx-auto mb-12 font-urbanist font-light"
-          style={{ animation: 'fadeInUp 0.7s ease 0.5s both' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.5 }}
         >
           Web design, SEO, and digital marketing for local businesses across Southwest Florida. Built to perform.
-        </p>
+        </motion.p>
 
         {/* Single, minimal CTA */}
-        <div
+        <motion.div
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          style={{ animation: 'fadeInUp 0.6s ease 0.65s both' }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.65 }}
         >
           <Link
             href="/contact"
-            className="inline-block text-sm font-semibold px-10 py-4 bg-white text-black hover:bg-[#14EAEA] transition-all duration-400 font-urbanist tracking-wide"
+            className="inline-block text-sm font-semibold px-10 py-4 bg-white text-black hover:bg-[#14EAEA] transition-all duration-300 font-urbanist tracking-wide rounded-lg"
           >
             Start a Project
           </Link>
@@ -94,7 +108,7 @@ export default function HeroF() {
           >
             Explore ↓
           </Link>
-        </div>
+        </motion.div>
       </div>
 
       {/* Bottom metadata strip */}
@@ -123,13 +137,6 @@ export default function HeroF() {
         {/* Single cyan accent line — the only color */}
         <div className="h-[2px] bg-[#14EAEA]" />
       </div>
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </section>
   )
 }

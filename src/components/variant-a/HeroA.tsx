@@ -1,7 +1,12 @@
+'use client'
 import Image from 'next/image'
 import Link from 'next/link'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 export default function HeroA() {
+  const { scrollY } = useScroll()
+  const heroY = useTransform(scrollY, [0, 500], [0, -80])
+
   return (
     <section className="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden bg-[#0A0A0A]">
 
@@ -84,16 +89,16 @@ export default function HeroA() {
           </div>
         </div>
 
-        {/* Right — Image card */}
-        <div className="relative mt-8 md:mt-0">
+        {/* Right — Image card with parallax */}
+        <motion.div className="relative mt-8 md:mt-0 will-change-transform" style={{ y: heroY }}>
           {/* Main photo */}
-          <div className="relative rounded-2xl overflow-hidden border border-[#14EAEA]/20">
+          <div className="relative rounded-2xl overflow-hidden border border-[#14EAEA]/20 shadow-xl">
             <Image
               src="/variant-a/sean-hero.jpg"
               alt="Sean Rowe — Founder, Webink Solutions"
               width={600}
               height={720}
-              className="w-full object-cover"
+              className="w-full object-cover rounded-2xl"
               style={{ objectPosition: 'center top', maxHeight: '580px' }}
               priority
             />
@@ -104,20 +109,20 @@ export default function HeroA() {
           </div>
 
           {/* Floating stat card — bottom left */}
-          <div className="absolute -bottom-5 -left-5 bg-[#0D0D0D] border border-[#14EAEA]/30 rounded-xl p-4 shadow-[0_0_30px_rgba(20,234,234,0.15)]">
+          <div className="absolute -bottom-5 -left-5 bg-[#0D0D0D] border border-[#14EAEA]/30 rounded-xl p-4 shadow-2xl z-20 will-change-transform">
             <div className="font-syne text-3xl font-bold text-[#14EAEA]">300%</div>
             <div className="text-xs text-white/45 mt-0.5 tracking-wide">Avg Traffic Increase</div>
           </div>
 
           {/* Floating badge — top right */}
-          <div className="absolute -top-3 -right-3 bg-[#F813BE] rounded-xl px-4 py-2 shadow-[0_0_20px_rgba(248,19,190,0.4)]">
+          <div className="absolute -top-3 -right-3 bg-[#F813BE] rounded-xl px-4 py-2 shadow-2xl z-20 will-change-transform">
             <div className="text-xs font-bold text-white leading-tight">#1 Rated</div>
             <div className="text-[10px] text-white/80">on DesignRush</div>
           </div>
 
           {/* Subtle cyan line accent */}
           <div className="absolute left-0 top-1/4 w-1 h-1/2 rounded-full bg-gradient-to-b from-transparent via-[#14EAEA]/40 to-transparent -translate-x-3" />
-        </div>
+        </motion.div>
       </div>
     </section>
   )

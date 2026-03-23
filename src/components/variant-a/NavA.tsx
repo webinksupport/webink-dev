@@ -22,24 +22,34 @@ export default function NavA() {
     return () => window.removeEventListener('scroll', handler)
   }, [])
 
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
+
   return (
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-[#0A0A0A]/95 backdrop-blur-md border-b border-[#14EAEA]/15 shadow-[0_4px_30px_rgba(0,0,0,0.5)]'
-            : 'bg-transparent'
+            ? 'bg-[#0A0A0A]/90 backdrop-blur-xl border-b border-[#14EAEA]/15 shadow-[0_4px_30px_rgba(0,0,0,0.5)]'
+            : 'bg-transparent backdrop-blur-sm'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
+          {/* Logo — larger */}
+          <Link href="/" className="flex-shrink-0 min-w-[160px]">
             <Image
               src="/variant-a/logo-white.png"
               alt="Webink Solutions"
-              width={160}
-              height={44}
-              className="h-9 w-auto"
+              width={180}
+              height={50}
+              className="h-10 w-auto"
               priority
             />
           </Link>
@@ -68,43 +78,77 @@ export default function NavA() {
           {/* Hamburger */}
           <button
             className="md:hidden text-white p-2"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
           >
             <div className="w-6 flex flex-col gap-1.5">
-              <span className={`h-0.5 bg-white transition-all duration-300 ${mobileOpen ? 'rotate-45 translate-y-2' : ''}`} />
-              <span className={`h-0.5 bg-white transition-all duration-300 ${mobileOpen ? 'opacity-0' : ''}`} />
-              <span className={`h-0.5 bg-white transition-all duration-300 ${mobileOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+              <span className="h-0.5 bg-white rounded" />
+              <span className="h-0.5 bg-white rounded w-4" />
+              <span className="h-0.5 bg-white rounded" />
             </div>
           </button>
         </div>
       </nav>
 
-      {/* Mobile menu */}
+      {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-[#0A0A0A]/98 backdrop-blur-xl flex flex-col transition-all duration-300 md:hidden ${
+        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
           mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
-      >
-        <div className="flex flex-col items-center justify-center h-full gap-8">
+        onClick={() => setMobileOpen(false)}
+      />
+
+      {/* Slide-out drawer */}
+      <div className={`fixed top-0 right-0 h-full w-80 z-50 flex flex-col bg-[#0A0A0A] border-l border-white/10 shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${
+        mobileOpen ? 'translate-x-0' : 'translate-x-full'
+      }`}>
+        {/* Drawer header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+          <Image
+            src="/variant-a/logo-white.png"
+            alt="Webink Solutions"
+            width={140}
+            height={40}
+            className="h-8 w-auto"
+          />
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="text-white/40 hover:text-white p-2 transition-colors"
+            aria-label="Close menu"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Drawer links */}
+        <nav className="flex flex-col px-6 py-8 gap-2 flex-1">
           {links.map((l, i) => (
             <Link
               key={l.label}
               href={l.href}
               onClick={() => setMobileOpen(false)}
-              className="font-syne text-3xl font-bold text-white hover:text-[#14EAEA] transition-colors"
-              style={{ transitionDelay: `${i * 50}ms` }}
+              className="font-syne text-xl font-bold text-white/70 hover:text-[#14EAEA] transition-colors py-3 border-b border-white/5"
+              style={{ transitionDelay: `${i * 30}ms` }}
             >
               {l.label}
             </Link>
           ))}
+        </nav>
+
+        {/* Drawer footer CTA */}
+        <div className="px-6 pb-8 space-y-3">
           <Link
             href="/contact"
             onClick={() => setMobileOpen(false)}
-            className="mt-4 bg-[#14EAEA] text-black font-bold px-8 py-4 rounded-full text-lg"
+            className="block w-full bg-[#14EAEA] text-black font-bold py-4 rounded-full text-center text-sm"
           >
-            Get a Quote
+            Get a Free Quote
           </Link>
+          <div className="text-center text-white/25 text-xs">
+            (941) 840-1381 · hello@webink.solutions
+          </div>
         </div>
       </div>
     </>

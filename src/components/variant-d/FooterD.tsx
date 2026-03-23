@@ -41,7 +41,7 @@ export default function FooterD() {
               className="h-9 w-auto mb-6"
             />
             <p className="text-white/30 text-sm leading-relaxed font-sans max-w-xs mb-6">
-              Web design, SEO, and digital marketing for local businesses across Southwest Florida. Founded in Sarasota by a firefighter who believed every business deserves a world-class online presence.
+              Full-service digital agency based in Sarasota, FL — web design, SEO, and digital marketing for local businesses across Southwest Florida.
             </p>
 
             {/* Contact details */}

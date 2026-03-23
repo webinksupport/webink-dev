@@ -42,14 +42,14 @@ export default function HeroB() {
           <div className="flex flex-wrap gap-4 mb-14">
             <Link
               href="/contact"
-              className="inline-flex items-center bg-[#14EAEA] text-black text-[11px] font-black px-8 py-4 tracking-[0.2em] uppercase hover:bg-[#14EAEA]/80 transition-all duration-200 font-inter"
+              className="inline-flex items-center bg-[#14EAEA] text-black text-[11px] font-black px-8 py-4 tracking-[0.2em] uppercase hover:bg-[#14EAEA]/80 transition-all duration-200 font-inter rounded-full"
               style={{ boxShadow: '0 0 24px rgba(20,234,234,0.25)' }}
             >
               Start a Project
             </Link>
             <Link
               href="/portfolio"
-              className="inline-flex items-center border border-white/15 text-white/50 text-[11px] font-bold px-8 py-4 tracking-[0.2em] uppercase hover:border-white/40 hover:text-white transition-all duration-200 font-inter"
+              className="inline-flex items-center border border-white/15 text-white/50 text-[11px] font-bold px-8 py-4 tracking-[0.2em] uppercase hover:border-white/40 hover:text-white transition-all duration-200 font-inter rounded-lg"
             >
               See Our Work
             </Link>
@@ -78,10 +78,10 @@ export default function HeroB() {
         {/* Right — Photo */}
         <div className="relative lg:min-h-screen min-h-[50vh] order-first lg:order-last">
           <Image
-            src="/variant-b/hero-photo.jpg"
+            src="/variant-b/professional-1.jpg"
             alt="Webink Solutions — Professional Digital Agency"
             fill
-            className="object-cover object-center"
+            className="object-cover object-center rounded-xl shadow-xl"
             priority
           />
           {/* Dark gradient overlay fading into left (blends with text panel) */}
@@ -94,7 +94,7 @@ export default function HeroB() {
           />
           {/* Floating badge */}
           <div className="absolute bottom-10 right-8 hidden lg:block">
-            <div className="border border-[#14EAEA]/30 bg-[#0F0F0F]/80 backdrop-blur-sm px-5 py-4">
+            <div className="border border-[#14EAEA]/30 bg-[#0F0F0F]/80 backdrop-blur-sm px-5 py-4 rounded-xl">
               <div className="text-[#14EAEA] text-[10px] font-bold tracking-[0.25em] uppercase mb-1 font-inter">#1 Rated</div>
               <div className="text-white text-sm font-semibold font-inter">Top Web Design</div>
               <div className="text-white/40 text-[10px] font-inter">Company in Florida</div>

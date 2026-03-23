@@ -127,7 +127,7 @@ export default function HeroC() {
               }}
             >
               <Image
-                src="/variant-c/sean-hero.jpg"
+                src="/variant-c/sean-about.jpg"
                 alt="Sean Rowe — Webink Solutions Founder"
                 fill
                 className="object-cover object-center"

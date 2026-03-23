@@ -20,8 +20,21 @@ const company = [
 
 export default function FooterE() {
   return (
-    <footer className="bg-[#0A0A0A] border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20">
+    <footer className="bg-[#0A0A0A] relative overflow-hidden">
+      {/* Gradient border-top */}
+      <div className="h-[2px] bg-gradient-to-r from-[#14EAEA] via-[#F813BE] to-[#B9FF33]" />
+
+      {/* Large headline section */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-16 lg:pt-20">
+        <h2 className="font-urbanist font-black text-white leading-tight mb-4" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}>
+          Let&apos;s Build Something Great
+        </h2>
+        <p className="text-white/40 text-lg font-urbanist max-w-2xl mb-12">
+          Sarasota&apos;s premiere digital agency — web design, SEO, and digital marketing that drives real growth for local businesses.
+        </p>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 pb-16 lg:pb-20">
         <div className="grid lg:grid-cols-12 gap-12">
 
           <div className="lg:col-span-4">
@@ -33,7 +46,7 @@ export default function FooterE() {
               className="h-9 w-auto mb-6"
             />
             <p className="text-white/30 text-sm leading-relaxed font-urbanist max-w-xs mb-6">
-              Web design, SEO, and digital marketing for local businesses across Southwest Florida. Founded in Sarasota by a firefighter who believed every business deserves a world-class online presence.
+              Full-service digital agency based in Sarasota, FL — web design, SEO, and digital marketing for local businesses across Southwest Florida.
             </p>
             <div className="space-y-2 mb-8">
               <a href="tel:9418401381" className="flex items-center gap-2 text-sm text-white/30 hover:text-[#14EAEA] transition-colors font-urbanist">
@@ -48,7 +61,7 @@ export default function FooterE() {
             </div>
             <div className="flex gap-3">
               {['I', 'F', 'L', 'X'].map((s, i) => (
-                <a key={i} href="#" className="w-9 h-9 border border-white/10 flex items-center justify-center text-white/30 hover:border-[#14EAEA] hover:text-[#14EAEA] transition-all duration-200 text-xs font-urbanist font-bold">
+                <a key={i} href="#" className="w-9 h-9 border border-white/10 rounded-lg flex items-center justify-center text-white/30 hover:border-[#14EAEA] hover:text-[#14EAEA] transition-all duration-200 text-xs font-urbanist font-bold">
                   {s}
                 </a>
               ))}
@@ -86,9 +99,9 @@ export default function FooterE() {
               <input
                 type="email"
                 placeholder="your@email.com"
-                className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#14EAEA] transition-colors font-urbanist"
+                className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#14EAEA] transition-colors font-urbanist rounded-l-lg"
               />
-              <button className="bg-[#14EAEA] text-black px-4 py-3 text-sm font-bold hover:bg-[#0DD4D4] transition-colors font-urbanist">→</button>
+              <button className="bg-[#14EAEA] text-black px-4 py-3 text-sm font-bold hover:bg-[#0DD4D4] transition-colors font-urbanist rounded-r-lg">→</button>
             </div>
             <p className="text-white/15 text-xs mt-2 font-urbanist">No spam. Unsubscribe anytime.</p>
           </div>

@@ -136,7 +136,7 @@ export default function PricingB() {
               {/* CTA */}
               <Link
                 href={plan.ctaHref}
-                className={`block text-center font-inter text-[11px] font-black py-3.5 tracking-[0.18em] uppercase transition-all duration-200 ${
+                className={`block text-center font-inter text-[11px] font-black py-3.5 tracking-[0.18em] uppercase transition-all duration-200 rounded-full ${
                   plan.highlight
                     ? 'bg-[#14EAEA] text-black hover:bg-[#14EAEA]/80'
                     : 'border border-white/15 text-white/40 hover:border-[#14EAEA]/50 hover:text-[#14EAEA]'

@@ -1,5 +1,8 @@
+'use client'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 const steps = [
   {
@@ -20,36 +23,43 @@ const steps = [
 ]
 
 export default function AboutA() {
+  const sectionRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
+  })
+  const imageY = useTransform(scrollYProgress, [0, 1], [60, -60])
+
   return (
-    <section className="py-28 px-6 bg-[#0D0D0D] relative overflow-hidden">
+    <section ref={sectionRef} className="py-28 px-6 bg-[#0D0D0D] relative overflow-hidden">
       {/* Background subtle glow */}
       <div className="absolute right-0 top-0 w-[400px] h-[400px] pointer-events-none opacity-5"
         style={{ background: 'radial-gradient(circle, #14EAEA 0%, transparent 70%)' }} />
 
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 lg:gap-24 items-center">
 
-        {/* Image side */}
+        {/* Image side with parallax */}
         <div className="relative order-2 md:order-1">
-          <div className="relative rounded-2xl overflow-hidden">
+          <motion.div className="relative rounded-2xl overflow-hidden will-change-transform" style={{ y: imageY }}>
             <Image
-              src="/variant-a/sean-about.jpg"
+              src="/images/photos/sean-street.jpg"
               alt="Sean Rowe — Webink Solutions Founder"
               width={600}
               height={720}
-              className="w-full object-cover"
+              className="w-full object-cover rounded-2xl shadow-xl"
               style={{ objectPosition: 'center 20%', maxHeight: '560px' }}
             />
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D]/70 via-[#0D0D0D]/10 to-transparent" />
             {/* Cyan border accent */}
             <div className="absolute inset-0 rounded-2xl border border-[#14EAEA]/15 pointer-events-none" />
-          </div>
+          </motion.div>
 
           {/* Floating quote card */}
-          <div className="absolute -bottom-6 -right-2 md:-right-8 bg-[#0A0A0A] border border-[#14EAEA]/20 rounded-2xl p-5 max-w-[280px] shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+          <div className="absolute -bottom-6 -right-2 md:-right-8 bg-[#0A0A0A] border border-[#14EAEA]/20 rounded-2xl p-5 max-w-[280px] shadow-2xl z-20 will-change-transform">
             <div className="text-[#14EAEA] text-2xl leading-none mb-2">&ldquo;</div>
             <p className="text-white/60 text-xs leading-relaxed italic mb-3">
-              From firefighter & paramedic to digital agency founder — I understand what it means to show up for people when it counts.
+              &ldquo;Every business in Sarasota deserves a world-class online presence. We don&apos;t stop until the numbers move.&rdquo;
             </p>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-[#14EAEA]/20 flex items-center justify-center text-[#14EAEA] text-xs font-bold">S</div>
@@ -61,13 +71,13 @@ export default function AboutA() {
           </div>
 
           {/* Kelley team member bubble */}
-          <div className="absolute top-6 -left-4 md:-left-8 bg-[#0A0A0A] border border-white/10 rounded-2xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+          <div className="absolute top-6 -left-4 md:-left-8 bg-[#0A0A0A] border border-white/10 rounded-2xl p-4 shadow-2xl z-20 will-change-transform">
             <Image
-              src="/variant-a/kelley-headshot.png"
+              src="/images/photos/team-kelley.jpg"
               alt="Kelley — Webink Team"
               width={64}
               height={64}
-              className="w-16 h-16 rounded-full object-cover object-top mb-2"
+              className="w-16 h-16 rounded-full object-cover object-top mb-2 shadow-xl"
             />
             <div className="text-white/60 text-[10px] font-semibold">Kelley</div>
             <div className="text-[#14EAEA] text-[9px]">Creative Director</div>
@@ -82,9 +92,9 @@ export default function AboutA() {
             <span className="text-[#14EAEA]">Structure &amp; Process</span>
           </h2>
           <p className="text-white/55 text-lg leading-relaxed mb-10">
-            Before becoming a digital agency founder, Sean Rowe was a firefighter and paramedic in Sarasota.
-            Someone who knew that when you show up for people, you deliver — no excuses, no shortcuts.
-            That mentality is baked into everything we do at Webink.
+            Sean Rowe founded Webink Solutions in Sarasota with one conviction: local businesses deserve 
+            world-class digital presence — not cookie-cutter templates or empty promises. That drive for 
+            accountability and results is baked into everything we do.
           </p>
 
           {/* Process steps */}

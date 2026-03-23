@@ -252,3 +252,9 @@ body {
   background-size: 200% 200%;
   animation: gradientShift 4s ease infinite;
 }
+
+/* GPU acceleration helper */
+.gpu-accelerated {
+  will-change: transform;
+  transform: translateZ(0);
+}
