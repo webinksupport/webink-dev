@@ -56,7 +56,7 @@ export default function AIShowcaseD() {
 
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 mb-16">
           <div className="lg:col-span-5">
-            <h2 className="font-syne font-extrabold text-[#0A0A0A] leading-tight" style={{ fontSize: 'clamp(2rem, 3.5vw, 3rem)' }}>
+            <h2 className="font-urbanist font-extrabold text-[#0A0A0A] leading-tight" style={{ fontSize: 'clamp(2rem, 3.5vw, 3rem)' }}>
               AI-Enhanced.<br />
               <span className="text-[#14EAEA]">Human-Driven.</span>
             </h2>
@@ -87,7 +87,7 @@ export default function AIShowcaseD() {
                 {tool.tag}
               </div>
 
-              <h3 className="font-syne text-lg font-bold text-[#0A0A0A] mb-3">{tool.title}</h3>
+              <h3 className="font-urbanist text-lg font-bold text-[#0A0A0A] mb-3">{tool.title}</h3>
               <p className="text-black/45 text-sm leading-relaxed font-sans mb-5">{tool.desc}</p>
 
               {/* Metric */}
@@ -101,7 +101,7 @@ export default function AIShowcaseD() {
         {/* Bottom banner */}
         <div className="mt-12 bg-white border border-black/6 p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div>
-            <div className="font-syne text-xl font-bold text-[#0A0A0A] mb-1">Ready to see AI in action?</div>
+            <div className="font-urbanist text-xl font-bold text-[#0A0A0A] mb-1">Ready to see AI in action?</div>
             <div className="text-sm text-black/40 font-sans">We&apos;ll show you exactly how we&apos;d apply these tools to your business.</div>
           </div>
           <a
@@ -115,3 +115,4 @@ export default function AIShowcaseD() {
     </section>
   )
 }
+

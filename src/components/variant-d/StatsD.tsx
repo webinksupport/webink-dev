@@ -51,7 +51,7 @@ export default function StatsD() {
             >
               {/* Big number */}
               <div
-                className="font-syne font-extrabold leading-none mb-3 transition-colors duration-300"
+                className="font-urbanist font-extrabold leading-none mb-3 transition-colors duration-300"
                 style={{
                   fontSize: 'clamp(3rem, 6vw, 5.5rem)',
                   color: stat.accent,
@@ -70,8 +70,8 @@ export default function StatsD() {
         {/* Testimonial highlight */}
         <div className="grid lg:grid-cols-12 gap-10 items-start">
           <div className="lg:col-span-7">
-            <div className="font-syne text-6xl text-[#14EAEA] leading-none mb-4">&ldquo;</div>
-            <blockquote className="font-syne text-2xl lg:text-3xl font-bold text-[#0A0A0A] leading-snug mb-6">
+            <div className="font-urbanist text-6xl text-[#14EAEA] leading-none mb-4">&ldquo;</div>
+            <blockquote className="font-urbanist text-2xl lg:text-3xl font-bold text-[#0A0A0A] leading-snug mb-6">
               {testimonial.quote}
             </blockquote>
             <div className="flex items-center gap-4">
@@ -92,7 +92,7 @@ export default function StatsD() {
             ].map((m) => (
               <div key={m.label} className="flex items-center justify-between border border-black/8 px-6 py-4 bg-[#F8F8F8]">
                 <span className="text-sm text-black/40 font-sans">{m.label}</span>
-                <span className="font-syne text-2xl font-extrabold" style={{ color: m.color }}>
+                <span className="font-urbanist text-2xl font-extrabold" style={{ color: m.color }}>
                   {m.value}
                 </span>
               </div>
@@ -103,3 +103,4 @@ export default function StatsD() {
     </section>
   )
 }
+

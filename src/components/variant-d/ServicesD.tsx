@@ -91,7 +91,7 @@ export default function ServicesD() {
               <div className="w-2 h-2 bg-[#F813BE]" />
               <span className="text-xs font-bold tracking-[0.35em] text-black/30 uppercase font-sans">What We Do</span>
             </div>
-            <h2 className="font-syne font-extrabold text-[#0A0A0A] leading-tight" style={{ fontSize: 'clamp(2.2rem, 4vw, 3.5rem)' }}>
+            <h2 className="font-urbanist font-extrabold text-[#0A0A0A] leading-tight" style={{ fontSize: 'clamp(2.2rem, 4vw, 3.5rem)' }}>
               Full-Service<br />Digital Agency
             </h2>
           </div>
@@ -119,12 +119,12 @@ export default function ServicesD() {
                 >
                   {svc.icon}
                 </div>
-                <span className="font-syne text-4xl font-extrabold text-black/5 group-hover:text-black/8 transition-colors">
+                <span className="font-urbanist text-4xl font-extrabold text-black/5 group-hover:text-black/8 transition-colors">
                   {svc.tag}
                 </span>
               </div>
 
-              <h3 className="font-syne text-xl font-bold text-[#0A0A0A] mb-3 group-hover:text-[#0A0A0A] transition-colors">
+              <h3 className="font-urbanist text-xl font-bold text-[#0A0A0A] mb-3 group-hover:text-[#0A0A0A] transition-colors">
                 {svc.title}
               </h3>
               <p className="text-black/45 text-sm leading-relaxed font-sans mb-6">
@@ -162,3 +162,4 @@ export default function ServicesD() {
     </section>
   )
 }
+

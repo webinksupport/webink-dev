@@ -23,6 +23,7 @@ const config: Config = {
       },
       fontFamily: {
         syne: ['Syne', 'sans-serif'],
+        urbanist: ['Urbanist', 'sans-serif'],
         grotesk: ['Space Grotesk', 'sans-serif'],
         sans: ['Public Sans', 'sans-serif'],
         inter: ['Inter', 'sans-serif'],

@@ -84,7 +84,7 @@ export default function FooterD() {
 
           {/* Services */}
           <div className="lg:col-span-3 lg:col-start-6">
-            <div className="font-syne font-bold text-white text-sm mb-6 tracking-wide">Services</div>
+            <div className="font-urbanist font-bold text-white text-sm mb-6 tracking-wide">Services</div>
             <ul className="space-y-3">
               {services.map((s) => (
                 <li key={s.label}>
@@ -98,7 +98,7 @@ export default function FooterD() {
 
           {/* Company */}
           <div className="lg:col-span-2">
-            <div className="font-syne font-bold text-white text-sm mb-6 tracking-wide">Company</div>
+            <div className="font-urbanist font-bold text-white text-sm mb-6 tracking-wide">Company</div>
             <ul className="space-y-3">
               {company.map((s) => (
                 <li key={s.label}>
@@ -112,7 +112,7 @@ export default function FooterD() {
 
           {/* Newsletter CTA */}
           <div className="lg:col-span-3">
-            <div className="font-syne font-bold text-white text-sm mb-3 tracking-wide">Stay in the Loop</div>
+            <div className="font-urbanist font-bold text-white text-sm mb-3 tracking-wide">Stay in the Loop</div>
             <p className="text-white/25 text-xs leading-relaxed font-sans mb-5">
               Monthly tips on web design, SEO, and digital marketing for Southwest Florida businesses.
             </p>
@@ -147,9 +147,10 @@ export default function FooterD() {
               </Link>
             ))}
           </div>
-          <div className="text-white/10 text-xs font-syne tracking-widest">RETHINK DESIGN.</div>
+          <div className="text-white/10 text-xs font-urbanist tracking-widest">RETHINK DESIGN.</div>
         </div>
       </div>
     </footer>
   )
 }
+

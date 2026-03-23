@@ -18,7 +18,7 @@ export default function HeroD() {
             </div>
 
             {/* Headline */}
-            <h1 className="font-syne font-extrabold leading-[0.92] text-[#0A0A0A] mb-6" style={{ fontSize: 'clamp(3.2rem, 7vw, 6.5rem)' }}>
+            <h1 className="font-urbanist font-extrabold leading-[0.92] text-[#0A0A0A] mb-6" style={{ fontSize: 'clamp(3.2rem, 7vw, 6.5rem)' }}>
               WEBSITES<br />
               THAT <span className="text-[#14EAEA]">WORK.</span><br />
               <span className="text-[#0A0A0A]">MARKETING</span><br />
@@ -75,12 +75,12 @@ export default function HeroD() {
 
             {/* Floating stat cards */}
             <div className="absolute top-12 left-0 bg-white border border-black/8 shadow-lg p-5 z-10 min-w-[160px]">
-              <div className="font-syne text-3xl font-extrabold text-[#0A0A0A]">50+</div>
+              <div className="font-urbanist text-3xl font-extrabold text-[#0A0A0A]">50+</div>
               <div className="text-xs text-black/40 mt-1 font-sans uppercase tracking-wider">Clients Served</div>
             </div>
 
             <div className="absolute bottom-16 left-6 bg-[#14EAEA] p-5 z-10 min-w-[150px]">
-              <div className="font-syne text-3xl font-extrabold text-black">300%</div>
+              <div className="font-urbanist text-3xl font-extrabold text-black">300%</div>
               <div className="text-xs text-black/60 mt-1 font-sans uppercase tracking-wider">Avg Traffic Lift</div>
             </div>
 
@@ -104,3 +104,4 @@ export default function HeroD() {
     </section>
   )
 }
+

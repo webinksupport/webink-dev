@@ -21,7 +21,7 @@ export default function CTABannerD() {
               <span className="text-xs font-bold tracking-[0.35em] text-white/25 uppercase font-sans">Next Step</span>
             </div>
 
-            <h2 className="font-syne font-extrabold text-white leading-tight mb-6"
+            <h2 className="font-urbanist font-extrabold text-white leading-tight mb-6"
               style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}>
               Ready to Grow<br />
               Your <span className="text-[#14EAEA]">Business?</span>
@@ -79,7 +79,7 @@ export default function CTABannerD() {
 
             {/* Floating card */}
             <div className="absolute -bottom-6 -left-6 bg-[#14EAEA] p-6 min-w-[200px]">
-              <div className="font-syne text-3xl font-extrabold text-black">Free</div>
+              <div className="font-urbanist text-3xl font-extrabold text-black">Free</div>
               <div className="text-black/60 text-sm font-sans mt-0.5">Discovery Call — No Obligation</div>
             </div>
           </div>
@@ -88,3 +88,4 @@ export default function CTABannerD() {
     </section>
   )
 }
+
