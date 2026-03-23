@@ -122,41 +122,41 @@ export default function HeroI() {
           className="absolute hidden md:block"
           style={{ right: '4%', top: '50%', marginTop: '-290px', width: '460px', height: '580px', overflow: 'visible' }}
         >
-          {/* Card 1 — Cyan background card (fans in then tucks behind photo) */}
+          {/* Card 1 — Cyan background card (fans in then fully tucks BEHIND photo) */}
           <motion.div
             className="absolute inset-0 rounded-2xl bg-[#14EAEA]"
             style={{ zIndex: 5 }}
             initial={{ opacity: 0, x: 160, rotate: 0, scale: 1 }}
             animate={{
-              opacity: [0, 1, 1, 1],
+              opacity: [0, 1, 1, 0],
               x: [160, 30, 30, 0],
               rotate: [0, 10, 10, 0],
-              scale: [1, 1, 1, 0.88],
+              scale: [1, 1, 1, 0.82],
             }}
             transition={{
-              duration: 2.2,
+              duration: 2.4,
               delay: 0.3,
               ease: [0.25, 0.46, 0.45, 0.94],
-              times: [0, 0.35, 0.65, 1],
+              times: [0, 0.3, 0.6, 1],
             }}
           />
 
-          {/* Card 2 — Pink background card (fans in then tucks behind photo) */}
+          {/* Card 2 — Pink background card (fans in then fully tucks BEHIND photo) */}
           <motion.div
             className="absolute inset-0 rounded-2xl bg-[#F813BE]"
             style={{ zIndex: 5 }}
             initial={{ opacity: 0, x: 160, rotate: 0, scale: 1 }}
             animate={{
-              opacity: [0, 1, 1, 1],
+              opacity: [0, 1, 1, 0],
               x: [160, -20, -20, 0],
               rotate: [0, -8, -8, 0],
-              scale: [1, 1, 1, 0.88],
+              scale: [1, 1, 1, 0.82],
             }}
             transition={{
-              duration: 2.2,
+              duration: 2.4,
               delay: 0.45,
               ease: [0.25, 0.46, 0.45, 0.94],
-              times: [0, 0.35, 0.65, 1],
+              times: [0, 0.3, 0.6, 1],
             }}
           />
 
@@ -183,7 +183,7 @@ export default function HeroI() {
           {/* Webink logo overlay — no background box, glow effect only */}
           <motion.div
             className="absolute left-1/2 -translate-x-1/2 z-20"
-            style={{ top: '-20px', width: '300px' }}
+            style={{ top: '-28px', width: '340px' }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 1.8, ease: [0.25, 0.46, 0.45, 0.94] }}

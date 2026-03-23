@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import LenisProvider from '@/components/LenisProvider'
+import SessionProvider from '@/components/SessionProvider'
 
 export const metadata: Metadata = {
   title: 'Webink Solutions — Sarasota\'s Premiere Digital Agency',
@@ -32,7 +33,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <LenisProvider>{children}</LenisProvider>
+        <SessionProvider>
+          <LenisProvider>{children}</LenisProvider>
+        </SessionProvider>
       </body>
     </html>
   )
