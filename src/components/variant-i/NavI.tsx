@@ -17,7 +17,7 @@ export default function NavI() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40)
+    const handleScroll = () => setScrolled(window.scrollY >= 80)
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -44,16 +44,27 @@ export default function NavI() {
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-6 lg:px-20 py-4 flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo — white over hero, black when scrolled */}
           <Link href="/variant-i" className="relative z-10 flex-shrink-0">
-            <Image
-              src="/images/logos/webink-black-4x1.png"
-              alt="Webink Solutions"
-              width={176}
-              height={44}
-              className="h-12 w-auto"
-              priority
-            />
+            {scrolled ? (
+              <Image
+                src="/images/logos/webink-black-4x1.png"
+                alt="Webink Solutions"
+                width={176}
+                height={44}
+                className="h-12 w-auto"
+                priority
+              />
+            ) : (
+              <Image
+                src="/images/logos/webink-white.png"
+                alt="Webink Solutions"
+                width={176}
+                height={44}
+                className="h-12 w-auto"
+                priority
+              />
+            )}
           </Link>
 
           {/* Desktop nav links — centered */}
@@ -62,7 +73,11 @@ export default function NavI() {
               <a
                 key={l.label}
                 href={l.href}
-                className="font-urbanist text-sm font-semibold text-[#0A0A0A]/60 hover:text-[#0A0A0A] transition-colors duration-200 tracking-wide"
+                className={`font-urbanist text-sm font-semibold transition-colors duration-200 tracking-wide ${
+                  scrolled
+                    ? 'text-[#0A0A0A]/60 hover:text-[#0A0A0A]'
+                    : 'text-white/80 hover:text-white'
+                }`}
               >
                 {l.label}
               </a>
@@ -73,7 +88,11 @@ export default function NavI() {
           <div className="flex items-center gap-4">
             <a
               href="#contact"
-              className="hidden lg:inline-flex items-center gap-2 font-urbanist text-sm font-bold px-6 py-3 bg-[#0A0A0A] text-white rounded-full hover:bg-[#14EAEA] hover:text-black transition-all duration-300"
+              className={`hidden lg:inline-flex items-center gap-2 font-urbanist text-sm font-bold px-6 py-3 rounded-full transition-all duration-300 ${
+                scrolled
+                  ? 'bg-[#0A0A0A] text-white hover:bg-[#14EAEA] hover:text-black'
+                  : 'bg-white text-[#0A0A0A] hover:bg-[#14EAEA] hover:text-black'
+              }`}
             >
               Get Free Audit
             </a>
@@ -87,17 +106,17 @@ export default function NavI() {
               <motion.span
                 animate={open ? { rotate: 45, y: 9 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="block w-6 h-[2px] bg-[#0A0A0A] origin-center"
+                className={`block w-6 h-[2px] origin-center ${scrolled ? 'bg-[#0A0A0A]' : 'bg-white'}`}
               />
               <motion.span
                 animate={open ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
                 transition={{ duration: 0.2 }}
-                className="block w-6 h-[2px] bg-[#0A0A0A] origin-center"
+                className={`block w-6 h-[2px] origin-center ${scrolled ? 'bg-[#0A0A0A]' : 'bg-white'}`}
               />
               <motion.span
                 animate={open ? { rotate: -45, y: -9 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="block w-6 h-[2px] bg-[#0A0A0A] origin-center"
+                className={`block w-6 h-[2px] origin-center ${scrolled ? 'bg-[#0A0A0A]' : 'bg-white'}`}
               />
             </button>
           </div>
