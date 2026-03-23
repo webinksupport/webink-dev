@@ -274,3 +274,14 @@ body {
   animation: highlight 0.6s ease-out 0.5s forwards;
   transform: scaleX(0);
 }
+
+/* Hero highlight sweep (Variant I) */
+@keyframes highlightSweep {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Variant I — scribble draw keyframe (keep for compat) */
+@keyframes scribble-draw {
+  to { stroke-dashoffset: 0; }
+}

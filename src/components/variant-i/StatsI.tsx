@@ -5,7 +5,7 @@ const stats = [
   { value: 50, suffix: '+', label: 'Clients Served', sublabel: 'Across Florida' },
   { value: 6, suffix: '+', label: 'Years in Business', sublabel: 'Est. in Sarasota' },
   { value: 300, suffix: '%', label: 'Avg Traffic Growth', sublabel: 'For our SEO clients' },
-  { value: 1, suffix: 'st', label: '#1 Rankings', sublabel: 'Delivered consistently' },
+  { value: 5, suffix: '★', label: 'Google Rating', sublabel: '50+ five-star reviews' },
 ]
 
 function useCountUp(target: number, duration: number, active: boolean) {
@@ -15,8 +15,6 @@ function useCountUp(target: number, duration: number, active: boolean) {
   useEffect(() => {
     if (!active) return
     const start = performance.now()
-
-    // Ease out cubic
     const ease = (t: number) => 1 - Math.pow(1 - t, 3)
 
     const tick = (now: number) => {
@@ -61,14 +59,14 @@ function StatCard({ value, suffix, label, sublabel, delay }: {
       style={{ transitionDelay: `${delay}ms` }}
     >
       <div
-        className="font-urbanist font-black text-[#0A0A0A] leading-none mb-3"
+        className="font-urbanist font-black text-white leading-none mb-3"
         style={{ fontSize: 'clamp(3.5rem, 7vw, 7rem)', letterSpacing: '-0.04em' }}
       >
         {count}
         <span className="text-[#14EAEA]">{suffix}</span>
       </div>
-      <div className="font-urbanist font-bold text-[#0A0A0A] text-xl mb-1">{label}</div>
-      <div className="font-urbanist text-[#0A0A0A]/40 text-sm">{sublabel}</div>
+      <div className="font-urbanist font-bold text-white text-xl mb-1">{label}</div>
+      <div className="font-urbanist text-white/35 text-sm">{sublabel}</div>
       <div className="mt-4 w-12 h-0.5 bg-[#14EAEA] mx-auto lg:mx-0" />
     </div>
   )
@@ -76,7 +74,10 @@ function StatCard({ value, suffix, label, sublabel, delay }: {
 
 export default function StatsI() {
   return (
-    <section id="results" className="bg-[#F8F8F8] py-24 lg:py-36 border-y border-black/5">
+    <section id="results" className="bg-[#0F0F0F] py-24 lg:py-36">
+      {/* Top accent line */}
+      <div className="h-px bg-gradient-to-r from-transparent via-[#14EAEA]/25 to-transparent mb-0" />
+
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">
 
         {/* Section header */}
@@ -84,17 +85,17 @@ export default function StatsI() {
           <div>
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-[2px] bg-[#14EAEA]" />
-              <span className="font-urbanist text-xs font-black tracking-[0.5em] text-black/30 uppercase">Results</span>
+              <span className="font-urbanist text-xs font-black tracking-[0.5em] text-white/30 uppercase">Results</span>
             </div>
             <h2
-              className="font-urbanist font-black text-[#0A0A0A] leading-[0.9]"
+              className="font-urbanist font-black text-white leading-[0.9]"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 6rem)', letterSpacing: '-0.04em' }}
             >
               Numbers<br />
               <span className="text-[#14EAEA]">Don&apos;t Lie.</span>
             </h2>
           </div>
-          <p className="font-urbanist text-[#0A0A0A]/50 text-lg leading-relaxed max-w-sm lg:text-right">
+          <p className="font-urbanist text-white/40 text-lg leading-relaxed max-w-sm lg:text-right">
             Six years of building digital foundations for Southwest Florida businesses. Here&apos;s what that looks like.
           </p>
         </div>
@@ -106,22 +107,22 @@ export default function StatsI() {
           ))}
         </div>
 
-        {/* DesignRush badge text */}
-        <div className="mt-16 pt-10 border-t border-black/8 flex flex-wrap gap-6 items-center justify-between">
+        {/* DesignRush badge */}
+        <div className="mt-16 pt-10 border-t border-white/8 flex flex-wrap gap-6 items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-[#14EAEA] flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="#0A0A0A">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#0F0F0F">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
             </div>
             <div>
-              <div className="font-urbanist font-bold text-sm text-[#0A0A0A]">Top Web Design Company in Florida</div>
-              <div className="font-urbanist text-xs text-[#0A0A0A]/40">Recognized by DesignRush</div>
+              <div className="font-urbanist font-bold text-sm text-white">Top Web Design Company in Florida</div>
+              <div className="font-urbanist text-xs text-white/35">Recognized by DesignRush</div>
             </div>
           </div>
           <a
-            href="https://webink.solutions/contact"
-            className="font-urbanist font-bold text-sm text-[#0A0A0A] border-b-2 border-[#14EAEA] pb-0.5 hover:text-[#14EAEA] transition-colors duration-200"
+            href="https://webink.solutions/portfolio"
+            className="font-urbanist font-bold text-sm text-white/40 border-b border-[#14EAEA] pb-0.5 hover:text-[#14EAEA] transition-colors duration-200"
           >
             See Our Work →
           </a>
