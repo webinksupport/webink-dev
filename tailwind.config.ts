@@ -23,7 +23,10 @@ const config: Config = {
       },
       fontFamily: {
         syne: ['Syne', 'sans-serif'],
+        grotesk: ['Space Grotesk', 'sans-serif'],
         sans: ['Public Sans', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
+        'public-sans': ['Public Sans', 'sans-serif'],
       },
       animation: {
         'marquee': 'marquee 30s linear infinite',
