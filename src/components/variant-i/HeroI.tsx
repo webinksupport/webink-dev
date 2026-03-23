@@ -180,38 +180,24 @@ export default function HeroI() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
           </motion.div>
 
-          {/* Webink logo overlay — large, centered over top of photo, gradient tint */}
+          {/* Webink logo overlay — no background box, glow effect only */}
           <motion.div
-            className="absolute flex items-center justify-center"
-            style={{
-              zIndex: 20,
-              top: '-40px',
-              left: '50%',
-              marginLeft: '-120px',
-              width: '240px',
-              filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.5))',
-            }}
+            className="absolute left-1/2 -translate-x-1/2 z-20"
+            style={{ top: '-20px', width: '300px' }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 1.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <div className="relative w-[240px] h-[240px]">
-              <Image
-                src="/images/logos/webink-white.png"
-                alt="Webink Solutions logo"
-                width={240}
-                height={240}
-                className="w-full h-full object-contain"
-              />
-              {/* Gradient overlay: cyan → white → pink */}
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: 'linear-gradient(90deg, #14EAEA 0%, #ffffff 50%, #F813BE 100%)',
-                  mixBlendMode: 'color',
-                }}
-              />
-            </div>
+            {/* White logo PNG — mix-blend-mode screen on dark bg = transparent background, logo glows */}
+            <img
+              src="/images/logos/webink-white.png"
+              alt="Webink Solutions logo"
+              className="w-full block"
+              style={{
+                mixBlendMode: 'screen',
+                filter: 'drop-shadow(0 0 20px rgba(20, 234, 234, 0.6)) drop-shadow(0 0 40px rgba(248, 19, 190, 0.3))',
+              }}
+            />
           </motion.div>
         </div>
       </motion.div>
