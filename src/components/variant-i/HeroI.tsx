@@ -67,8 +67,8 @@ export default function HeroI() {
           width: '220px',
           height: '300px',
         }}
-        initial={{ opacity: 0, y: 40, rotate: -3 }}
-        animate={{ opacity: 1, y: 0, rotate: -3 }}
+        initial={{ opacity: 0, y: 40, rotate: -3, scale: 0.92 }}
+        animate={{ opacity: 1, y: 0, rotate: -3, scale: 1 }}
         transition={{ duration: 1.1, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         <div className="relative w-full h-full rounded-[20px] overflow-hidden shadow-2xl ring-1 ring-white/10">
@@ -91,8 +91,8 @@ export default function HeroI() {
           width: '180px',
           height: '240px',
         }}
-        initial={{ opacity: 0, y: 60, rotate: 4 }}
-        animate={{ opacity: 1, y: 0, rotate: 4 }}
+        initial={{ opacity: 0, y: 60, rotate: 4, scale: 0.92 }}
+        animate={{ opacity: 1, y: 0, rotate: 4, scale: 1 }}
         transition={{ duration: 1.1, delay: 0.85, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         <div className="relative w-full h-full rounded-[20px] overflow-hidden shadow-2xl ring-1 ring-white/10">
@@ -167,7 +167,10 @@ export default function HeroI() {
           <span className="text-[#14EAEA]">That</span>
           <br />
           <span className="relative">
-            <span className="text-[#14EAEA]">Converts</span>
+            <span className="relative inline-block">
+              <span className="relative z-10 text-[#14EAEA]">Converts</span>
+              <span className="absolute inset-0 -mx-1 bg-[#14EAEA]/40 origin-left animate-highlight" />
+            </span>
             {' '}in{' '}
             {/* Word cycling */}
             <span

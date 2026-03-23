@@ -33,17 +33,25 @@ export default function AboutI() {
             style={{ y: imgY }}
             className="lg:col-span-5 relative"
           >
-            <div className="relative h-[500px] lg:h-[680px] rounded-[24px] overflow-hidden shadow-2xl">
-              <Image
-                src="/images/photos/sean-street.jpg"
-                alt="Sean Rowe, founder of Webink Solutions — Sarasota digital marketing"
-                fill
-                className="object-cover object-center"
-                sizes="(max-width: 1024px) 100vw, 40vw"
-              />
-              {/* Subtle bottom gradient */}
-              <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/30 to-transparent" />
-            </div>
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 20 }}
+              whileInView={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+              viewport={{ once: true, margin: "-80px" }}
+              className="overflow-hidden rounded-2xl"
+            >
+              <div className="relative h-[500px] lg:h-[680px] rounded-[24px] overflow-hidden shadow-2xl">
+                <Image
+                  src="/images/photos/sean-street.jpg"
+                  alt="Sean Rowe, founder of Webink Solutions — Sarasota digital marketing"
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                />
+                {/* Subtle bottom gradient */}
+                <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/30 to-transparent" />
+              </div>
+            </motion.div>
 
             {/* Floating stat card */}
             <motion.div

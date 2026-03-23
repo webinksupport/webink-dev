@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 import {
   Globe, Search, TrendingUp, Share2, Server, Brain, Database,
 } from 'lucide-react'
@@ -13,8 +14,9 @@ const services = [
     desc: 'Custom responsive websites engineered for performance, SEO, and real conversion. Fast, modern, and built to last.',
     image: '/images/photos/workspace-dark.jpg',
     icon: Globe,
-    accent: '#14EAEA',
-    bg: '#F0FEFE',
+    accent: '#0A0A0A',
+    bg: '#14EAEA',
+    dark: false,
   },
   {
     num: '02',
@@ -23,8 +25,9 @@ const services = [
     desc: 'Keyword research, technical optimization, local SEO, and transparent monthly reporting. We get you to page one.',
     image: '/images/photos/sean-street.jpg',
     icon: Search,
-    accent: '#F813BE',
-    bg: '#FEF0FB',
+    accent: '#14EAEA',
+    bg: '#F813BE',
+    dark: false,
   },
   {
     num: '03',
@@ -33,8 +36,9 @@ const services = [
     desc: 'Google Ads and Meta campaigns engineered for ROI. Real leads, not vanity metrics. We manage every dollar.',
     image: '/images/photos/team-rooftop.jpg',
     icon: TrendingUp,
-    accent: '#B9FF33',
-    bg: '#F5FEE8',
+    accent: '#0A0A0A',
+    bg: '#B9FF33',
+    dark: false,
   },
   {
     num: '04',
@@ -44,7 +48,8 @@ const services = [
     image: '/images/photos/team-duo.jpg',
     icon: Share2,
     accent: '#14EAEA',
-    bg: '#F0FEFE',
+    bg: '#FFFFFF',
+    dark: false,
   },
   {
     num: '05',
@@ -53,8 +58,9 @@ const services = [
     desc: 'Managed hosting with enterprise uptime, daily backups, SSL, and full technical support. From $31/mo.',
     image: '/images/photos/team-family.jpg',
     icon: Server,
-    accent: '#F813BE',
-    bg: '#FEF0FB',
+    accent: '#14EAEA',
+    bg: '#000000',
+    dark: true,
   },
   {
     num: '06',
@@ -63,8 +69,9 @@ const services = [
     desc: 'We leverage AI to automate, optimize, and scale your marketing beyond what traditional agencies can deliver.',
     image: '/images/photos/workspace-dark.jpg',
     icon: Brain,
-    accent: '#B9FF33',
-    bg: '#F5FEE8',
+    accent: '#0A0A0A',
+    bg: '#14EAEA',
+    dark: false,
   },
   {
     num: '07',
@@ -74,7 +81,8 @@ const services = [
     image: '/images/photos/tech-laptop.jpg',
     icon: Database,
     accent: '#14EAEA',
-    bg: '#F0FEFE',
+    bg: '#F813BE',
+    dark: false,
   },
 ]
 
@@ -170,7 +178,7 @@ export default function ServicesI() {
                     {/* Number */}
                     <div
                       className="font-urbanist font-black text-[120px] lg:text-[180px] leading-none select-none mb-2"
-                      style={{ color: `${svc.accent}20`, letterSpacing: '-0.05em' }}
+                      style={{ color: svc.dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)', letterSpacing: '-0.05em' }}
                     >
                       {svc.num}
                     </div>
@@ -179,13 +187,17 @@ export default function ServicesI() {
                     <div className="flex items-center gap-4 mb-4 -mt-16 lg:-mt-24">
                       <div
                         className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: svc.accent }}
+                        style={{ backgroundColor: svc.dark ? svc.accent : svc.accent === '#14EAEA' ? '#0A0A0A' : svc.accent === '#F813BE' ? '#0A0A0A' : '#0A0A0A' }}
                       >
-                        <Icon size={24} className="text-[#0A0A0A]" />
+                        <Icon size={24} style={{ color: svc.dark ? '#0A0A0A' : svc.accent === '#0A0A0A' ? '#14EAEA' : '#0A0A0A' }} />
                       </div>
                       <h2
-                        className="font-urbanist font-black text-[#0A0A0A] leading-tight"
-                        style={{ fontSize: 'clamp(2.5rem, 5vw, 5rem)', letterSpacing: '-0.03em' }}
+                        className="font-urbanist font-black leading-tight"
+                        style={{
+                          fontSize: 'clamp(2.5rem, 5vw, 5rem)',
+                          letterSpacing: '-0.03em',
+                          color: svc.dark ? '#FFFFFF' : '#0A0A0A',
+                        }}
                       >
                         {svc.title}
                       </h2>
@@ -193,18 +205,25 @@ export default function ServicesI() {
 
                     <p
                       className="font-urbanist font-bold text-xl mb-4"
-                      style={{ color: svc.accent === '#B9FF33' ? '#4A7C10' : svc.accent }}
+                      style={{ color: svc.dark ? 'rgba(255,255,255,0.7)' : svc.bg === '#B9FF33' ? '#3A6B0A' : svc.bg === '#14EAEA' ? '#0A4040' : svc.bg === '#F813BE' ? '#6B0A4A' : '#0A0A0A' }}
                     >
                       {svc.tagline}
                     </p>
 
-                    <p className="font-urbanist text-[#0A0A0A]/55 text-lg leading-relaxed mb-10 max-w-md">
+                    <p
+                      className="font-urbanist text-lg leading-relaxed mb-10 max-w-md"
+                      style={{ color: svc.dark ? 'rgba(255,255,255,0.55)' : 'rgba(10,10,10,0.55)' }}
+                    >
                       {svc.desc}
                     </p>
 
                     <a
                       href="/services"
-                      className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-4 bg-[#0A0A0A] text-white rounded-full hover:bg-[#14EAEA] hover:text-[#0A0A0A] transition-all duration-300"
+                      className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-4 rounded-full transition-all duration-300"
+                      style={{
+                        backgroundColor: svc.dark ? '#14EAEA' : '#0A0A0A',
+                        color: svc.dark ? '#0A0A0A' : '#FFFFFF',
+                      }}
                     >
                       Learn More →
                     </a>
@@ -218,7 +237,7 @@ export default function ServicesI() {
                           style={{
                             width: i === j ? '24px' : '6px',
                             height: '6px',
-                            backgroundColor: i === j ? svc.accent : 'rgba(0,0,0,0.15)',
+                            backgroundColor: i === j ? (svc.dark ? '#14EAEA' : '#0A0A0A') : svc.dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)',
                           }}
                         />
                       ))}
@@ -227,6 +246,13 @@ export default function ServicesI() {
 
                   {/* Image side */}
                   <div className="relative hidden lg:block h-[500px]">
+                    <motion.div
+                      initial={{ scale: 0.92, opacity: 0, y: 20 }}
+                      whileInView={{ scale: 1, opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      className="overflow-hidden rounded-[24px] w-full h-full"
+                    >
                     <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-2xl">
                       <Image
                         src={svc.image}
@@ -238,13 +264,14 @@ export default function ServicesI() {
                       {/* Accent border */}
                       <div
                         className="absolute bottom-0 left-0 right-0 h-1"
-                        style={{ backgroundColor: svc.accent }}
+                        style={{ backgroundColor: svc.dark ? '#14EAEA' : '#0A0A0A' }}
                       />
                     </div>
+                    </motion.div>
                     {/* Floating number badge */}
                     <div
                       className="absolute -top-6 -right-6 w-20 h-20 rounded-full flex items-center justify-center font-urbanist font-black text-2xl shadow-xl"
-                      style={{ backgroundColor: svc.accent, color: '#0A0A0A' }}
+                      style={{ backgroundColor: svc.dark ? '#14EAEA' : '#0A0A0A', color: svc.dark ? '#0A0A0A' : '#FFFFFF' }}
                     >
                       {svc.num}
                     </div>
