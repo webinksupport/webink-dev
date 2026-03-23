@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import {
-  Globe, Search, TrendingUp, Share2, Server, Video,
+  Globe, Search, TrendingUp, Share2, Server, Brain, Database,
 } from 'lucide-react'
 
 const services = [
@@ -58,13 +58,23 @@ const services = [
   },
   {
     num: '06',
-    title: 'Short Form Video',
-    tagline: 'Stop the scroll.',
-    desc: 'Reels and TikTok content built for engagement. Strategy, scripting, and production for your brand.',
-    image: '/images/photos/sean-about.jpg',
-    icon: Video,
+    title: 'AI-Powered Marketing',
+    tagline: 'Beyond what agencies deliver.',
+    desc: 'We leverage AI to automate, optimize, and scale your marketing beyond what traditional agencies can deliver.',
+    image: '/images/photos/workspace-dark.jpg',
+    icon: Brain,
     accent: '#B9FF33',
     bg: '#F5FEE8',
+  },
+  {
+    num: '07',
+    title: 'Custom CRM & SaaS',
+    tagline: 'Software built for your industry.',
+    desc: 'We build industry-specific software platforms — booking systems, CRM tools, client portals. Like VoltDesk, our platform for electrical contractors.',
+    image: '/images/photos/tech-laptop.jpg',
+    icon: Database,
+    accent: '#14EAEA',
+    bg: '#F0FEFE',
   },
 ]
 
