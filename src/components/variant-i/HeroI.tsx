@@ -117,36 +117,65 @@ export default function HeroI() {
           </a>
         </motion.div>
 
-        {/* Baja landscape photo — large, right side, elegant entrance */}
-        <motion.div
-          className="absolute hidden lg:block z-10"
-          style={{ right: '6%', top: '50%', transform: 'translateY(-50%)', width: '420px', height: '560px' }}
-          initial={{ opacity: 0, scale: 0.9, rotate: -2, x: 60 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0, x: 0 }}
-          transition={{ duration: 1.2, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+        {/* Card fan hero image — right side, vertically centered */}
+        <div
+          className="absolute hidden md:block z-10"
+          style={{ right: '6%', top: '50%', marginTop: '-300px', width: '420px', height: '560px', overflow: 'visible' }}
         >
-          <div
-            className="relative w-full h-full"
-            style={{
-              borderRadius: '24px',
-              overflow: 'hidden',
-              boxShadow: '0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)',
-            }}
+          {/* Card 1 — Cyan background card */}
+          <motion.div
+            className="absolute inset-0 rounded-2xl bg-[#14EAEA]"
+            initial={{ opacity: 0, x: 120, rotate: 0 }}
+            animate={{ opacity: 1, x: 20, rotate: 8 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ top: '10px' }}
+          />
+
+          {/* Card 2 — Pink background card */}
+          <motion.div
+            className="absolute inset-0 rounded-2xl bg-[#F813BE]"
+            initial={{ opacity: 0, x: 120, rotate: 0 }}
+            animate={{ opacity: 1, x: 10, rotate: 4 }}
+            transition={{ duration: 0.6, delay: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ top: '5px' }}
+          />
+
+          {/* Card 3 — The actual Baja photo */}
+          <motion.div
+            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
+            initial={{ opacity: 0, x: 80, rotate: -6 }}
+            animate={{ opacity: 1, x: 0, rotate: 0 }}
+            transition={{ duration: 1, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <Image
               src="/images/photos/baja-6.jpg"
-              alt="Baja California beach — inspiring digital work from anywhere"
+              alt="Baja California beach — Webink Solutions Sarasota digital marketing"
               fill
               priority
               className="object-cover object-center"
               sizes="420px"
             />
-            {/* Subtle cyan accent bottom bar */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#14EAEA]" />
             {/* Subtle vignette */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-          </div>
-        </motion.div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+          </motion.div>
+
+          {/* Webink logo overlay — top-left of photo */}
+          <motion.div
+            className="absolute z-20"
+            style={{ top: '-16px', left: '-16px', width: '80px' }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 1.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <Image
+              src="/images/logos/webink-white.png"
+              alt="Webink Solutions logo"
+              width={80}
+              height={80}
+              className="drop-shadow-lg"
+            />
+          </motion.div>
+        </div>
       </motion.div>
 
       {/* Sub-hero info strip — anchored to bottom of hero */}
