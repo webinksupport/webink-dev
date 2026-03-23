@@ -11,7 +11,8 @@
   "dependencies": {
     "next": "14.2.3",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "ssh2": "^1.17.0"
   },
   "devDependencies": {
     "@types/node": "^20",
