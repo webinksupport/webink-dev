@@ -1,6 +1,16 @@
 import Link from 'next/link'
 import Image from 'next/image'
 
+const variantI = {
+  route: '/variant-i',
+  name: 'Variant I',
+  title: 'The Definitive Version',
+  description: 'Primarily white, with bold dark sections for contrast. Baja hero with parallax + word cycling. GSAP horizontal scroll services section (full viewport panels — scroll hijack). 3D flip-card testimonials. Anime.js staggered headline. Count-up stats. Off-canvas slide-out nav. Pricing cards. All premium effects — the portfolio piece.',
+  tags: ['⭐ NEW', 'White + Dark Contrast', 'GSAP Horizontal Scroll', '3D Flip Cards', 'Anime.js', 'Lenis', 'Framer Motion', 'Full Stack'],
+  preview: { bg: '#FFFFFF', accent: '#14EAEA', secondary: '#0A0A0A' },
+  emoji: '🏆',
+}
+
 const variants = [
   {
     route: '/',
@@ -127,10 +137,49 @@ export default function PickPage() {
           </p>
         </div>
 
+        {/* ⭐ VARIANT I — THE DEFINITIVE */}
+        <div className="mb-6">
+          <div className="text-xs text-yellow-400 font-semibold tracking-widest uppercase mb-4 flex items-center gap-2">
+            <span className="w-8 h-px bg-yellow-400" /> ⭐ Definitive Version — All Premium Effects
+          </div>
+        </div>
+        <Link
+          href={variantI.route}
+          className="group block border-2 border-yellow-400/60 hover:border-yellow-400 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.01] bg-[#1A1700] mb-10"
+          target="_blank"
+        >
+          <div className="h-2 w-full bg-gradient-to-r from-[#14EAEA] via-yellow-400 to-[#F813BE]" />
+          <div className="p-8 lg:p-10">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
+              <div>
+                <div className="text-xs font-bold tracking-[0.3em] text-yellow-400/70 uppercase mb-2">{variantI.name} ⭐ DEFINITIVE</div>
+                <div className="font-urbanist text-3xl font-black text-white flex items-center gap-3">
+                  {variantI.emoji} {variantI.title}
+                </div>
+              </div>
+              <div className="flex gap-2 mt-1">
+                <div className="w-8 h-8 rounded-full border-2 border-yellow-400" style={{background: variantI.preview.bg}} />
+                <div className="w-8 h-8 rounded-full" style={{background: variantI.preview.accent}} />
+                <div className="w-8 h-8 rounded-full" style={{background: variantI.preview.secondary}} />
+              </div>
+            </div>
+            <p className="text-white/60 text-sm leading-relaxed mb-6 max-w-3xl">{variantI.description}</p>
+            <div className="flex flex-wrap gap-2 mb-6">
+              {variantI.tags.map((tag) => (
+                <span key={tag} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-yellow-400/15 text-yellow-300">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="text-yellow-400 text-sm font-semibold group-hover:translate-x-1 transition-transform duration-200">View Variant I — The Definitive →</div>
+              <div className="text-white/20 text-xs font-mono">{variantI.route}</div>
+            </div>
+          </div>
+        </Link>
+
         {/* NEWEST VARIANTS — G & H */}
         <div className="mb-6">
           <div className="text-xs text-[#F813BE] font-semibold tracking-widest uppercase mb-4 flex items-center gap-2">
-            <span className="w-8 h-px bg-[#F813BE]" /> Newest — Current Site Feel + Editorial Bold
+            <span className="w-8 h-px bg-[#F813BE]" /> Previous New — Current Site Feel + Editorial Bold
           </div>
         </div>
         <div className="grid md:grid-cols-2 gap-6 mb-10">
@@ -283,8 +332,9 @@ export default function PickPage() {
                   ['D — Clean White', 'White', 'Urbanist', 'Split layout', 'Swiss grid', '/variant-d'],
                   ['E — White + Bold ❤️', 'White', 'Urbanist', 'Baja full-bleed', 'Word cycling', '/variant-e'],
                   ['F — White + Minimal ❤️', 'White', 'Urbanist', 'Baja full-bleed', 'Scribble draw', '/variant-f'],
-                  ['G — Current Site, Modern 🆕', 'White', 'Urbanist', 'Collage of 3 photos', 'Rotating badge + scale', '/variant-g'],
-                  ['H — Editorial Bold 🆕', 'White/Black', 'Urbanist', 'Baja + Sean portrait', 'Service image reveal', '/variant-h'],
+                  ['G — Current Site, Modern', 'White', 'Urbanist', 'Collage of 3 photos', 'Rotating badge + scale', '/variant-g'],
+                  ['H — Editorial Bold', 'White/Black', 'Urbanist', 'Baja + Sean portrait', 'Service image reveal', '/variant-h'],
+                  ['I — The Definitive ⭐', 'White + Dark', 'Urbanist', 'Baja parallax + collage', 'GSAP horiz. scroll + 3D cards', '/variant-i'],
                 ].map(([name, theme, font, hero, feature, route]) => (
                   <tr key={route} className="hover:bg-white/2 transition-colors">
                     <td className="px-5 py-4">
