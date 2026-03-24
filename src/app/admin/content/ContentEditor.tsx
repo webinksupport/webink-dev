@@ -962,7 +962,7 @@ export default function ContentEditor() {
       {selectedPage && (
         <div>
           {/* Toolbar */}
-          <div className="flex items-center gap-3 mb-6 bg-[#1A1A1A] border border-white/10 rounded-xl px-5 py-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 bg-[#1A1A1A] border border-white/10 rounded-xl px-4 sm:px-5 py-3">
             <button
               onClick={() => {
                 if (hasDirtyBlocks && !confirm('You have unsaved changes. Go back?')) return
@@ -973,37 +973,37 @@ export default function ContentEditor() {
               }}
               className="text-white/60 hover:text-white text-sm transition-colors"
             >
-              ← All Pages
+              ← Back
             </button>
 
-            <div className="w-px h-5 bg-[#333]" />
+            <div className="w-px h-5 bg-[#333] hidden sm:block" />
 
-            <h2 className="text-white font-bold">
+            <h2 className="text-white font-bold text-sm sm:text-base">
               {PAGES.find((p) => p.slug === selectedPage)?.label}
             </h2>
-            <span className="text-[#666] text-xs font-mono">
+            <span className="text-[#666] text-xs font-mono hidden sm:inline">
               {selectedPage}
             </span>
 
-            <div className="flex-1" />
+            <div className="flex-1 min-w-0" />
 
             {/* Save status */}
             {saveStatus === 'saving' && (
-              <span className="flex items-center gap-2 text-sm text-white/50">
+              <span className="flex items-center gap-2 text-xs sm:text-sm text-white/50">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                Saving...
+                <span className="hidden sm:inline">Saving...</span>
               </span>
             )}
             {saveStatus === 'saved' && (
-              <span className="flex items-center gap-2 text-sm text-[#14EAEA]">
+              <span className="flex items-center gap-2 text-xs sm:text-sm text-[#14EAEA]">
                 <Check className="w-3.5 h-3.5" />
-                Saved
+                <span className="hidden sm:inline">Saved</span>
               </span>
             )}
             {saveStatus === 'error' && (
-              <span className="flex items-center gap-2 text-sm text-red-400">
+              <span className="flex items-center gap-2 text-xs sm:text-sm text-red-400">
                 <AlertCircle className="w-3.5 h-3.5" />
-                Error
+                <span className="hidden sm:inline">Error</span>
               </span>
             )}
 
@@ -1011,17 +1011,18 @@ export default function ContentEditor() {
             <button
               onClick={handleRevert}
               disabled={!hasDirtyBlocks}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#555] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#555] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Revert"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              Revert
+              <span className="hidden sm:inline">Revert</span>
             </button>
 
             {/* Save */}
             <button
               onClick={handleSave}
               disabled={!hasDirtyBlocks || saving}
-              className="flex items-center gap-1.5 px-4 py-1.5 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm rounded-lg hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm rounded-lg hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Save className="w-3.5 h-3.5" />
               Save
@@ -1033,10 +1034,11 @@ export default function ContentEditor() {
                 href={pageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#14EAEA] hover:text-[#14EAEA] transition-colors"
+                className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#14EAEA] hover:text-[#14EAEA] transition-colors"
+                title="Preview"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                Preview
+                <span className="hidden sm:inline">Preview</span>
               </a>
             )}
           </div>
@@ -1048,8 +1050,8 @@ export default function ContentEditor() {
             </div>
           ) : (
             <div className="flex flex-col lg:flex-row gap-6">
-              {/* Block list (left panel) */}
-              <div className="lg:w-[380px] shrink-0 space-y-1">
+              {/* Block list (left panel — full width on mobile) */}
+              <div className="w-full lg:w-[380px] shrink-0 space-y-1">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-xs font-bold tracking-[3px] uppercase text-[#14EAEA]">
                     Content Blocks

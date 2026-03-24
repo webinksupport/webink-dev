@@ -266,7 +266,7 @@ export default function IntegrationsPage() {
           return (
             <div key={group.id} className="bg-[#0A0A0A] border border-[#333] rounded-2xl overflow-hidden">
               {/* Group Header */}
-              <div className="flex items-center gap-3 px-6 py-4 border-b border-[#333]">
+              <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-[#333]">
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center"
                   style={{ backgroundColor: `${group.color}15` }}
@@ -277,7 +277,7 @@ export default function IntegrationsPage() {
               </div>
 
               {/* Fields */}
-              <div className="p-6 space-y-5">
+              <div className="p-4 sm:p-6 space-y-5">
                 {group.fields.map((field) => {
                   const setting = settings[field.key]
                   const isSet = setting?.isSet ?? false
@@ -357,11 +357,11 @@ export default function IntegrationsPage() {
               </div>
 
               {/* Save Button */}
-              <div className="px-6 py-4 border-t border-[#333] flex justify-end">
+              <div className="px-4 sm:px-6 py-4 border-t border-[#333] flex sm:justify-end">
                 <button
                   onClick={() => saveGroup(group)}
                   disabled={saving[group.id]}
-                  className="flex items-center gap-2 bg-[#14EAEA] text-[#0A0A0A] font-semibold px-5 py-2.5 rounded-lg text-sm hover:bg-[#14EAEA]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-2 w-full sm:w-auto bg-[#14EAEA] text-[#0A0A0A] font-semibold px-5 py-2.5 rounded-lg text-sm hover:bg-[#14EAEA]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving[group.id] ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

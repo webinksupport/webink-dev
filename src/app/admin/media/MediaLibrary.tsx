@@ -141,11 +141,11 @@ function DetailPanel({
       onClick={onClose}
     >
       <div
-        className="bg-[#111] rounded-2xl border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-auto flex flex-col md:flex-row"
+        className="bg-[#111] md:rounded-2xl border-0 md:border border-white/10 max-w-3xl w-full h-full md:h-auto md:max-h-[90vh] overflow-auto flex flex-col md:flex-row"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Image preview */}
-        <div className="flex-1 bg-[#0A0A0A] flex items-center justify-center min-h-[300px] p-6 rounded-l-2xl">
+        <div className="flex-1 bg-[#0A0A0A] flex items-center justify-center min-h-[200px] md:min-h-[300px] p-4 md:p-6 md:rounded-l-2xl">
           {file.name.endsWith('.svg') ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
