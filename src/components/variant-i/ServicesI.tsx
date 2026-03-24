@@ -20,21 +20,21 @@ const services = [
     title: 'SEO Services',
     desc: 'Keyword research, technical optimization, local SEO, and transparent monthly reporting.',
     color: '#F813BE',
-    href: '/services/sarasota-seo',
+    href: '/services/seo',
   },
   {
     icon: TrendingUp,
     title: 'Paid Advertising',
     desc: 'Google Ads and Meta campaigns engineered for ROI. Real leads, not vanity metrics.',
     color: '#B9FF33',
-    href: '/services/ppc-management-sarasota',
+    href: '/services/paid-advertising',
   },
   {
     icon: Share2,
     title: 'Social Media',
     desc: 'Strategy, content creation, scheduling, and community management that converts.',
     color: '#14EAEA',
-    href: '/services/social-media-marketing',
+    href: '/services/social-media',
   },
   {
     icon: Server,
@@ -48,7 +48,7 @@ const services = [
     title: 'AI-Powered Marketing',
     desc: 'We leverage AI to automate, optimize, and scale your marketing beyond what traditional agencies deliver.',
     color: '#B9FF33',
-    href: '/services',
+    href: '/services/ai-marketing',
   },
 ]
 
