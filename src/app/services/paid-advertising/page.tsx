@@ -18,7 +18,7 @@ export default function PaidAdvertisingPage() {
         headline="Ads That Drive"
         headlineAccent="Real ROI."
         subtext="Google Ads and Meta campaigns engineered for measurable results. We manage your ad spend like it is our own — because your growth is our growth."
-        heroImage="/images/photos/workspace-laptop.jpg"
+        heroImage="/images/services/ppc-ads-hero.png"
         features={[
           {
             icon: 'Target',

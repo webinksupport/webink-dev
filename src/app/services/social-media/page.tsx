@@ -26,7 +26,7 @@ export default function SocialMediaPage() {
         headline="Grow Your"
         headlineAccent="Audience."
         subtext="Strategic social media management that builds your brand, engages your community, and drives real business results across every major platform."
-        heroImage="/images/photos/baja-beach.jpg"
+        heroImage="/images/services/social-media-hero.png"
         features={[
           {
             icon: 'Palette',

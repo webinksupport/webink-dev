@@ -26,7 +26,7 @@ export default function SEOPage() {
         headline="Dominate Search"
         headlineAccent="Results."
         subtext="Data-driven SEO strategies that put your Sarasota or Tampa business in front of the right customers. No smoke and mirrors — just measurable, month-over-month growth."
-        heroImage="/images/photos/workspace-dark.jpg"
+        heroImage="/images/services/seo-hero.png"
         features={[
           {
             icon: 'Search',

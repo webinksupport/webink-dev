@@ -1,8 +1,9 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSession, signOut } from 'next-auth/react'
 
 const navLinks = [
   { label: 'Services', href: '#services' },
@@ -12,9 +13,24 @@ const navLinks = [
   { label: 'Pricing', href: '#pricing' },
 ]
 
+function getInitials(name?: string | null): string {
+  if (!name) return '?'
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
 export default function NavI() {
+  const { data: session, status } = useSession()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const isAdmin = session?.user?.role === 'ADMIN'
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY >= 80)
@@ -32,7 +48,23 @@ export default function NavI() {
     return () => { document.body.style.overflow = '' }
   }, [open])
 
-  const handleLinkClick = () => setOpen(false)
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [dropdownOpen])
+
+  const handleLinkClick = () => {
+    setOpen(false)
+    setDropdownOpen(false)
+  }
 
   return (
     <>
@@ -84,8 +116,108 @@ export default function NavI() {
             ))}
           </nav>
 
-          {/* Right: CTA + hamburger */}
+          {/* Right: Auth + CTA + hamburger */}
           <div className="flex items-center gap-4">
+            {/* Desktop auth section */}
+            <div className="hidden lg:flex items-center gap-3">
+              {status === 'authenticated' && session?.user ? (
+                /* Logged in — avatar + dropdown */
+                <div ref={dropdownRef} className="relative">
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="flex items-center gap-2 group"
+                    aria-label="Account menu"
+                  >
+                    {/* Avatar circle */}
+                    <div className="w-9 h-9 rounded-full bg-[#14EAEA] flex items-center justify-center text-[#0A0A0A] text-xs font-bold select-none">
+                      {getInitials(session.user.name)}
+                    </div>
+                    {isAdmin && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-[#F813BE] text-white px-2 py-0.5 rounded-full leading-none">
+                        Admin
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Dropdown */}
+                  <AnimatePresence>
+                    {dropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                        transition={{ duration: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-black/8 overflow-hidden z-50"
+                      >
+                        <div className="px-4 py-3 border-b border-black/5">
+                          <p className="font-urbanist text-sm font-bold text-[#0A0A0A] truncate">
+                            {session.user.name || session.user.email}
+                          </p>
+                          <p className="font-urbanist text-xs text-[#0A0A0A]/50 truncate">
+                            {session.user.email}
+                          </p>
+                        </div>
+
+                        <div className="py-1">
+                          {isAdmin && (
+                            <Link
+                              href="/admin"
+                              onClick={handleLinkClick}
+                              className="flex items-center gap-2 px-4 py-2.5 font-urbanist text-sm text-[#F813BE] hover:bg-[#F813BE]/5 transition-colors"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                              Admin Dashboard
+                            </Link>
+                          )}
+                          <Link
+                            href="/dashboard"
+                            onClick={handleLinkClick}
+                            className="flex items-center gap-2 px-4 py-2.5 font-urbanist text-sm text-[#0A0A0A]/70 hover:bg-black/5 transition-colors"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            My Portal
+                          </Link>
+                          <Link
+                            href="/dashboard/settings"
+                            onClick={handleLinkClick}
+                            className="flex items-center gap-2 px-4 py-2.5 font-urbanist text-sm text-[#0A0A0A]/70 hover:bg-black/5 transition-colors"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            Account Settings
+                          </Link>
+                        </div>
+
+                        <div className="border-t border-black/5 py-1">
+                          <button
+                            onClick={() => {
+                              setDropdownOpen(false)
+                              signOut({ callbackUrl: '/' })
+                            }}
+                            className="flex items-center gap-2 w-full px-4 py-2.5 font-urbanist text-sm text-[#0A0A0A]/50 hover:bg-black/5 hover:text-[#0A0A0A]/70 transition-colors"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Sign Out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : status === 'unauthenticated' ? (
+                /* Logged out — Sign In button */
+                <Link
+                  href="/auth/signin"
+                  className={`font-urbanist text-sm font-semibold px-5 py-2 rounded-full border transition-colors duration-200 ${
+                    scrolled
+                      ? 'border-[#14EAEA] text-[#14EAEA] hover:bg-[#14EAEA] hover:text-[#0A0A0A]'
+                      : 'border-[#14EAEA] text-[#14EAEA] hover:bg-[#14EAEA] hover:text-[#0A0A0A]'
+                  }`}
+                >
+                  Sign In
+                </Link>
+              ) : null}
+            </div>
+
             <a
               href="#contact"
               className={`hidden lg:inline-flex items-center gap-2 font-urbanist text-sm font-bold px-6 py-3 rounded-full transition-all duration-300 ${
@@ -185,12 +317,82 @@ export default function NavI() {
                   ))}
                 </div>
 
+                {/* Mobile auth section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="mt-8 pt-6 border-t border-black/8"
+                >
+                  {status === 'authenticated' && session?.user ? (
+                    <div className="space-y-1">
+                      {/* User info */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-[#14EAEA] flex items-center justify-center text-[#0A0A0A] text-sm font-bold select-none">
+                          {getInitials(session.user.name)}
+                        </div>
+                        <div>
+                          <p className="font-urbanist text-sm font-bold text-[#0A0A0A]">
+                            {session.user.name || 'Account'}
+                          </p>
+                          {isAdmin && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider bg-[#F813BE] text-white px-2 py-0.5 rounded-full leading-none">
+                              Admin
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {isAdmin && (
+                        <Link
+                          href="/admin"
+                          onClick={handleLinkClick}
+                          className="block font-urbanist text-base font-semibold text-[#F813BE] py-3 hover:text-[#d10fa3] transition-colors"
+                        >
+                          Admin Dashboard
+                        </Link>
+                      )}
+                      <Link
+                        href="/dashboard"
+                        onClick={handleLinkClick}
+                        className="block font-urbanist text-base font-semibold text-[#0A0A0A]/70 py-3 hover:text-[#0A0A0A] transition-colors"
+                      >
+                        My Portal
+                      </Link>
+                      <Link
+                        href="/dashboard/settings"
+                        onClick={handleLinkClick}
+                        className="block font-urbanist text-base font-semibold text-[#0A0A0A]/70 py-3 hover:text-[#0A0A0A] transition-colors"
+                      >
+                        Account Settings
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleLinkClick()
+                          signOut({ callbackUrl: '/' })
+                        }}
+                        className="block font-urbanist text-base font-semibold text-[#0A0A0A]/40 py-3 hover:text-[#0A0A0A]/70 transition-colors"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  ) : status === 'unauthenticated' ? (
+                    <Link
+                      href="/auth/signin"
+                      onClick={handleLinkClick}
+                      className="inline-flex font-urbanist text-sm font-bold px-6 py-3 rounded-full border border-[#14EAEA] text-[#14EAEA] hover:bg-[#14EAEA] hover:text-[#0A0A0A] transition-colors duration-200"
+                    >
+                      Sign In
+                    </Link>
+                  ) : null}
+                </motion.div>
+
                 {/* Contact in panel */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.45 }}
-                  className="mt-12 space-y-4"
+                  className="mt-8 space-y-4"
                 >
                   <a
                     href="tel:9418401381"

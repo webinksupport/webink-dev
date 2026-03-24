@@ -26,7 +26,7 @@ export default function WebDesignPage() {
         headline="Websites That"
         headlineAccent="Convert."
         subtext="Custom responsive websites engineered for speed, performance, and real business growth. No templates. No shortcuts. Built from scratch for Sarasota and Tampa businesses."
-        heroImage="/images/ai/sarasota-coast-aerial.png"
+        heroImage="/images/services/web-design-hero.png"
         features={[
           {
             icon: 'Globe',

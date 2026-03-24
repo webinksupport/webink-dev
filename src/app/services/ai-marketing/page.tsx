@@ -18,7 +18,7 @@ export default function AiMarketingPage() {
         headline="Marketing at the"
         headlineAccent="Speed of AI."
         subtext="We leverage AI to automate repetitive tasks, uncover insights humans miss, and scale your marketing beyond what traditional agencies can deliver."
-        heroImage="/images/ai/ai-marketing-abstract.png"
+        heroImage="/images/services/ai-marketing-hero.png"
         features={[
           {
             icon: 'Brain',

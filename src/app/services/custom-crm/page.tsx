@@ -18,7 +18,7 @@ export default function CustomCrmPage() {
         headline="Software Built for"
         headlineAccent="Your Business."
         subtext="Purpose-built CRM and SaaS applications tailored to your workflows. Own your tools instead of renting them."
-        heroImage="/images/ai/crm-network-abstract.png"
+        heroImage="/images/services/crm-hero.png"
         features={[
           {
             icon: 'Code',
