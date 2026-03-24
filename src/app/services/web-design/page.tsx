@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import NavI from '@/components/variant-i/NavI'
 import FooterI from '@/components/variant-i/FooterI'
 import ServicePageLayout from '@/components/services/ServicePageLayout'
+import WebDesignPortfolio from '@/components/services/WebDesignPortfolio'
 import { getPageContent } from '@/lib/content'
 
 export const dynamic = 'force-dynamic'
@@ -104,6 +105,7 @@ export default async function WebDesignPage() {
           },
         ]}
       />
+      <WebDesignPortfolio />
       <FooterI />
     </main>
   )

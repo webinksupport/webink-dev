@@ -3,6 +3,8 @@ import HeroI from '@/components/variant-i/HeroI'
 import MarqueeI from '@/components/variant-i/MarqueeI'
 import ServicesI from '@/components/variant-i/ServicesI'
 import AboutI from '@/components/variant-i/AboutI'
+import FounderI from '@/components/variant-i/FounderI'
+import LocalI from '@/components/variant-i/LocalI'
 import StatsI from '@/components/variant-i/StatsI'
 import TestimonialsI from '@/components/variant-i/TestimonialsI'
 import PricingI from '@/components/variant-i/PricingI'
@@ -40,6 +42,8 @@ export default async function HomePage() {
       <MarqueeI />
       <ServicesI />
       <AboutI />
+      <FounderI />
+      <LocalI />
       <StatsI />
       <TestimonialsI />
       <PricingI />

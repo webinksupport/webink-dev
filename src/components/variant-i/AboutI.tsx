@@ -40,8 +40,8 @@ export default function AboutI() {
             >
               <div className="relative h-[500px] lg:h-[680px]">
                 <Image
-                  src="/images/photos/baja-6.jpg"
-                  alt="Florida coast — Webink Solutions, Sarasota digital marketing"
+                  src="/images/photoshoot/DSC05056-Edit-Edit.jpg"
+                  alt="Webink Solutions workspace — Sarasota digital marketing agency"
                   fill
                   className="object-cover object-center"
                   sizes="(max-width: 1024px) 100vw, 40vw"

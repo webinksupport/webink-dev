@@ -4,9 +4,18 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
+import { ChevronDown } from 'lucide-react'
+
+const serviceLinks = [
+  { label: 'Web Design', href: '/services/web-design', desc: 'Custom responsive sites built to convert' },
+  { label: 'SEO', href: '/services/seo', desc: 'Rank higher on Google organically' },
+  { label: 'Social Media Marketing', href: '/services/social-media', desc: 'Strategy, content & community management' },
+  { label: 'Paid Advertising', href: '/services/paid-advertising', desc: 'Google Ads & Meta campaigns for ROI' },
+  { label: 'AI-Powered Marketing', href: '/services/ai-marketing', desc: 'Leverage AI to scale your marketing' },
+  { label: 'Custom CRM & SaaS', href: '/services/custom-crm', desc: 'Tailored software for your business' },
+]
 
 const navLinks = [
-  { label: 'Services', href: '#services' },
   { label: 'About', href: '#about' },
   { label: 'Results', href: '#results' },
   { label: 'Testimonials', href: '#testimonials' },
@@ -28,7 +37,10 @@ export default function NavI() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [servicesOpen, setServicesOpen] = useState(false)
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const servicesRef = useRef<HTMLDivElement>(null)
 
   const isAdmin = session?.user?.role === 'ADMIN'
 
@@ -48,22 +60,27 @@ export default function NavI() {
     return () => { document.body.style.overflow = '' }
   }, [open])
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false)
       }
+      if (servicesRef.current && !servicesRef.current.contains(e.target as Node)) {
+        setServicesOpen(false)
+      }
     }
-    if (dropdownOpen) {
+    if (dropdownOpen || servicesOpen) {
       document.addEventListener('mousedown', handleClickOutside)
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [dropdownOpen])
+  }, [dropdownOpen, servicesOpen])
 
   const handleLinkClick = () => {
     setOpen(false)
     setDropdownOpen(false)
+    setServicesOpen(false)
+    setMobileServicesOpen(false)
   }
 
   return (
@@ -101,6 +118,65 @@ export default function NavI() {
 
           {/* Desktop nav links — centered */}
           <nav className="hidden lg:flex items-center gap-10">
+            {/* Services dropdown */}
+            <div
+              ref={servicesRef}
+              className="relative"
+              onMouseEnter={() => setServicesOpen(true)}
+              onMouseLeave={() => setServicesOpen(false)}
+            >
+              <button
+                onClick={() => setServicesOpen(!servicesOpen)}
+                className={`flex items-center gap-1 font-urbanist text-sm font-semibold transition-colors duration-200 tracking-wide ${
+                  scrolled
+                    ? 'text-[#0A0A0A]/60 hover:text-[#0A0A0A]'
+                    : 'text-white/80 hover:text-white'
+                }`}
+              >
+                Services
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${servicesOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {servicesOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-black/8 overflow-hidden z-50"
+                  >
+                    <div className="py-2">
+                      {serviceLinks.map((svc) => (
+                        <Link
+                          key={svc.href}
+                          href={svc.href}
+                          onClick={() => setServicesOpen(false)}
+                          className="flex flex-col px-5 py-3 hover:bg-[#14EAEA]/5 transition-colors group"
+                        >
+                          <span className="font-urbanist text-sm font-bold text-[#0A0A0A] group-hover:text-[#14EAEA] transition-colors">
+                            {svc.label}
+                          </span>
+                          <span className="font-urbanist text-xs text-[#0A0A0A]/40 mt-0.5">
+                            {svc.desc}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="border-t border-black/5 px-5 py-3">
+                      <Link
+                        href="/services"
+                        onClick={() => setServicesOpen(false)}
+                        className="font-urbanist text-sm font-bold text-[#F813BE] hover:text-[#d10fa3] transition-colors"
+                      >
+                        View All Services →
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             {navLinks.map((l) => (
               <a
                 key={l.label}
@@ -302,6 +378,52 @@ export default function NavI() {
               {/* Links */}
               <div className="flex-1 overflow-y-auto px-8 py-10">
                 <div className="space-y-1">
+                  {/* Services accordion */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <button
+                      onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
+                      className="w-full flex items-center justify-between font-urbanist font-black text-4xl text-[#0A0A0A] py-4 border-b border-black/5 hover:text-[#14EAEA] transition-colors duration-200"
+                    >
+                      Services
+                      <ChevronDown className={`w-6 h-6 transition-transform duration-200 ${mobileServicesOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    <AnimatePresence>
+                      {mobileServicesOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-4 py-2 space-y-1">
+                            {serviceLinks.map((svc) => (
+                              <Link
+                                key={svc.href}
+                                href={svc.href}
+                                onClick={handleLinkClick}
+                                className="block font-urbanist text-lg font-semibold text-[#0A0A0A]/60 py-2 hover:text-[#14EAEA] transition-colors"
+                              >
+                                {svc.label}
+                              </Link>
+                            ))}
+                            <Link
+                              href="/services"
+                              onClick={handleLinkClick}
+                              className="block font-urbanist text-lg font-bold text-[#F813BE] py-2 hover:text-[#d10fa3] transition-colors"
+                            >
+                              View All Services →
+                            </Link>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+
                   {navLinks.map((l, i) => (
                     <motion.a
                       key={l.label}
@@ -309,7 +431,7 @@ export default function NavI() {
                       onClick={handleLinkClick}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.06 + 0.1 }}
+                      transition={{ delay: i * 0.06 + 0.16 }}
                       className="block font-urbanist font-black text-4xl text-[#0A0A0A] py-4 border-b border-black/5 hover:text-[#14EAEA] transition-colors duration-200"
                     >
                       {l.label}
