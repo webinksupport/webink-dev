@@ -27,7 +27,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+      <h1 className="text-3xl font-bold text-white mb-2">Client Portal</h1>
       <p className="text-[#999] mb-8">
         Welcome back, {session!.user.name || session!.user.email}
       </p>

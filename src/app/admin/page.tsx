@@ -103,8 +103,8 @@ export default async function AdminPage() {
         </Link>
       </div>
 
-      <div className="bg-[#1A1A1A] border border-[#333] rounded-2xl overflow-hidden">
-        <table className="w-full">
+      <div className="bg-[#1A1A1A] border border-[#333] rounded-2xl overflow-x-auto">
+        <table className="w-full min-w-[600px]">
           <thead>
             <tr className="border-b border-[#333]">
               <th className="text-left text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] px-6 py-4">

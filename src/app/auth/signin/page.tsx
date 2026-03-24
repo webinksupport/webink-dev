@@ -16,7 +16,7 @@ export default function SignInPage() {
 function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+  const callbackUrl = searchParams.get('callbackUrl') || ''
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -31,15 +31,30 @@ function SignInForm() {
       email,
       password,
       redirect: false,
-      callbackUrl,
     })
 
     setLoading(false)
 
     if (result?.error) {
       setError('Invalid email or password')
-    } else if (result?.url) {
-      router.push(result.url)
+      return
+    }
+
+    // If there's an explicit callbackUrl, use it
+    if (callbackUrl) {
+      router.push(callbackUrl)
+      return
+    }
+
+    // Otherwise, fetch session to route by role
+    const res = await fetch('/api/auth/session')
+    const session = await res.json()
+    const role = session?.user?.role
+
+    if (role === 'ADMIN') {
+      router.push('/admin')
+    } else {
+      router.push('/dashboard')
     }
   }
 

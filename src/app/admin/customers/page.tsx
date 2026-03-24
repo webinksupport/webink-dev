@@ -17,8 +17,8 @@ export default async function AdminCustomersPage() {
       <h1 className="text-3xl font-bold text-white mb-2">Customers</h1>
       <p className="text-[#999] mb-8">{customers.length} registered users</p>
 
-      <div className="bg-[#1A1A1A] border border-[#333] rounded-2xl overflow-hidden">
-        <table className="w-full">
+      <div className="bg-[#1A1A1A] border border-[#333] rounded-2xl overflow-x-auto">
+        <table className="w-full min-w-[700px]">
           <thead>
             <tr className="border-b border-[#333]">
               <th className="text-left text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] px-6 py-4">

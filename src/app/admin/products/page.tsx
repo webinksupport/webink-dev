@@ -50,8 +50,8 @@ export default async function AdminProductsPage() {
             <p className="text-[#999] text-sm mb-4">{product.description}</p>
 
             {/* Variants table */}
-            <div className="bg-[#0F0F0F] rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-[#0F0F0F] rounded-xl overflow-x-auto">
+              <table className="w-full min-w-[500px] text-sm">
                 <thead>
                   <tr className="border-b border-[#333]">
                     <th className="text-left text-xs font-bold tracking-[2px] uppercase text-[#F813BE] px-4 py-3">
