@@ -223,3 +223,12 @@ enum ContentBlockType {
   IMAGE
   LINK
 }
+
+// ─── Settings ──────────────────────────────────────────────────────
+
+model Setting {
+  key       String   @id
+  value     String   @db.Text // encrypted for secrets
+  isSecret  Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}
