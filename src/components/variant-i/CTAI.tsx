@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 
 export default function CTAI() {
@@ -7,6 +8,17 @@ export default function CTAI() {
       id="contact"
       className="bg-[#0A0A0A] py-32 lg:py-44 relative overflow-hidden"
     >
+      {/* Background photo */}
+      <div className="absolute inset-0">
+        <Image
+          src="/images/photos/baja-beach.jpg"
+          alt=""
+          fill
+          className="object-cover opacity-[0.07]"
+          sizes="100vw"
+        />
+      </div>
+
       {/* Subtle radial gradient wash */}
       <div
         className="absolute inset-0 pointer-events-none"

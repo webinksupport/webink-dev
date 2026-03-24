@@ -33,6 +33,11 @@ export default async function WebDesignPage() {
         headlineAccent="Convert."
         subtext={content.hero_subtext || 'Custom responsive websites engineered for speed, performance, and real business growth. No templates. No shortcuts. Built from scratch for Sarasota and Tampa businesses.'}
         heroImage="/images/services/web-design-hero.png"
+        photos={[
+          { src: '/images/photos/workspace-laptop.jpg', alt: 'Web design workspace with laptop showing Webink project — Sarasota web development' },
+          { src: '/images/photos/tech-laptop.jpg', alt: 'Modern web development setup — Webink Solutions web design process' },
+          { src: '/images/photoshoot/DSC04507-2.jpg', alt: 'Sean Rowe working on web design projects at Webink Solutions' },
+        ]}
         features={[
           {
             icon: 'Globe',

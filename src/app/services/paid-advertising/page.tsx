@@ -19,6 +19,11 @@ export default function PaidAdvertisingPage() {
         headlineAccent="Real ROI."
         subtext="Google Ads and Meta campaigns engineered for measurable results. We manage your ad spend like it is our own — because your growth is our growth."
         heroImage="/images/services/ppc-ads-hero.png"
+        photos={[
+          { src: '/images/photoshoot/DSC04537.jpg', alt: 'PPC campaign strategy meeting at Webink Solutions Sarasota' },
+          { src: '/images/photos/sean-street.jpg', alt: 'Sean Rowe — advertising strategist at Webink Solutions' },
+          { src: '/images/photoshoot/DSC04554.jpg', alt: 'Webink Solutions paid advertising team in action' },
+        ]}
         features={[
           {
             icon: 'Target',

@@ -26,6 +26,11 @@ interface PricingTier {
   contactOnly?: boolean
 }
 
+interface ServicePhoto {
+  src: string
+  alt: string
+}
+
 interface ServicePageProps {
   eyebrow: string
   headline: string
@@ -39,6 +44,7 @@ interface ServicePageProps {
   faqs: { question: string; answer: string }[]
   ctaText?: string
   ctaHref?: string
+  photos?: ServicePhoto[]
 }
 
 /* ── Shared Easing ────────────────────────────────────────── */
@@ -102,6 +108,7 @@ export default function ServicePageLayout({
   faqs,
   ctaText = 'Get a Free Quote',
   ctaHref = '/contact',
+  photos = [],
 }: ServicePageProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
@@ -225,6 +232,52 @@ export default function ServicePageLayout({
       </section>
 
       {/* ════════════════════════════════════════════════════════
+          PHOTO SHOWCASE (between features and process)
+      ════════════════════════════════════════════════════════ */}
+      {photos.length >= 2 && (
+        <section className="bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-20 lg:py-32 overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+              <motion.div
+                initial={{ scale: 0.92, opacity: 0, y: 20 }}
+                whileInView={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease }}
+                viewport={{ once: true, margin: '-80px' }}
+                className="overflow-hidden rounded-2xl shadow-xl"
+              >
+                <div className="relative h-[300px] md:h-[400px]">
+                  <Image
+                    src={photos[0].src}
+                    alt={photos[0].alt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+              </motion.div>
+              <motion.div
+                initial={{ scale: 0.92, opacity: 0, y: 20 }}
+                whileInView={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.15, ease }}
+                viewport={{ once: true, margin: '-80px' }}
+                className="overflow-hidden rounded-2xl shadow-xl md:mt-12"
+              >
+                <div className="relative h-[300px] md:h-[400px]">
+                  <Image
+                    src={photos[1].src}
+                    alt={photos[1].alt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
           PROCESS SECTION
       ════════════════════════════════════════════════════════ */}
       <section className="bg-[#F8F8F8] px-6 md:px-16 lg:px-24 py-20 lg:py-32">
@@ -284,6 +337,59 @@ export default function ServicePageLayout({
           </div>
         </div>
       </section>
+
+      {/* ════════════════════════════════════════════════════════
+          TEAM / WORKSPACE PHOTO STRIP
+      ════════════════════════════════════════════════════════ */}
+      {photos.length >= 3 && (
+        <section className="bg-white px-6 md:px-16 lg:px-24 py-20 lg:py-32 overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+              <motion.div
+                initial={{ scale: 0.92, opacity: 0, y: 20 }}
+                whileInView={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease }}
+                viewport={{ once: true, margin: '-80px' }}
+                className="lg:col-span-5 overflow-hidden rounded-2xl shadow-xl"
+              >
+                <div className="relative h-[350px] lg:h-[480px]">
+                  <Image
+                    src={photos[2].src}
+                    alt={photos[2].alt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 42vw"
+                  />
+                </div>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.15, ease }}
+                className="lg:col-span-7"
+              >
+                <p className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4">
+                  Real People, Real Results
+                </p>
+                <h2
+                  className="font-urbanist font-black text-[#1A1A1A] mb-6 leading-tight"
+                  style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '-0.03em' }}
+                >
+                  Built by a Team That{' '}
+                  <span className="text-[#F813BE]">Gets It.</span>
+                </h2>
+                <p className="font-urbanist text-[17px] text-[#333]/60 leading-relaxed mb-6">
+                  Webink Solutions is a Sarasota-based digital agency founded by Sean Rowe. Every strategy is backed by data, built for humans, and optimized for growth.
+                </p>
+                <p className="font-urbanist text-[15px] text-[#333]/40 leading-relaxed">
+                  No outsourcing, no cookie-cutter templates. Just a dedicated local team that shows up, delivers results, and genuinely cares about your success.
+                </p>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ════════════════════════════════════════════════════════
           PRICING SECTION

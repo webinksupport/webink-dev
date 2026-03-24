@@ -19,6 +19,11 @@ export default function AiMarketingPage() {
         headlineAccent="Speed of AI."
         subtext="We leverage AI to automate repetitive tasks, uncover insights humans miss, and scale your marketing beyond what traditional agencies can deliver."
         heroImage="/images/services/ai-marketing-hero.png"
+        photos={[
+          { src: '/images/photos/tech-laptop.jpg', alt: 'AI marketing tools on laptop screen — Webink Solutions AI-powered marketing' },
+          { src: '/images/photoshoot/DSC04603-2.jpg', alt: 'Webink Solutions AI marketing strategy session' },
+          { src: '/images/photoshoot/DSC05043.jpg', alt: 'Sean Rowe leveraging AI tools for digital marketing automation' },
+        ]}
         features={[
           {
             icon: 'Brain',

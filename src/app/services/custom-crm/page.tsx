@@ -19,6 +19,11 @@ export default function CustomCrmPage() {
         headlineAccent="Your Business."
         subtext="Purpose-built CRM and SaaS applications tailored to your workflows. Own your tools instead of renting them."
         heroImage="/images/services/crm-hero.png"
+        photos={[
+          { src: '/images/photos/workspace-dark.jpg', alt: 'Custom CRM development workspace — Webink Solutions software engineering' },
+          { src: '/images/photoshoot/DSC04510-2.jpg', alt: 'Webink team building custom SaaS applications' },
+          { src: '/images/photos/team-duo.jpg', alt: 'Webink Solutions development team collaborating on CRM project' },
+        ]}
         features={[
           {
             icon: 'Code',

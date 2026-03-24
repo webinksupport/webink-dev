@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ChevronDown, Loader2 } from 'lucide-react'
 
@@ -601,36 +602,65 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
       {/* ============================================================ */}
       {/*  CTA BANNER                                                  */}
       {/* ============================================================ */}
-      <section className="bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-20">
-        <motion.div
-          {...fadeUp}
-          className="max-w-4xl mx-auto text-center"
-        >
-          <p className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4">
-            Ready to Grow?
-          </p>
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-            Not sure which plan is right for you?
-          </h2>
-          <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto">
-            Schedule a free consultation and we will build a custom strategy tailored to your
-            business goals and budget.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/contact"
-              className="bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors"
-            >
-              Get a Free Consultation
-            </Link>
-            <a
-              href="tel:+19418401381"
-              className="border border-white text-white font-semibold px-8 py-4 rounded-full hover:bg-white hover:text-[#0A0A0A] transition-colors"
-            >
-              Call (941) 840-1381
-            </a>
-          </div>
-        </motion.div>
+      <section className="relative bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/photoshoot/DSC04566.jpg"
+            alt=""
+            fill
+            className="object-cover opacity-10"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-[#0F0F0F]/80" />
+        </div>
+        <div className="relative max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center">
+          <motion.div
+            initial={{ scale: 0.92, opacity: 0, y: 20 }}
+            whileInView={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+            viewport={{ once: true, margin: '-80px' }}
+            className="lg:col-span-4 hidden lg:block overflow-hidden rounded-2xl shadow-xl"
+          >
+            <div className="relative h-[320px]">
+              <Image
+                src="/images/photoshoot/SquareSean2.jpg"
+                alt="Sean Rowe — founder of Webink Solutions, ready to help grow your business"
+                fill
+                className="object-cover"
+                sizes="33vw"
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            {...fadeUp}
+            className="lg:col-span-8 text-center lg:text-left"
+          >
+            <p className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4">
+              Ready to Grow?
+            </p>
+            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+              Not sure which plan is right for you?
+            </h2>
+            <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto lg:mx-0">
+              Schedule a free consultation and we will build a custom strategy tailored to your
+              business goals and budget.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <Link
+                href="/contact"
+                className="bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors"
+              >
+                Get a Free Consultation
+              </Link>
+              <a
+                href="tel:+19418401381"
+                className="border border-white text-white font-semibold px-8 py-4 rounded-full hover:bg-white hover:text-[#0A0A0A] transition-colors"
+              >
+                Call (941) 840-1381
+              </a>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       {/* ============================================================ */}

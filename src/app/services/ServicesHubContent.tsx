@@ -63,34 +63,64 @@ export default function ServicesHubContent() {
   return (
     <>
       {/* ── Hero ── */}
-      <section className="bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-32 lg:py-40">
-        <div className="max-w-7xl mx-auto">
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease }}
-            className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
+      <section className="relative bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-32 lg:py-40 overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/photoshoot/_UTA4035-Edit.jpg"
+            alt=""
+            fill
+            className="object-cover opacity-15"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-[#0F0F0F]/75" />
+        </div>
+        <div className="relative max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease }}
+              className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
+            >
+              Our Services
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.0, ease }}
+              className="font-urbanist font-black text-white leading-[0.92] mb-6"
+              style={{ fontSize: 'clamp(2.75rem, 7vw, 5.5rem)', letterSpacing: '-0.04em' }}
+            >
+              Full-Service{' '}
+              <span className="text-[#F813BE]">Digital Agency.</span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease }}
+              className="font-urbanist text-white/60 text-lg md:text-xl leading-relaxed max-w-2xl"
+            >
+              Everything your Sarasota business needs to dominate the digital landscape — web design, SEO, social media, paid ads, AI marketing, and custom software — all under one roof.
+            </motion.p>
+          </div>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, x: 40 }}
+            animate={{ scale: 1, opacity: 1, x: 0 }}
+            transition={{ duration: 1.0, delay: 0.3, ease }}
+            className="hidden lg:block overflow-hidden rounded-2xl shadow-2xl"
           >
-            Our Services
-          </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.0, ease }}
-            className="font-urbanist font-black text-white leading-[0.92] mb-6"
-            style={{ fontSize: 'clamp(2.75rem, 7vw, 5.5rem)', letterSpacing: '-0.04em' }}
-          >
-            Full-Service{' '}
-            <span className="text-[#F813BE]">Digital Agency.</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease }}
-            className="font-urbanist text-white/60 text-lg md:text-xl leading-relaxed max-w-2xl"
-          >
-            Everything your Sarasota business needs to dominate the digital landscape — web design, SEO, social media, paid ads, AI marketing, and custom software — all under one roof.
-          </motion.p>
+            <div className="relative h-[400px]">
+              <Image
+                src="/images/photoshoot/DSC04500-2.jpg"
+                alt="Sean Rowe and the Webink Solutions team — full-service digital agency in Sarasota"
+                fill
+                className="object-cover"
+                sizes="50vw"
+              />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#14EAEA] via-[#F813BE] to-[#B9FF33]" />
+            </div>
+          </motion.div>
         </div>
       </section>
 

@@ -32,6 +32,11 @@ export default async function SEOPage() {
         headlineAccent="Results."
         subtext={content.hero_subtext || 'Data-driven SEO strategies that put your Sarasota or Tampa business in front of the right customers. No smoke and mirrors — just measurable, month-over-month growth.'}
         heroImage="/images/services/seo-hero.png"
+        photos={[
+          { src: '/images/photos/workspace-dark.jpg', alt: 'SEO analytics dashboard on screen — Webink Solutions data-driven SEO' },
+          { src: '/images/digital-workspace-flatlay.png', alt: 'Digital workspace flatlay showing SEO tools and analytics' },
+          { src: '/images/photoshoot/DSC04515.jpg', alt: 'Webink Solutions team analyzing SEO performance metrics' },
+        ]}
         features={[
           {
             icon: 'Search',

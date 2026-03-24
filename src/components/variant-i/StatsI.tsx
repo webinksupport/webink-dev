@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 
 const stats = [
   { value: 50, suffix: '+', label: 'Clients Served', sublabel: 'Across Florida', underlineColor: '#14EAEA' },
@@ -75,11 +76,23 @@ function StatCard({ value, suffix, label, sublabel, delay, underlineColor }: {
 
 export default function StatsI() {
   return (
-    <section id="results" className="bg-[#0F0F0F] py-24 lg:py-36">
-      {/* Top accent line */}
-      <div className="h-px bg-gradient-to-r from-transparent via-[#14EAEA]/25 to-transparent mb-0" />
+    <section id="results" className="relative bg-[#0F0F0F] py-24 lg:py-36 overflow-hidden">
+      {/* Background photo */}
+      <div className="absolute inset-0">
+        <Image
+          src="/images/photoshoot/_UTA4035-Edit.jpg"
+          alt=""
+          fill
+          className="object-cover opacity-10"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-[#0F0F0F]/80" />
+      </div>
 
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-20">
+      {/* Top accent line */}
+      <div className="relative h-px bg-gradient-to-r from-transparent via-[#14EAEA]/25 to-transparent mb-0" />
+
+      <div className="relative max-w-[1400px] mx-auto px-6 lg:px-20">
 
         {/* Section header */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-20">

@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 
 const testimonials = [
@@ -191,6 +192,61 @@ export default function TestimonialsI() {
           {testimonials.map((t, i) => (
             <FlipCard key={t.name} t={t} index={i} />
           ))}
+        </div>
+
+        {/* Team photo strip */}
+        <div className="mt-16 grid md:grid-cols-3 gap-4">
+          <motion.div
+            initial={{ scale: 0.92, opacity: 0, y: 20 }}
+            whileInView={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+            viewport={{ once: true, margin: '-80px' }}
+            className="overflow-hidden rounded-2xl shadow-xl"
+          >
+            <div className="relative h-[200px]">
+              <Image
+                src="/images/photos/team-kelley.jpg"
+                alt="Webink Solutions team member Kelley — Sarasota digital marketing"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ scale: 0.92, opacity: 0, y: 20 }}
+            whileInView={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+            viewport={{ once: true, margin: '-80px' }}
+            className="overflow-hidden rounded-2xl shadow-xl"
+          >
+            <div className="relative h-[200px]">
+              <Image
+                src="/images/photoshoot/DSC04488.jpg"
+                alt="Webink Solutions professional team photo — client results"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ scale: 0.92, opacity: 0, y: 20 }}
+            whileInView={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+            viewport={{ once: true, margin: '-80px' }}
+            className="overflow-hidden rounded-2xl shadow-xl"
+          >
+            <div className="relative h-[200px]">
+              <Image
+                src="/images/photos/team-family.jpg"
+                alt="The Webink Solutions family — Sarasota based digital agency team"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </div>
+          </motion.div>
         </div>
 
         {/* Google review CTA */}

@@ -27,6 +27,11 @@ export default function SocialMediaPage() {
         headlineAccent="Audience."
         subtext="Strategic social media management that builds your brand, engages your community, and drives real business results across every major platform."
         heroImage="/images/services/social-media-hero.png"
+        photos={[
+          { src: '/images/photos/team-rooftop.jpg', alt: 'Webink Solutions team on rooftop — Sarasota social media marketing agency' },
+          { src: '/images/photoshoot/DSC04520.jpg', alt: 'Creative content planning session at Webink Solutions' },
+          { src: '/images/photoshoot/SquareSean.jpg', alt: 'Sean Rowe — founder of Webink Solutions social media team' },
+        ]}
         features={[
           {
             icon: 'Palette',
