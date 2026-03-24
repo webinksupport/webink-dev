@@ -202,3 +202,24 @@ enum OrderStatus {
   FAILED
   REFUNDED
 }
+
+// ─── CMS Content ────────────────────────────────────────────────────
+
+model PageContent {
+  id        String           @id @default(cuid())
+  pageSlug  String           // e.g. 'home', 'about', 'services/seo'
+  blockKey  String           // e.g. 'hero_headline', 'hero_subtext', 'hero_image'
+  blockType ContentBlockType
+  value     String           @db.LongText
+  updatedAt DateTime         @updatedAt
+
+  @@unique([pageSlug, blockKey])
+  @@index([pageSlug])
+}
+
+enum ContentBlockType {
+  TEXT
+  HTML
+  IMAGE
+  LINK
+}
