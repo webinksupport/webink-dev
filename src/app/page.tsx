@@ -8,6 +8,9 @@ import TestimonialsI from '@/components/variant-i/TestimonialsI'
 import PricingI from '@/components/variant-i/PricingI'
 import CTAI from '@/components/variant-i/CTAI'
 import FooterI from '@/components/variant-i/FooterI'
+import { getPageContent } from '@/lib/content'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Digital Marketing Agency Sarasota | Webink Solutions',
@@ -27,11 +30,13 @@ export const metadata = {
   },
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const content = await getPageContent('home')
+
   return (
     <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
       <NavI />
-      <HeroI />
+      <HeroI content={content} />
       <MarqueeI />
       <ServicesI />
       <AboutI />

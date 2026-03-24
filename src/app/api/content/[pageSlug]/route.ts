@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import type { ContentBlockType } from '@/generated/prisma/client'
 
 export async function GET(
   _request: Request,
@@ -17,6 +20,63 @@ export async function GET(
   } catch {
     return NextResponse.json(
       { error: 'Failed to fetch content blocks' },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT — bulk save all blocks for a page
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ pageSlug: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session || (session.user as { role: string }).role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { pageSlug } = await params
+    const { blocks } = (await request.json()) as {
+      blocks: {
+        blockKey: string
+        blockType: ContentBlockType
+        value: string
+      }[]
+    }
+
+    if (!Array.isArray(blocks)) {
+      return NextResponse.json(
+        { error: 'blocks array is required' },
+        { status: 400 }
+      )
+    }
+
+    // Bulk upsert all blocks
+    const results = await Promise.all(
+      blocks.map((block) =>
+        prisma.pageContent.upsert({
+          where: {
+            pageSlug_blockKey: { pageSlug, blockKey: block.blockKey },
+          },
+          update: {
+            value: block.value,
+            blockType: block.blockType,
+          },
+          create: {
+            pageSlug,
+            blockKey: block.blockKey,
+            blockType: block.blockType,
+            value: block.value,
+          },
+        })
+      )
+    )
+
+    return NextResponse.json(results)
+  } catch {
+    return NextResponse.json(
+      { error: 'Failed to save content blocks' },
       { status: 500 }
     )
   }

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
@@ -12,12 +13,12 @@ export async function POST(request: Request) {
 
   try {
     const formData = await request.formData()
-    const file = formData.get('file') as File | null
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    const files = formData.getAll('file') as File[]
+
+    if (!files || files.length === 0) {
+      return NextResponse.json({ error: 'No files provided' }, { status: 400 })
     }
 
-    // Validate file type
     const allowedTypes = [
       'image/jpeg',
       'image/png',
@@ -26,46 +27,112 @@ export async function POST(request: Request) {
       'image/svg+xml',
       'image/x-icon',
     ]
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Only images are allowed.' },
-        { status: 400 }
-      )
-    }
-
-    // Limit file size to 10MB
     const maxSize = 10 * 1024 * 1024
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: 'File too large. Maximum size is 10MB.' },
-        { status: 400 }
-      )
-    }
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
+    // WordPress-style date-based folders: /uploads/YYYY/MM/
+    const now = new Date()
+    const year = now.getFullYear().toString()
+    const month = (now.getMonth() + 1).toString().padStart(2, '0')
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+    const uploadDir = path.join(
+      process.cwd(),
+      'public',
+      'uploads',
+      year,
+      month
+    )
     await mkdir(uploadDir, { recursive: true })
 
-    // Sanitize filename: lowercase, replace unsafe chars
-    const safeName = file.name
-      .replace(/[^a-zA-Z0-9._-]/g, '-')
-      .toLowerCase()
-    const filename = `${Date.now()}-${safeName}`
-    const filepath = path.join(uploadDir, filename)
+    const results: {
+      name: string
+      path: string
+      size: number
+      width?: number
+      height?: number
+      mimeType: string
+      success: boolean
+      error?: string
+    }[] = []
 
-    await writeFile(filepath, buffer)
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) {
+        results.push({
+          name: file.name,
+          path: '',
+          size: 0,
+          mimeType: file.type,
+          success: false,
+          error: 'Invalid file type',
+        })
+        continue
+      }
 
-    return NextResponse.json({
-      name: filename,
-      path: `/uploads/${filename}`,
-      size: buffer.length,
-      modified: new Date().toISOString(),
-    })
+      if (file.size > maxSize) {
+        results.push({
+          name: file.name,
+          path: '',
+          size: file.size,
+          mimeType: file.type,
+          success: false,
+          error: 'File too large (max 10MB)',
+        })
+        continue
+      }
+
+      const bytes = await file.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+
+      // Sanitize filename
+      const safeName = file.name
+        .replace(/[^a-zA-Z0-9._-]/g, '-')
+        .toLowerCase()
+      const filename = `${Date.now()}-${safeName}`
+      const filepath = path.join(uploadDir, filename)
+      const urlPath = `/uploads/${year}/${month}/${filename}`
+
+      await writeFile(filepath, buffer)
+
+      // Get dimensions for raster images
+      let width: number | undefined
+      let height: number | undefined
+      if (file.type !== 'image/svg+xml') {
+        try {
+          const sharp = (await import('sharp')).default
+          const meta = await sharp(buffer).metadata()
+          width = meta.width ?? undefined
+          height = meta.height ?? undefined
+        } catch {
+          // non-critical
+        }
+      }
+
+      // Store in DB
+      await prisma.mediaItem.create({
+        data: {
+          filename,
+          filepath: urlPath,
+          altText: null,
+          mimeType: file.type,
+          size: buffer.length,
+          width: width ?? null,
+          height: height ?? null,
+        },
+      })
+
+      results.push({
+        name: filename,
+        path: urlPath,
+        size: buffer.length,
+        width,
+        height,
+        mimeType: file.type,
+        success: true,
+      })
+    }
+
+    return NextResponse.json({ results })
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Upload failed'
+    const message = error instanceof Error ? error.message : 'Upload failed'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

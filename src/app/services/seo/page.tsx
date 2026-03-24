@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import NavI from '@/components/variant-i/NavI'
 import FooterI from '@/components/variant-i/FooterI'
 import ServicePageLayout from '@/components/services/ServicePageLayout'
+import { getPageContent } from '@/lib/content'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'SEO Services Sarasota & Tampa | $1,103/mo | Webink Solutions',
@@ -17,15 +20,17 @@ export const metadata: Metadata = {
   },
 }
 
-export default function SEOPage() {
+export default async function SEOPage() {
+  const content = await getPageContent('services/seo')
+
   return (
     <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
       <NavI />
       <ServicePageLayout
         eyebrow="SEO Services"
-        headline="Dominate Search"
+        headline={content.hero_headline || 'Dominate Search'}
         headlineAccent="Results."
-        subtext="Data-driven SEO strategies that put your Sarasota or Tampa business in front of the right customers. No smoke and mirrors — just measurable, month-over-month growth."
+        subtext={content.hero_subtext || 'Data-driven SEO strategies that put your Sarasota or Tampa business in front of the right customers. No smoke and mirrors — just measurable, month-over-month growth.'}
         heroImage="/images/services/seo-hero.png"
         features={[
           {

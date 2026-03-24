@@ -3,7 +3,11 @@ import { useRef } from 'react'
 import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
-export default function HeroI() {
+interface HeroIProps {
+  content?: Record<string, string>
+}
+
+export default function HeroI({ content }: HeroIProps = {}) {
   const sectionRef = useRef<HTMLElement>(null)
 
   const { scrollYProgress } = useScroll({
@@ -71,19 +75,27 @@ export default function HeroI() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          Websites That{' '}
-          <span className="relative inline-block">
-            Work.
-            {/* Single cyan highlight sweep */}
-            <span
-              className="absolute inset-x-0 bottom-0 h-[8px] bg-[#14EAEA] origin-left"
-              style={{ animation: 'highlightSweep 0.7s cubic-bezier(0.4,0,0.2,1) 1.1s forwards', transform: 'scaleX(0)', bottom: '6px' }}
-            />
-          </span>
-          <br />
-          Marketing That
-          <br />
-          Converts.
+          {(() => {
+            const headline = content?.hero_headline || 'Websites That Work.\nMarketing That Converts.'
+            const lines = headline.split('\n')
+            return lines.map((line, i) => (
+              <span key={i}>
+                {i === 0 ? (
+                  <>
+                    {line.replace(/\.$/, '')}{' '}
+                    <span className="relative inline-block">
+                      {line.endsWith('.') ? '.' : ''}
+                      <span
+                        className="absolute inset-x-0 bottom-0 h-[8px] bg-[#14EAEA] origin-left"
+                        style={{ animation: 'highlightSweep 0.7s cubic-bezier(0.4,0,0.2,1) 1.1s forwards', transform: 'scaleX(0)', bottom: '6px' }}
+                      />
+                    </span>
+                  </>
+                ) : line}
+                {i < lines.length - 1 && <br />}
+              </span>
+            ))
+          })()}
         </motion.h1>
 
         {/* Sub-headline */}
@@ -93,7 +105,7 @@ export default function HeroI() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.55 }}
         >
-          Web design, SEO, and digital marketing for local businesses in Sarasota, Tampa &amp; Bradenton. Real results, real relationships.
+          {content?.hero_subtext || 'Web design, SEO, and digital marketing for local businesses in Sarasota, Tampa & Bradenton. Real results, real relationships.'}
         </motion.p>
 
         {/* CTAs */}
@@ -107,7 +119,7 @@ export default function HeroI() {
             href="#contact"
             className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-5 bg-[#14EAEA] text-[#0F0F0F] rounded-full hover:bg-white transition-all duration-300 shadow-lg"
           >
-            Get a Free Audit →
+            {content?.hero_cta_text || 'Get a Free Audit'} →
           </a>
           <a
             href="#services"

@@ -361,7 +361,11 @@ function SkeletonCards() {
 /*  Main Component                                                     */
 /* ------------------------------------------------------------------ */
 
-export default function PricingContent() {
+interface PricingContentProps {
+  content?: Record<string, string>
+}
+
+export default function PricingContent({ content }: PricingContentProps = {}) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [annual, setAnnual] = useState(false)
@@ -420,7 +424,7 @@ export default function PricingContent() {
             className="text-white font-light text-5xl md:text-6xl lg:text-7xl mb-6"
             style={{ fontSize: 'clamp(3rem, 8vw, 5rem)' }}
           >
-            Transparent Pricing
+            {content?.hero_headline || 'Transparent Pricing'}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -428,8 +432,7 @@ export default function PricingContent() {
             transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto"
           >
-            No hidden fees. No long-term contracts. Just straightforward plans built to grow your
-            business.
+            {content?.hero_subtext || 'No hidden fees. No long-term contracts. Just straightforward plans built to grow your business.'}
           </motion.p>
         </div>
       </section>

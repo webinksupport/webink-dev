@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import {
   FileText,
   Image as ImageIcon,
@@ -13,15 +13,33 @@ import {
   Check,
   AlertCircle,
   ChevronRight,
-  Upload,
   X,
+  Eye,
+  ExternalLink,
+  RotateCcw,
+  Search,
+  MousePointerClick,
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  List as ListIcon,
+  ListOrdered,
+  Heading1,
+  Heading2,
+  Heading3,
+  Link2,
+  Type,
 } from 'lucide-react'
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import LinkExtension from '@tiptap/extension-link'
+import UnderlineExtension from '@tiptap/extension-underline'
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type BlockType = 'TEXT' | 'HTML' | 'IMAGE' | 'LINK'
+type BlockType = 'TEXT' | 'HTML' | 'IMAGE' | 'LINK' | 'BUTTON' | 'SEO'
 
 interface ContentBlock {
   id: string
@@ -30,6 +48,7 @@ interface ContentBlock {
   blockType: BlockType
   value: string
   updatedAt: string
+  _dirty?: boolean
 }
 
 interface DefaultBlock {
@@ -44,17 +63,17 @@ interface DefaultBlock {
 // ---------------------------------------------------------------------------
 
 const PAGES = [
-  { slug: 'home', label: 'Homepage' },
-  { slug: 'about', label: 'About' },
-  { slug: 'services', label: 'Services Hub' },
-  { slug: 'services/web-design', label: 'Web Design' },
-  { slug: 'services/seo', label: 'SEO Services' },
-  { slug: 'services/social-media', label: 'Social Media' },
-  { slug: 'services/paid-advertising', label: 'Paid Advertising' },
-  { slug: 'services/ai-marketing', label: 'AI Marketing' },
-  { slug: 'services/custom-crm', label: 'Custom CRM' },
-  { slug: 'pricing', label: 'Pricing' },
-  { slug: 'contact', label: 'Contact' },
+  { slug: 'home', label: 'Homepage', url: '/' },
+  { slug: 'about', label: 'About', url: '/about' },
+  { slug: 'services', label: 'Services Hub', url: '/services' },
+  { slug: 'services/web-design', label: 'Web Design', url: '/services/web-design' },
+  { slug: 'services/seo', label: 'SEO Services', url: '/services/seo' },
+  { slug: 'services/social-media', label: 'Social Media', url: '/services/social-media' },
+  { slug: 'services/paid-advertising', label: 'Paid Advertising', url: '/services/paid-advertising' },
+  { slug: 'services/ai-marketing', label: 'AI Marketing', url: '/services/ai-marketing' },
+  { slug: 'services/custom-crm', label: 'Custom CRM', url: '/services/custom-crm' },
+  { slug: 'pricing', label: 'Pricing', url: '/pricing' },
+  { slug: 'contact', label: 'Contact', url: '/contact' },
 ] as const
 
 const DEFAULT_BLOCKS: Record<string, DefaultBlock[]> = {
@@ -70,6 +89,8 @@ const DEFAULT_BLOCKS: Record<string, DefaultBlock[]> = {
     { key: 'about_heading', type: 'TEXT', label: 'About Heading', defaultValue: 'We Drive Growth Through Structure & Process' },
     { key: 'about_body', type: 'HTML', label: 'About Body', defaultValue: 'Founded in Sarasota, Webink Solutions delivers measurable results for local businesses.' },
     { key: 'stats_heading', type: 'TEXT', label: 'Stats Section Heading', defaultValue: 'Results That Speak' },
+    { key: 'seo_meta_title', type: 'SEO', label: 'Meta Title', defaultValue: 'Digital Marketing Agency Sarasota | Webink Solutions' },
+    { key: 'seo_meta_description', type: 'SEO', label: 'Meta Description', defaultValue: 'Web design, SEO, and digital marketing for local businesses in Sarasota, Tampa & Bradenton.' },
   ],
   about: [
     { key: 'hero_headline', type: 'TEXT', label: 'Hero Headline', defaultValue: 'About Webink Solutions' },
@@ -131,6 +152,8 @@ function blockTypeIcon(type: BlockType) {
     case 'HTML': return <Code className="w-4 h-4" />
     case 'IMAGE': return <ImageIcon className="w-4 h-4" />
     case 'LINK': return <LinkIcon className="w-4 h-4" />
+    case 'BUTTON': return <MousePointerClick className="w-4 h-4" />
+    case 'SEO': return <Search className="w-4 h-4" />
   }
 }
 
@@ -140,13 +163,13 @@ function blockTypeColor(type: BlockType) {
     case 'HTML': return 'text-[#F813BE]'
     case 'IMAGE': return 'text-[#B9FF33]'
     case 'LINK': return 'text-[#14EAEA]'
+    case 'BUTTON': return 'text-[#F813BE]'
+    case 'SEO': return 'text-[#B9FF33]'
   }
 }
 
 function formatBlockKey(key: string): string {
-  return key
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase())
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 function truncate(str: string, len: number): string {
@@ -155,10 +178,150 @@ function truncate(str: string, len: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// Toast component
+// TipTap Rich Text Editor
 // ---------------------------------------------------------------------------
 
-function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
+function RichTextEditor({
+  content,
+  onChange,
+}: {
+  content: string
+  onChange: (html: string) => void
+}) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3] },
+      }),
+      LinkExtension.configure({
+        openOnClick: false,
+        HTMLAttributes: { class: 'text-[#14EAEA] underline' },
+      }),
+      UnderlineExtension,
+    ],
+    content,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML())
+    },
+    editorProps: {
+      attributes: {
+        class:
+          'prose prose-invert prose-sm max-w-none min-h-[120px] focus:outline-none px-4 py-3 text-white/80',
+      },
+    },
+  })
+
+  if (!editor) return null
+
+  const addLink = () => {
+    const url = prompt('Enter URL:')
+    if (url) {
+      editor.chain().focus().setLink({ href: url }).run()
+    }
+  }
+
+  return (
+    <div className="border border-[#333] rounded-lg overflow-hidden bg-[#0A0A0A]">
+      {/* Toolbar */}
+      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-[#333] bg-[#111] flex-wrap">
+        <button
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={`p-1.5 rounded transition-colors ${editor.isActive('bold') ? 'bg-[#14EAEA]/20 text-[#14EAEA]' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+          title="Bold"
+        >
+          <Bold className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={`p-1.5 rounded transition-colors ${editor.isActive('italic') ? 'bg-[#14EAEA]/20 text-[#14EAEA]' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+          title="Italic"
+        >
+          <Italic className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          className={`p-1.5 rounded transition-colors ${editor.isActive('underline') ? 'bg-[#14EAEA]/20 text-[#14EAEA]' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+          title="Underline"
+        >
+          <UnderlineIcon className="w-4 h-4" />
+        </button>
+
+        <div className="w-px h-5 bg-[#333] mx-1" />
+
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          className={`p-1.5 rounded transition-colors ${editor.isActive('heading', { level: 1 }) ? 'bg-[#14EAEA]/20 text-[#14EAEA]' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+          title="Heading 1"
+        >
+          <Heading1 className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={`p-1.5 rounded transition-colors ${editor.isActive('heading', { level: 2 }) ? 'bg-[#14EAEA]/20 text-[#14EAEA]' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+          title="Heading 2"
+        >
+          <Heading2 className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          className={`p-1.5 rounded transition-colors ${editor.isActive('heading', { level: 3 }) ? 'bg-[#14EAEA]/20 text-[#14EAEA]' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+          title="Heading 3"
+        >
+          <Heading3 className="w-4 h-4" />
+        </button>
+
+        <div className="w-px h-5 bg-[#333] mx-1" />
+
+        <button
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={`p-1.5 rounded transition-colors ${editor.isActive('bulletList') ? 'bg-[#14EAEA]/20 text-[#14EAEA]' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+          title="Bullet List"
+        >
+          <ListIcon className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={`p-1.5 rounded transition-colors ${editor.isActive('orderedList') ? 'bg-[#14EAEA]/20 text-[#14EAEA]' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+          title="Numbered List"
+        >
+          <ListOrdered className="w-4 h-4" />
+        </button>
+
+        <div className="w-px h-5 bg-[#333] mx-1" />
+
+        <button
+          onClick={addLink}
+          className={`p-1.5 rounded transition-colors ${editor.isActive('link') ? 'bg-[#14EAEA]/20 text-[#14EAEA]' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+          title="Add Link"
+        >
+          <Link2 className="w-4 h-4" />
+        </button>
+
+        {/* Character count */}
+        <div className="ml-auto text-white/20 text-xs">
+          {editor.storage.characterCount?.characters?.() ?? editor.getText().length} chars
+        </div>
+      </div>
+
+      {/* Editor */}
+      <EditorContent editor={editor} />
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Toast
+// ---------------------------------------------------------------------------
+
+function Toast({
+  message,
+  type,
+  onClose,
+}: {
+  message: string
+  type: 'success' | 'error'
+  onClose: () => void
+}) {
   return (
     <div
       className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-lg shadow-lg border transition-all ${
@@ -181,252 +344,282 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
 }
 
 // ---------------------------------------------------------------------------
-// Block editor
+// Media Picker Modal
 // ---------------------------------------------------------------------------
 
-function BlockEditor({
+function MediaPickerModal({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (path: string) => void
+  onClose: () => void
+}) {
+  const [files, setFiles] = useState<{ name: string; path: string; size: number }[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    fetch('/api/media')
+      .then((r) => r.json())
+      .then(setFiles)
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const filtered = files.filter(
+    (f) =>
+      !search ||
+      f.name.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#111] rounded-2xl border border-white/10 w-full max-w-3xl max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <h3 className="text-white font-bold">Select Image</h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-4 border-b border-white/10">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+            <input
+              type="text"
+              placeholder="Search images..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-[#0A0A0A] border border-[#333] rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#14EAEA]/50"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto p-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 text-[#14EAEA] animate-spin" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <p className="text-center text-white/30 py-12">No images found</p>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+              {filtered.map((file) => (
+                <button
+                  key={file.path}
+                  onClick={() => onSelect(file.path)}
+                  className="group relative bg-[#1A1A1A] rounded-lg border border-white/10 overflow-hidden hover:border-[#14EAEA] transition-colors aspect-square"
+                >
+                  {file.name.endsWith('.svg') ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={file.path}
+                      alt={file.name}
+                      className="w-full h-full object-contain p-3"
+                    />
+                  ) : (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={file.path}
+                      alt={file.name}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                    <p className="text-white text-[10px] truncate">
+                      {file.name}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Block Editor component
+// ---------------------------------------------------------------------------
+
+function BlockEditorItem({
   block,
   label,
-  pageSlug,
-  onSaved,
-  onDeleted,
-  showToast,
+  isActive,
+  onSelect,
+  onValueChange,
+  isDirty,
 }: {
   block: ContentBlock
   label: string
-  pageSlug: string
-  onSaved: () => void
-  onDeleted: () => void
-  showToast: (msg: string, type: 'success' | 'error') => void
+  isActive: boolean
+  onSelect: () => void
+  onValueChange: (value: string) => void
+  isDirty: boolean
 }) {
-  const [editing, setEditing] = useState(false)
-  const [value, setValue] = useState(block.value)
-  const [saving, setSaving] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      const res = await fetch(
-        `/api/content/${encodeURIComponent(pageSlug)}/${encodeURIComponent(block.blockKey)}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ value, blockType: block.blockType }),
-        }
-      )
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Save failed')
-      }
-      showToast(`Saved "${label}"`, 'success')
-      setEditing(false)
-      onSaved()
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Save failed', 'error')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleDelete = async () => {
-    if (!confirm(`Delete block "${label}"? This cannot be undone.`)) return
-    setDeleting(true)
-    try {
-      const res = await fetch(
-        `/api/content/${encodeURIComponent(pageSlug)}/${encodeURIComponent(block.blockKey)}`,
-        { method: 'DELETE' }
-      )
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Delete failed')
-      }
-      showToast(`Deleted "${label}"`, 'success')
-      onDeleted()
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Delete failed', 'error')
-    } finally {
-      setDeleting(false)
-    }
-  }
-
-  const handleUpload = async (file: File) => {
-    setUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const res = await fetch(
-        `/api/content/${encodeURIComponent(pageSlug)}/${encodeURIComponent(block.blockKey)}/upload`,
-        { method: 'POST', body: formData }
-      )
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Upload failed')
-      }
-      const data = await res.json()
-      setValue(data.url)
-      showToast(`Uploaded image for "${label}"`, 'success')
-      onSaved()
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Upload failed', 'error')
-    } finally {
-      setUploading(false)
-    }
-  }
+  const [showMediaPicker, setShowMediaPicker] = useState(false)
 
   return (
-    <div className="bg-[#1A1A1A] border border-[#333] rounded-xl p-5 transition-all">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className={`shrink-0 ${blockTypeColor(block.blockType)}`}>
-            {blockTypeIcon(block.blockType)}
-          </span>
-          <div className="min-w-0">
-            <h4 className="text-white font-semibold text-sm">{label}</h4>
-            <p className="text-[#666] text-xs font-mono mt-0.5">{block.blockKey}</p>
+    <>
+      <button
+        onClick={onSelect}
+        className={`w-full flex items-center gap-3 text-left px-4 py-3 rounded-lg transition-all ${
+          isActive
+            ? 'bg-[#1A1A1A] border border-[#14EAEA]/40'
+            : 'hover:bg-[#1A1A1A] border border-transparent'
+        }`}
+      >
+        <span className={`shrink-0 ${blockTypeColor(block.blockType)}`}>
+          {blockTypeIcon(block.blockType)}
+        </span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h4 className="text-white text-sm font-medium truncate">{label}</h4>
+            {isDirty && (
+              <span className="w-2 h-2 rounded-full bg-yellow-400 shrink-0" title="Unsaved changes" />
+            )}
           </div>
+          <p className="text-[#666] text-xs truncate mt-0.5">
+            {truncate(block.value.replace(/<[^>]*>/g, ''), 60) || '(empty)'}
+          </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full border ${blockTypeColor(block.blockType)} border-current/20`}>
-            {block.blockType}
-          </span>
-          {!editing && (
-            <button
-              onClick={() => setEditing(true)}
-              className="text-xs text-[#999] hover:text-white border border-[#333] hover:border-[#14EAEA] px-3 py-1.5 rounded-lg transition-colors"
-            >
-              Edit
-            </button>
-          )}
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="text-[#666] hover:text-red-400 p-1.5 rounded-lg transition-colors"
-            title="Delete block"
-          >
-            {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-          </button>
-        </div>
-      </div>
+        <span className={`text-[8px] font-bold tracking-wider uppercase ${blockTypeColor(block.blockType)}`}>
+          {block.blockType}
+        </span>
+      </button>
 
-      {/* Preview / Edit */}
-      {!editing ? (
-        <div className="mt-2">
-          {block.blockType === 'IMAGE' ? (
-            <div className="flex items-center gap-3">
-              {block.value && (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={block.value}
-                  alt={label}
-                  className="w-20 h-14 object-cover rounded-lg border border-[#333]"
-                />
-              )}
-              <span className="text-[#999] text-sm font-mono truncate">{block.value || '(no image)'}</span>
-            </div>
-          ) : (
-            <p className="text-[#999] text-sm leading-relaxed">
-              {truncate(block.value, 200) || '(empty)'}
-            </p>
-          )}
-        </div>
-      ) : (
-        <div className="mt-3 space-y-3">
-          {block.blockType === 'IMAGE' ? (
+      {/* Inline editor when active */}
+      {isActive && (
+        <div className="bg-[#1A1A1A] border border-[#333] rounded-lg p-4 -mt-1 ml-2 mr-2 mb-2">
+          {block.blockType === 'HTML' ? (
+            <RichTextEditor
+              content={block.value}
+              onChange={onValueChange}
+            />
+          ) : block.blockType === 'IMAGE' ? (
             <div className="space-y-3">
-              {/* Current image preview */}
-              {value && (
+              {block.value && (
                 <div className="flex items-center gap-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={value}
+                    src={block.value}
                     alt={label}
                     className="w-24 h-16 object-cover rounded-lg border border-[#333]"
                   />
-                  <span className="text-[#999] text-xs font-mono truncate">{value}</span>
+                  <span className="text-[#999] text-xs font-mono truncate flex-1">
+                    {block.value}
+                  </span>
                 </div>
               )}
-              {/* URL input */}
-              <input
-                type="text"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                placeholder="/images/photos/example.jpg"
-                className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#14EAEA] focus:ring-1 focus:ring-[#14EAEA]/30 font-mono transition-colors"
-              />
-              {/* Upload button */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleUpload(file)
-                  }}
+                  type="text"
+                  value={block.value}
+                  onChange={(e) => onValueChange(e.target.value)}
+                  placeholder="/images/photos/example.jpg"
+                  className="flex-1 bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA] font-mono"
                 />
                 <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="flex items-center gap-2 text-sm border border-dashed border-[#555] hover:border-[#14EAEA] text-[#999] hover:text-[#14EAEA] px-4 py-2 rounded-lg transition-colors"
+                  onClick={() => setShowMediaPicker(true)}
+                  className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#555] hover:border-[#14EAEA] text-[#999] hover:text-[#14EAEA] rounded-lg text-sm transition-colors whitespace-nowrap"
                 >
-                  {uploading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
-                  {uploading ? 'Uploading...' : 'Upload Image'}
+                  <ImageIcon className="w-4 h-4" />
+                  Browse
                 </button>
               </div>
             </div>
+          ) : block.blockType === 'BUTTON' ? (
+            <div className="space-y-3">
+              <div>
+                <label className="text-white/40 text-xs uppercase tracking-wider block mb-1">Button Text</label>
+                <input
+                  type="text"
+                  value={block.value.split('|')[0] || ''}
+                  onChange={(e) => {
+                    const parts = block.value.split('|')
+                    onValueChange(`${e.target.value}|${parts[1] || ''}|${parts[2] || 'primary'}`)
+                  }}
+                  placeholder="Get a Quote"
+                  className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA]"
+                />
+              </div>
+              <div>
+                <label className="text-white/40 text-xs uppercase tracking-wider block mb-1">URL</label>
+                <input
+                  type="text"
+                  value={block.value.split('|')[1] || ''}
+                  onChange={(e) => {
+                    const parts = block.value.split('|')
+                    onValueChange(`${parts[0] || ''}|${e.target.value}|${parts[2] || 'primary'}`)
+                  }}
+                  placeholder="/contact"
+                  className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA] font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-white/40 text-xs uppercase tracking-wider block mb-1">Style</label>
+                <select
+                  value={block.value.split('|')[2] || 'primary'}
+                  onChange={(e) => {
+                    const parts = block.value.split('|')
+                    onValueChange(`${parts[0] || ''}|${parts[1] || ''}|${e.target.value}`)
+                  }}
+                  className="bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA]"
+                >
+                  <option value="primary">Primary (Cyan)</option>
+                  <option value="secondary">Secondary (Outline)</option>
+                  <option value="ghost">Ghost</option>
+                </select>
+              </div>
+            </div>
+          ) : block.blockType === 'SEO' ? (
+            <textarea
+              value={block.value}
+              onChange={(e) => onValueChange(e.target.value)}
+              rows={2}
+              placeholder={block.blockKey.includes('title') ? 'Page Title for SEO...' : 'Meta description for SEO...'}
+              className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA] resize-y"
+            />
           ) : block.blockType === 'LINK' ? (
             <input
               type="text"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
+              value={block.value}
+              onChange={(e) => onValueChange(e.target.value)}
               placeholder="https://... or /path"
-              className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#14EAEA] focus:ring-1 focus:ring-[#14EAEA]/30 font-mono transition-colors"
+              className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA] font-mono"
             />
           ) : (
             <textarea
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              rows={block.blockType === 'HTML' ? 8 : 3}
-              className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-4 py-3 focus:outline-none focus:border-[#14EAEA] focus:ring-1 focus:ring-[#14EAEA]/30 font-mono leading-relaxed resize-y transition-colors"
+              value={block.value}
+              onChange={(e) => onValueChange(e.target.value)}
+              rows={3}
+              className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA] resize-y leading-relaxed"
             />
           )}
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm px-5 py-2 rounded-lg hover:bg-white transition-colors disabled:opacity-50"
-            >
-              {saving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              {saving ? 'Saving...' : 'Save'}
-            </button>
-            <button
-              onClick={() => {
-                setValue(block.value)
-                setEditing(false)
-              }}
-              className="text-sm text-[#999] hover:text-white px-4 py-2 rounded-lg border border-[#333] hover:border-[#555] transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
         </div>
       )}
-    </div>
+
+      {showMediaPicker && (
+        <MediaPickerModal
+          onSelect={(path) => {
+            onValueChange(path)
+            setShowMediaPicker(false)
+          }}
+          onClose={() => setShowMediaPicker(false)}
+        />
+      )}
+    </>
   )
 }
 
@@ -435,134 +628,92 @@ function BlockEditor({
 // ---------------------------------------------------------------------------
 
 function AddBlockForm({
-  pageSlug,
   onCreated,
-  showToast,
 }: {
-  pageSlug: string
-  onCreated: () => void
-  showToast: (msg: string, type: 'success' | 'error') => void
+  onCreated: (key: string, type: BlockType, value: string) => void
 }) {
   const [open, setOpen] = useState(false)
   const [key, setKey] = useState('')
   const [type, setType] = useState<BlockType>('TEXT')
   const [value, setValue] = useState('')
-  const [saving, setSaving] = useState(false)
-
-  const handleCreate = async () => {
-    if (!key.trim()) {
-      showToast('Block key is required', 'error')
-      return
-    }
-
-    const sanitizedKey = key
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, '_')
-      .replace(/[^a-z0-9_]/g, '')
-
-    setSaving(true)
-    try {
-      const res = await fetch(
-        `/api/content/${encodeURIComponent(pageSlug)}/${encodeURIComponent(sanitizedKey)}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ value: value || '', blockType: type }),
-        }
-      )
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Create failed')
-      }
-      showToast(`Created block "${sanitizedKey}"`, 'success')
-      setKey('')
-      setValue('')
-      setType('TEXT')
-      setOpen(false)
-      onCreated()
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Create failed', 'error')
-    } finally {
-      setSaving(false)
-    }
-  }
 
   if (!open) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-[#333] hover:border-[#14EAEA] text-[#666] hover:text-[#14EAEA] rounded-xl transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#333] hover:border-[#14EAEA] text-[#666] hover:text-[#14EAEA] rounded-xl transition-colors"
       >
         <Plus className="w-4 h-4" />
-        <span className="text-sm font-semibold">Add Content Block</span>
+        <span className="text-sm font-semibold">Add Block</span>
       </button>
     )
   }
 
   return (
-    <div className="bg-[#1A1A1A] border border-[#14EAEA]/30 rounded-xl p-5 space-y-4">
+    <div className="bg-[#1A1A1A] border border-[#14EAEA]/30 rounded-xl p-4 space-y-3">
       <h4 className="text-white font-semibold text-sm">New Content Block</h4>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[#999] text-xs font-semibold uppercase tracking-wider block mb-1.5">
+          <label className="text-[#999] text-[10px] font-bold uppercase tracking-wider block mb-1">
             Block Key
           </label>
           <input
             type="text"
             value={key}
             onChange={(e) => setKey(e.target.value)}
-            placeholder="e.g. hero_headline"
-            className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#14EAEA] focus:ring-1 focus:ring-[#14EAEA]/30 font-mono transition-colors"
+            placeholder="hero_headline"
+            className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA] font-mono"
           />
         </div>
         <div>
-          <label className="text-[#999] text-xs font-semibold uppercase tracking-wider block mb-1.5">
-            Block Type
+          <label className="text-[#999] text-[10px] font-bold uppercase tracking-wider block mb-1">
+            Type
           </label>
           <select
             value={type}
             onChange={(e) => setType(e.target.value as BlockType)}
-            className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#14EAEA] focus:ring-1 focus:ring-[#14EAEA]/30 transition-colors"
+            className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA]"
           >
             <option value="TEXT">Text</option>
-            <option value="HTML">HTML</option>
+            <option value="HTML">Rich Text</option>
             <option value="IMAGE">Image</option>
             <option value="LINK">Link</option>
+            <option value="BUTTON">Button/CTA</option>
+            <option value="SEO">SEO</option>
           </select>
         </div>
       </div>
-
       <div>
-        <label className="text-[#999] text-xs font-semibold uppercase tracking-wider block mb-1.5">
+        <label className="text-[#999] text-[10px] font-bold uppercase tracking-wider block mb-1">
           Initial Value
         </label>
-        <textarea
+        <input
+          type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          rows={2}
-          placeholder="Optional initial value..."
-          className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#14EAEA] focus:ring-1 focus:ring-[#14EAEA]/30 font-mono resize-y transition-colors"
+          placeholder="Optional..."
+          className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA]"
         />
       </div>
-
       <div className="flex items-center gap-2">
         <button
-          onClick={handleCreate}
-          disabled={saving}
-          className="flex items-center gap-2 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm px-5 py-2 rounded-lg hover:bg-white transition-colors disabled:opacity-50"
-        >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-          {saving ? 'Creating...' : 'Create Block'}
-        </button>
-        <button
           onClick={() => {
-            setOpen(false)
+            if (!key.trim()) return
+            const sanitizedKey = key.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
+            onCreated(sanitizedKey, type, value)
             setKey('')
             setValue('')
+            setType('TEXT')
+            setOpen(false)
           }}
-          className="text-sm text-[#999] hover:text-white px-4 py-2 rounded-lg border border-[#333] hover:border-[#555] transition-colors"
+          className="flex items-center gap-2 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm px-4 py-2 rounded-lg hover:bg-white transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Add
+        </button>
+        <button
+          onClick={() => setOpen(false)}
+          className="text-sm text-[#999] hover:text-white px-3 py-2 rounded-lg border border-[#333] hover:border-[#555] transition-colors"
         >
           Cancel
         </button>
@@ -572,72 +723,19 @@ function AddBlockForm({
 }
 
 // ---------------------------------------------------------------------------
-// Seed defaults button
-// ---------------------------------------------------------------------------
-
-function SeedDefaultsButton({
-  pageSlug,
-  existingKeys,
-  onSeeded,
-  showToast,
-}: {
-  pageSlug: string
-  existingKeys: Set<string>
-  onSeeded: () => void
-  showToast: (msg: string, type: 'success' | 'error') => void
-}) {
-  const [seeding, setSeeding] = useState(false)
-  const defaults = DEFAULT_BLOCKS[pageSlug]
-  if (!defaults) return null
-
-  const missing = defaults.filter((d) => !existingKeys.has(d.key))
-  if (missing.length === 0) return null
-
-  const handleSeed = async () => {
-    setSeeding(true)
-    try {
-      await Promise.all(
-        missing.map((d) =>
-          fetch(
-            `/api/content/${encodeURIComponent(pageSlug)}/${encodeURIComponent(d.key)}`,
-            {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ value: d.defaultValue, blockType: d.type }),
-            }
-          )
-        )
-      )
-      showToast(`Seeded ${missing.length} default block(s)`, 'success')
-      onSeeded()
-    } catch {
-      showToast('Failed to seed defaults', 'error')
-    } finally {
-      setSeeding(false)
-    }
-  }
-
-  return (
-    <button
-      onClick={handleSeed}
-      disabled={seeding}
-      className="flex items-center gap-2 text-xs text-[#F813BE] border border-[#F813BE]/30 hover:border-[#F813BE] px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-    >
-      {seeding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
-      Populate {missing.length} default block{missing.length !== 1 ? 's' : ''}
-    </button>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Main editor
+// Main Editor
 // ---------------------------------------------------------------------------
 
 export default function ContentEditor() {
   const [selectedPage, setSelectedPage] = useState<string | null>(null)
   const [blocks, setBlocks] = useState<ContentBlock[]>([])
+  const [savedBlocks, setSavedBlocks] = useState<ContentBlock[]>([])
+  const [activeBlockKey, setActiveBlockKey] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const autoSaveTimer = useRef<NodeJS.Timeout | null>(null)
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type })
@@ -651,21 +749,142 @@ export default function ContentEditor() {
       if (!res.ok) throw new Error('Fetch failed')
       const data = await res.json()
       setBlocks(data)
+      setSavedBlocks(JSON.parse(JSON.stringify(data)))
+      setActiveBlockKey(data.length > 0 ? data[0].blockKey : null)
     } catch {
       showToast('Failed to load content blocks', 'error')
       setBlocks([])
+      setSavedBlocks([])
     } finally {
       setLoading(false)
     }
   }, [showToast])
 
   const handleSelectPage = (slug: string) => {
+    // Warn if unsaved changes
+    if (hasDirtyBlocks && !confirm('You have unsaved changes. Switch pages?')) return
     setSelectedPage(slug)
     fetchBlocks(slug)
+    setSaveStatus('idle')
   }
 
-  const handleRefresh = () => {
-    if (selectedPage) fetchBlocks(selectedPage)
+  // Check for dirty blocks
+  const hasDirtyBlocks = blocks.some((block) => {
+    const saved = savedBlocks.find((s) => s.blockKey === block.blockKey)
+    if (!saved) return true // new block
+    return saved.value !== block.value || saved.blockType !== block.blockType
+  })
+
+  const isDirty = (blockKey: string) => {
+    const current = blocks.find((b) => b.blockKey === blockKey)
+    const saved = savedBlocks.find((b) => b.blockKey === blockKey)
+    if (!current) return false
+    if (!saved) return true
+    return current.value !== saved.value || current.blockType !== saved.blockType
+  }
+
+  // Auto-save debounce
+  useEffect(() => {
+    if (!hasDirtyBlocks || !selectedPage) return
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(() => {
+      handleSave()
+    }, 3000)
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocks])
+
+  const handleSave = async () => {
+    if (!selectedPage || saving) return
+    setSaving(true)
+    setSaveStatus('saving')
+    try {
+      const res = await fetch(`/api/content/${encodeURIComponent(selectedPage)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blocks: blocks.map((b) => ({
+            blockKey: b.blockKey,
+            blockType: b.blockType,
+            value: b.value,
+          })),
+        }),
+      })
+      if (!res.ok) throw new Error('Save failed')
+      const data = await res.json()
+      setBlocks(data)
+      setSavedBlocks(JSON.parse(JSON.stringify(data)))
+      setSaveStatus('saved')
+      setTimeout(() => setSaveStatus('idle'), 2000)
+    } catch {
+      setSaveStatus('error')
+      showToast('Failed to save', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleRevert = () => {
+    if (!confirm('Revert all changes to last saved state?')) return
+    setBlocks(JSON.parse(JSON.stringify(savedBlocks)))
+    setSaveStatus('idle')
+    showToast('Reverted to last saved state', 'success')
+  }
+
+  const handleValueChange = (blockKey: string, newValue: string) => {
+    setBlocks((prev) =>
+      prev.map((b) =>
+        b.blockKey === blockKey ? { ...b, value: newValue } : b
+      )
+    )
+  }
+
+  const handleDeleteBlock = async (blockKey: string) => {
+    if (!selectedPage) return
+    if (!confirm(`Delete block "${blockKey}"?`)) return
+
+    try {
+      const res = await fetch(
+        `/api/content/${encodeURIComponent(selectedPage)}/${encodeURIComponent(blockKey)}`,
+        { method: 'DELETE' }
+      )
+      if (!res.ok) throw new Error('Delete failed')
+      setBlocks((prev) => prev.filter((b) => b.blockKey !== blockKey))
+      setSavedBlocks((prev) => prev.filter((b) => b.blockKey !== blockKey))
+      if (activeBlockKey === blockKey) setActiveBlockKey(null)
+      showToast(`Deleted "${blockKey}"`, 'success')
+    } catch {
+      showToast('Failed to delete', 'error')
+    }
+  }
+
+  const handleAddBlock = (key: string, type: BlockType, value: string) => {
+    const newBlock: ContentBlock = {
+      id: `new_${Date.now()}`,
+      pageSlug: selectedPage || '',
+      blockKey: key,
+      blockType: type,
+      value: value || '',
+      updatedAt: new Date().toISOString(),
+    }
+    setBlocks((prev) => [...prev, newBlock])
+    setActiveBlockKey(key)
+  }
+
+  const handleSeedDefaults = async () => {
+    if (!selectedPage) return
+    const defaults = DEFAULT_BLOCKS[selectedPage]
+    if (!defaults) return
+    const existingKeys = new Set(blocks.map((b) => b.blockKey))
+    const missing = defaults.filter((d) => !existingKeys.has(d.key))
+    if (missing.length === 0) return
+
+    for (const d of missing) {
+      handleAddBlock(d.key, d.type, d.defaultValue)
+    }
+    showToast(`Added ${missing.length} default block(s)`, 'success')
   }
 
   // Build label map from defaults
@@ -677,113 +896,316 @@ export default function ContentEditor() {
   }
 
   const existingKeys = new Set(blocks.map((b) => b.blockKey))
+  const missingDefaults = selectedPage && DEFAULT_BLOCKS[selectedPage]
+    ? DEFAULT_BLOCKS[selectedPage].filter((d) => !existingKeys.has(d.key)).length
+    : 0
+
+  const pageUrl = PAGES.find((p) => p.slug === selectedPage)?.url
 
   return (
     <div>
       {/* Page header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Page Content Editor</h1>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-white mb-2">Page Editor</h1>
         <p className="text-[#999]">
-          Edit text, images, and links across the site without touching code.
+          Edit content, images, and SEO across the site. Changes auto-save after 3 seconds.
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar — page list */}
-        <div className="lg:w-64 shrink-0">
-          <h3 className="text-xs font-bold tracking-[3px] uppercase text-[#14EAEA] mb-4">
-            Pages
-          </h3>
-          <nav className="space-y-1">
-            {PAGES.map((page) => (
-              <button
+      {/* Page list (when no page selected) */}
+      {!selectedPage && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {PAGES.map((page) => {
+            const defaults = DEFAULT_BLOCKS[page.slug]
+            return (
+              <div
                 key={page.slug}
+                className="bg-[#1A1A1A] border border-white/10 rounded-xl p-5 hover:border-[#14EAEA]/40 transition-all group cursor-pointer"
                 onClick={() => handleSelectPage(page.slug)}
-                className={`w-full flex items-center gap-2 text-left text-sm px-4 py-2.5 rounded-lg transition-all ${
-                  selectedPage === page.slug
-                    ? 'bg-[#14EAEA]/10 text-[#14EAEA] border border-[#14EAEA]/40 font-semibold'
-                    : 'text-[#999] hover:text-white hover:bg-[#1A1A1A] border border-transparent'
-                }`}
               >
-                <ChevronRight
-                  className={`w-3.5 h-3.5 shrink-0 transition-transform ${
-                    selectedPage === page.slug ? 'rotate-90 text-[#14EAEA]' : 'text-[#555]'
-                  }`}
-                />
-                {page.label}
-              </button>
-            ))}
-          </nav>
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 className="text-white font-bold text-lg group-hover:text-[#14EAEA] transition-colors">
+                      {page.label}
+                    </h3>
+                    <p className="text-[#666] text-xs font-mono mt-0.5">
+                      {page.url}
+                    </p>
+                  </div>
+                  <span className="text-[#666] text-xs">
+                    {defaults?.length || 0} blocks
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mt-4">
+                  <button className="flex items-center gap-2 text-sm text-[#14EAEA] font-semibold hover:underline">
+                    <FileText className="w-4 h-4" />
+                    Edit Page
+                  </button>
+                  <a
+                    href={page.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 text-sm text-[#999] hover:text-white ml-auto"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    Preview
+                  </a>
+                </div>
+              </div>
+            )
+          })}
         </div>
+      )}
 
-        {/* Main panel */}
-        <div className="flex-1 min-w-0">
-          {!selectedPage ? (
-            <div className="flex items-center justify-center h-64 text-[#555] text-sm">
-              Select a page from the sidebar to begin editing.
-            </div>
-          ) : loading ? (
+      {/* Editor view */}
+      {selectedPage && (
+        <div>
+          {/* Toolbar */}
+          <div className="flex items-center gap-3 mb-6 bg-[#1A1A1A] border border-white/10 rounded-xl px-5 py-3">
+            <button
+              onClick={() => {
+                if (hasDirtyBlocks && !confirm('You have unsaved changes. Go back?')) return
+                setSelectedPage(null)
+                setBlocks([])
+                setSavedBlocks([])
+                setSaveStatus('idle')
+              }}
+              className="text-white/60 hover:text-white text-sm transition-colors"
+            >
+              ← All Pages
+            </button>
+
+            <div className="w-px h-5 bg-[#333]" />
+
+            <h2 className="text-white font-bold">
+              {PAGES.find((p) => p.slug === selectedPage)?.label}
+            </h2>
+            <span className="text-[#666] text-xs font-mono">
+              {selectedPage}
+            </span>
+
+            <div className="flex-1" />
+
+            {/* Save status */}
+            {saveStatus === 'saving' && (
+              <span className="flex items-center gap-2 text-sm text-white/50">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Saving...
+              </span>
+            )}
+            {saveStatus === 'saved' && (
+              <span className="flex items-center gap-2 text-sm text-[#14EAEA]">
+                <Check className="w-3.5 h-3.5" />
+                Saved
+              </span>
+            )}
+            {saveStatus === 'error' && (
+              <span className="flex items-center gap-2 text-sm text-red-400">
+                <AlertCircle className="w-3.5 h-3.5" />
+                Error
+              </span>
+            )}
+
+            {/* Revert */}
+            <button
+              onClick={handleRevert}
+              disabled={!hasDirtyBlocks}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#555] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Revert
+            </button>
+
+            {/* Save */}
+            <button
+              onClick={handleSave}
+              disabled={!hasDirtyBlocks || saving}
+              className="flex items-center gap-1.5 px-4 py-1.5 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm rounded-lg hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Save className="w-3.5 h-3.5" />
+              Save
+            </button>
+
+            {/* Preview */}
+            {pageUrl && (
+              <a
+                href={pageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#14EAEA] hover:text-[#14EAEA] transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Preview
+              </a>
+            )}
+          </div>
+
+          {/* Content */}
+          {loading ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="w-6 h-6 text-[#14EAEA] animate-spin" />
             </div>
           ) : (
-            <div>
-              {/* Page title bar */}
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-bold text-white">
-                    {PAGES.find((p) => p.slug === selectedPage)?.label}
-                  </h2>
-                  <p className="text-[#666] text-sm mt-0.5">
-                    {blocks.length} block{blocks.length !== 1 ? 's' : ''}
-                    <span className="mx-2 text-[#333]">|</span>
-                    <span className="font-mono text-xs">/{selectedPage}</span>
-                  </p>
+            <div className="flex flex-col lg:flex-row gap-6">
+              {/* Block list (left panel) */}
+              <div className="lg:w-[380px] shrink-0 space-y-1">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold tracking-[3px] uppercase text-[#14EAEA]">
+                    Content Blocks
+                  </h3>
+                  {missingDefaults > 0 && (
+                    <button
+                      onClick={handleSeedDefaults}
+                      className="flex items-center gap-1.5 text-[10px] text-[#F813BE] border border-[#F813BE]/30 hover:border-[#F813BE] px-2 py-1 rounded-lg transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                      +{missingDefaults} defaults
+                    </button>
+                  )}
                 </div>
-                <SeedDefaultsButton
-                  pageSlug={selectedPage}
-                  existingKeys={existingKeys}
-                  onSeeded={handleRefresh}
-                  showToast={showToast}
-                />
-              </div>
 
-              {/* Blocks */}
-              <div className="space-y-4">
                 {blocks.length === 0 && (
                   <div className="text-center py-12 text-[#555]">
-                    <FileText className="w-8 h-8 mx-auto mb-3 opacity-40" />
-                    <p className="text-sm">No content blocks defined for this page.</p>
+                    <Type className="w-8 h-8 mx-auto mb-3 opacity-40" />
+                    <p className="text-sm">No blocks yet.</p>
                     <p className="text-xs mt-1">
                       {DEFAULT_BLOCKS[selectedPage]
-                        ? 'Click "Populate default blocks" above, or add blocks manually below.'
-                        : 'Add blocks manually below.'}
+                        ? 'Click "+X defaults" above to get started.'
+                        : 'Add blocks below.'}
                     </p>
                   </div>
                 )}
 
                 {blocks.map((block) => (
-                  <BlockEditor
-                    key={block.id}
-                    block={block}
-                    label={labelMap[block.blockKey] || formatBlockKey(block.blockKey)}
-                    pageSlug={selectedPage}
-                    onSaved={handleRefresh}
-                    onDeleted={handleRefresh}
-                    showToast={showToast}
-                  />
+                  <div key={block.blockKey} className="group relative">
+                    <BlockEditorItem
+                      block={block}
+                      label={labelMap[block.blockKey] || formatBlockKey(block.blockKey)}
+                      isActive={activeBlockKey === block.blockKey}
+                      onSelect={() =>
+                        setActiveBlockKey(
+                          activeBlockKey === block.blockKey ? null : block.blockKey
+                        )
+                      }
+                      onValueChange={(v) => handleValueChange(block.blockKey, v)}
+                      isDirty={isDirty(block.blockKey)}
+                    />
+
+                    {/* Delete button on hover */}
+                    <button
+                      onClick={() => handleDeleteBlock(block.blockKey)}
+                      className="absolute top-3 right-2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/20 text-[#666] hover:text-red-400 transition-all"
+                      title="Delete block"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
                 ))}
 
-                <AddBlockForm
-                  pageSlug={selectedPage}
-                  onCreated={handleRefresh}
-                  showToast={showToast}
-                />
+                <div className="pt-2">
+                  <AddBlockForm onCreated={handleAddBlock} />
+                </div>
+              </div>
+
+              {/* Preview panel (right) */}
+              <div className="flex-1 min-w-0 hidden lg:block">
+                <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-6 sticky top-24">
+                  <h3 className="text-xs font-bold tracking-[3px] uppercase text-[#F813BE] mb-4">
+                    Block Preview
+                  </h3>
+
+                  {activeBlockKey ? (
+                    (() => {
+                      const block = blocks.find(
+                        (b) => b.blockKey === activeBlockKey
+                      )
+                      if (!block)
+                        return (
+                          <p className="text-[#555]">Block not found</p>
+                        )
+
+                      const label =
+                        labelMap[block.blockKey] ||
+                        formatBlockKey(block.blockKey)
+
+                      return (
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <span className={blockTypeColor(block.blockType)}>
+                              {blockTypeIcon(block.blockType)}
+                            </span>
+                            <h4 className="text-white font-semibold">
+                              {label}
+                            </h4>
+                            {isDirty(block.blockKey) && (
+                              <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                            )}
+                          </div>
+
+                          {block.blockType === 'IMAGE' && block.value ? (
+                            <div className="rounded-lg overflow-hidden border border-[#333]">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={block.value}
+                                alt={label}
+                                className="w-full max-h-[300px] object-contain bg-[#0A0A0A]"
+                              />
+                            </div>
+                          ) : block.blockType === 'HTML' ? (
+                            <div
+                              className="prose prose-invert prose-sm max-w-none text-white/80 bg-[#0A0A0A] rounded-lg p-4 border border-[#333]"
+                              dangerouslySetInnerHTML={{
+                                __html: block.value,
+                              }}
+                            />
+                          ) : block.blockType === 'BUTTON' ? (
+                            <div className="bg-[#0A0A0A] rounded-lg p-6 border border-[#333] flex items-center justify-center">
+                              {(() => {
+                                const [text, , style] = block.value.split('|')
+                                const buttonStyle =
+                                  style === 'secondary'
+                                    ? 'border border-[#14EAEA] text-[#14EAEA]'
+                                    : style === 'ghost'
+                                      ? 'border border-white/30 text-white/70'
+                                      : 'bg-[#14EAEA] text-[#0A0A0A]'
+                                return (
+                                  <span
+                                    className={`px-6 py-3 rounded-full font-semibold text-sm ${buttonStyle}`}
+                                  >
+                                    {text || 'Button Text'}
+                                  </span>
+                                )
+                              })()}
+                            </div>
+                          ) : (
+                            <div className="bg-[#0A0A0A] rounded-lg p-4 border border-[#333]">
+                              <p className="text-white/70 text-sm whitespace-pre-wrap leading-relaxed">
+                                {block.value || '(empty)'}
+                              </p>
+                            </div>
+                          )}
+
+                          <p className="text-[#555] text-xs font-mono mt-3">
+                            Key: {block.blockKey}
+                          </p>
+                        </div>
+                      )
+                    })()
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-[#555]">
+                      <ChevronRight className="w-8 h-8 mb-3 opacity-30" />
+                      <p className="text-sm">
+                        Select a block to preview
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
         </div>
-      </div>
+      )}
 
       {/* Toast */}
       {toast && (

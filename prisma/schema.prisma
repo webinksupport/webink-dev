@@ -222,6 +222,22 @@ enum ContentBlockType {
   HTML
   IMAGE
   LINK
+  BUTTON
+  SEO
+}
+
+// ─── Media ────────────────────────────────────────────────────────
+
+model MediaItem {
+  id        String   @id @default(cuid())
+  filename  String
+  filepath  String   @unique
+  altText   String?
+  mimeType  String
+  size      Int
+  width     Int?
+  height    Int?
+  createdAt DateTime @default(now())
 }
 
 // ─── Settings ──────────────────────────────────────────────────────

@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import NavI from '@/components/variant-i/NavI'
 import FooterI from '@/components/variant-i/FooterI'
 import ServicePageLayout from '@/components/services/ServicePageLayout'
+import { getPageContent } from '@/lib/content'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Web Design Services Sarasota & Tampa | Webink Solutions',
@@ -17,15 +20,17 @@ export const metadata: Metadata = {
   },
 }
 
-export default function WebDesignPage() {
+export default async function WebDesignPage() {
+  const content = await getPageContent('services/web-design')
+
   return (
     <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
       <NavI />
       <ServicePageLayout
         eyebrow="Web Design"
-        headline="Websites That"
+        headline={content.hero_headline || 'Websites That'}
         headlineAccent="Convert."
-        subtext="Custom responsive websites engineered for speed, performance, and real business growth. No templates. No shortcuts. Built from scratch for Sarasota and Tampa businesses."
+        subtext={content.hero_subtext || 'Custom responsive websites engineered for speed, performance, and real business growth. No templates. No shortcuts. Built from scratch for Sarasota and Tampa businesses.'}
         heroImage="/images/services/web-design-hero.png"
         features={[
           {
