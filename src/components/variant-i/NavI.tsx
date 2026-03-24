@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 import { ChevronDown } from 'lucide-react'
 
-const serviceLinks = [
+const defaultServiceLinks = [
   { label: 'Web Design', href: '/services/web-design', desc: 'Custom responsive sites built to convert' },
   { label: 'SEO', href: '/services/seo', desc: 'Rank higher on Google organically' },
   { label: 'Social Media Marketing', href: '/services/social-media', desc: 'Strategy, content & community management' },
@@ -15,12 +15,19 @@ const serviceLinks = [
   { label: 'Custom CRM & SaaS', href: '/services/custom-crm', desc: 'Tailored software for your business' },
 ]
 
-const navLinks = [
+const defaultNavLinks = [
   { label: 'About', href: '#about' },
   { label: 'Results', href: '#results' },
   { label: 'Testimonials', href: '#testimonials' },
   { label: 'Pricing', href: '#pricing' },
 ]
+
+interface DBMenuItem {
+  label: string
+  url: string
+  children?: DBMenuItem[]
+}
+
 
 function getInitials(name?: string | null): string {
   if (!name) return '?'
@@ -43,6 +50,39 @@ export default function NavI() {
   const servicesRef = useRef<HTMLDivElement>(null)
 
   const isAdmin = session?.user?.role === 'ADMIN'
+
+  // Dynamic menu from DB with hardcoded fallback
+  const [dbMenu, setDbMenu] = useState<DBMenuItem[] | null>(null)
+  useEffect(() => {
+    fetch('/api/menu/primary')
+      .then((r) => r.json())
+      .then((data: DBMenuItem[]) => {
+        if (Array.isArray(data) && data.length > 0) setDbMenu(data)
+      })
+      .catch(() => {})
+  }, [])
+
+  // Build nav from DB menu or fallback
+  const navLinks = dbMenu
+    ? dbMenu
+        .filter((item) => !item.children || item.children.length === 0)
+        .map((item) => ({ label: item.label, href: item.url }))
+    : defaultNavLinks
+
+  const serviceLinks = dbMenu
+    ? (() => {
+        const servicesItem = dbMenu.find(
+          (item) => item.children && item.children.length > 0
+        )
+        return servicesItem
+          ? servicesItem.children!.map((c) => ({
+              label: c.label,
+              href: c.url,
+              desc: '',
+            }))
+          : defaultServiceLinks
+      })()
+    : defaultServiceLinks
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY >= 80)

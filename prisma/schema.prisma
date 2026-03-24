@@ -248,3 +248,20 @@ model Setting {
   isSecret  Boolean  @default(false)
   updatedAt DateTime @updatedAt
 }
+
+// ─── Menu ─────────────────────────────────────────────────────────────
+
+model MenuItem {
+  id        String     @id @default(cuid())
+  label     String
+  url       String
+  order     Int        @default(0)
+  parentId  String?
+  parent    MenuItem?  @relation("MenuTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  MenuItem[] @relation("MenuTree")
+  menuSlug  String     @default("primary")
+  updatedAt DateTime   @updatedAt
+
+  @@index([menuSlug])
+  @@index([parentId])
+}
