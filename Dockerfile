@@ -10,6 +10,9 @@ ENV NEXTAUTH_URL=https://dev.webink.solutions
 # Generate Prisma client to src/generated/prisma
 RUN npx prisma generate --schema=./prisma/schema.prisma
 RUN npm run build
+# Copy static files into standalone build (required for Next.js standalone mode)
+RUN cp -r .next/static .next/standalone/.next/static && \
+    cp -r public .next/standalone/public
 EXPOSE 3001
 ENV PORT=3001
 CMD ["node", ".next/standalone/server.js"]
