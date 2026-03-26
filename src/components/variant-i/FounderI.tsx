@@ -2,6 +2,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import EditableText from '@/components/editor/EditableText'
+import EditableImage from '@/components/editor/EditableImage'
 
 const ease = [0.25, 0.46, 0.45, 0.94]
 
@@ -19,12 +21,15 @@ export default function FounderI() {
             className="lg:col-span-4 flex justify-center"
           >
             <div className="overflow-hidden rounded-full shadow-2xl w-64 h-64 lg:w-80 lg:h-80 border-4 border-[#14EAEA]/20">
-              <Image
+              <EditableImage
+                pageSlug="home"
+                blockKey="founder_image"
                 src="/images/photoshoot/SquareSean2.jpg"
                 alt="Sean Rowe — Founder of Webink Solutions, Sarasota digital marketing agency"
                 width={400}
                 height={400}
                 className="w-full h-full object-cover"
+                style={{ objectPosition: 'top center' }}
               />
             </div>
           </motion.div>
@@ -50,17 +55,21 @@ export default function FounderI() {
               <span className="text-[#14EAEA]">Rowe.</span>
             </h2>
 
-            <p className="font-urbanist text-white/60 text-xl leading-relaxed mb-6">
-              Sean Rowe founded Webink Solutions in Sarasota, FL with a simple mission: build
-              websites and marketing systems that actually drive business. Every strategy is
-              built around data, designed for humans, and optimized for growth.
-            </p>
+            <EditableText
+              as="p"
+              pageSlug="home"
+              blockKey="founder_bio_1"
+              defaultValue="Sean Rowe founded Webink Solutions in Sarasota, FL with a simple mission: build websites and marketing systems that actually drive business. Every strategy is built around data, designed for humans, and optimized for growth."
+              className="font-urbanist text-white/60 text-xl leading-relaxed mb-6"
+            />
 
-            <p className="font-urbanist text-white/35 text-lg leading-relaxed mb-10">
-              Before building the agency, Sean served as a firefighter and paramedic — a
-              background that instilled discipline, problem-solving under pressure, and a
-              service-first mindset that shapes every client relationship at Webink.
-            </p>
+            <EditableText
+              as="p"
+              pageSlug="home"
+              blockKey="founder_bio_2"
+              defaultValue="Before building the agency, Sean served as a firefighter and paramedic — a background that instilled discipline, problem-solving under pressure, and a service-first mindset that shapes every client relationship at Webink."
+              className="font-urbanist text-white/35 text-lg leading-relaxed mb-10"
+            />
 
             <Link
               href="/about"

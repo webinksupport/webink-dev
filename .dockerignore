@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+*.tar.gz
+migration
+CLAUDE.md
+DESIGN-SYSTEM.md
+WEBINK-PRODUCTS.md
+*.sql
+*.md
+!README.md

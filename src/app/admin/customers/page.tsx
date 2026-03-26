@@ -1,4 +1,10 @@
 import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
+import CustomerSearch from './CustomerSearch'
+
+function formatCents(cents: number): string {
+  return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+}
 
 export default async function AdminCustomersPage() {
   const customers = await prisma.user.findMany({
@@ -7,84 +13,42 @@ export default async function AdminCustomersPage() {
         where: { status: 'ACTIVE' },
         include: { variant: { include: { product: true } } },
       },
-      _count: { select: { orders: true } },
+      orders: {
+        where: { status: 'PAID' },
+        select: { totalAmount: true },
+      },
+      _count: { select: { orders: true, subscriptions: true } },
     },
     orderBy: { createdAt: 'desc' },
   })
 
+  const serialized = customers.map((c) => ({
+    id: c.id,
+    name: c.name,
+    email: c.email,
+    role: c.role,
+    suspended: c.suspended,
+    createdAt: c.createdAt.toISOString(),
+    activeSubscriptions: c.subscriptions.map((s) => ({
+      id: s.id,
+      productName: s.variant.product.name,
+      variantName: s.variant.name,
+    })),
+    totalSpent: c.orders.reduce((sum, o) => sum + o.totalAmount, 0),
+    orderCount: c._count.orders,
+    subscriptionCount: c._count.subscriptions,
+  }))
+
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-2">Customers</h1>
-      <p className="text-[#999] mb-8">{customers.length} registered users</p>
-
-      <div className="bg-[#1A1A1A] border border-[#333] rounded-2xl overflow-x-auto">
-        <table className="w-full min-w-[700px]">
-          <thead>
-            <tr className="border-b border-[#333]">
-              <th className="text-left text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] px-6 py-4">
-                Customer
-              </th>
-              <th className="text-left text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] px-6 py-4">
-                Role
-              </th>
-              <th className="text-left text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] px-6 py-4">
-                Active Subs
-              </th>
-              <th className="text-left text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] px-6 py-4">
-                Orders
-              </th>
-              <th className="text-left text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] px-6 py-4">
-                Joined
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {customers.map((customer) => (
-              <tr
-                key={customer.id}
-                className="border-b border-[#333]/50 last:border-0"
-              >
-                <td className="px-6 py-4">
-                  <p className="text-white text-sm font-semibold">
-                    {customer.name || '—'}
-                  </p>
-                  <p className="text-[#999] text-xs">{customer.email}</p>
-                </td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`text-xs font-bold tracking-[2px] uppercase ${
-                      customer.role === 'ADMIN'
-                        ? 'text-[#F813BE]'
-                        : 'text-[#999]'
-                    }`}
-                  >
-                    {customer.role}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  {customer.subscriptions.length > 0 ? (
-                    <div className="space-y-1">
-                      {customer.subscriptions.map((sub) => (
-                        <p key={sub.id} className="text-white text-xs">
-                          {sub.variant.product.name} — {sub.variant.name}
-                        </p>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-[#999] text-sm">None</span>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-white text-sm">
-                  {customer._count.orders}
-                </td>
-                <td className="px-6 py-4 text-[#999] text-sm">
-                  {new Date(customer.createdAt).toLocaleDateString()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Customers</h1>
+          <p className="text-[#999]">{customers.length} registered users</p>
+        </div>
       </div>
+
+      <CustomerSearch customers={serialized} formatCents={formatCents} />
     </div>
   )
 }

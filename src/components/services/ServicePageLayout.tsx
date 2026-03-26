@@ -8,6 +8,8 @@ import {
   Zap, Shield, BarChart3, Clock, Users, Target,
   Megaphone, Palette, Code, Cpu, CheckCircle2, ChevronDown,
 } from 'lucide-react'
+import EditableText from '@/components/editor/EditableText'
+import EditableBackground from '@/components/editor/EditableBackground'
 
 /* ── Icon Map ─────────────────────────────────────────────── */
 const iconMap: Record<string, React.ElementType> = {
@@ -29,9 +31,11 @@ interface PricingTier {
 interface ServicePhoto {
   src: string
   alt: string
+  objectPosition?: string
 }
 
 interface ServicePageProps {
+  pageSlug?: string
   eyebrow: string
   headline: string
   headlineAccent: string
@@ -45,6 +49,9 @@ interface ServicePageProps {
   ctaText?: string
   ctaHref?: string
   photos?: ServicePhoto[]
+  heroImagePosition?: string
+  /** Product slug for linking Get Started buttons to /products/[slug]?tier=X */
+  productSlug?: string
 }
 
 /* ── Shared Easing ────────────────────────────────────────── */
@@ -96,6 +103,7 @@ function FAQItem({
 
 /* ── Main Layout Component ────────────────────────────────── */
 export default function ServicePageLayout({
+  pageSlug,
   eyebrow,
   headline,
   headlineAccent,
@@ -109,6 +117,8 @@ export default function ServicePageLayout({
   ctaText = 'Get a Free Quote',
   ctaHref = '/contact',
   photos = [],
+  heroImagePosition = 'center',
+  productSlug,
 }: ServicePageProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
@@ -117,18 +127,37 @@ export default function ServicePageLayout({
       {/* ════════════════════════════════════════════════════════
           HERO SECTION
       ════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-[70vh] flex items-center bg-[#0F0F0F] overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src={heroImage}
-            alt=""
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/60" />
-        </div>
+      <section className="relative min-h-screen flex items-center bg-[#0F0F0F] overflow-hidden" style={{
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${heroImage}'), radial-gradient(ellipse at 30% 50%, rgba(20,234,234,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(248,19,190,0.05) 0%, transparent 60%)`,
+        backgroundSize: 'cover',
+        backgroundPosition: heroImagePosition,
+      }}>
+        {pageSlug ? (
+          <EditableBackground
+            pageSlug={pageSlug}
+            blockKey="hero_bg"
+            defaultSrc={heroImage}
+            defaultOverlayOpacity={0.6}
+            defaultPosition={heroImagePosition}
+            imageProps={{ priority: true, sizes: '100vw' }}
+            className="absolute inset-0"
+          >
+            <span />
+          </EditableBackground>
+        ) : (
+          <div className="absolute inset-0">
+            <Image
+              src={heroImage}
+              alt=""
+              fill
+              className="object-cover"
+              style={{ objectPosition: heroImagePosition }}
+              sizes="100vw"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/60" />
+          </div>
+        )}
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 lg:px-24 py-32">
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -146,30 +175,64 @@ export default function ServicePageLayout({
             className="font-urbanist font-black text-white leading-[0.92] mb-6"
             style={{ fontSize: 'clamp(2.75rem, 7vw, 5.5rem)', letterSpacing: '-0.04em' }}
           >
-            {headline}{' '}
-            <span className="text-[#14EAEA]">{headlineAccent}</span>
+            {pageSlug ? (
+              <EditableText
+                as="span"
+                pageSlug={pageSlug}
+                blockKey="hero_headline"
+                defaultValue={`${headline} ${headlineAccent}`}
+              >
+                {headline}{' '}
+                <span className="text-[#14EAEA]">{headlineAccent}</span>
+              </EditableText>
+            ) : (
+              <>{headline}{' '}<span className="text-[#14EAEA]">{headlineAccent}</span></>
+            )}
           </motion.h1>
 
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease }}
-            className="font-urbanist text-white/70 text-lg md:text-xl leading-relaxed max-w-2xl mb-10"
           >
-            {subtext}
-          </motion.p>
+            <EditableText
+              as="p"
+              pageSlug={pageSlug || ''}
+              blockKey="hero_subtext"
+              defaultValue={subtext}
+              className="font-urbanist text-white/70 text-lg md:text-xl leading-relaxed max-w-2xl mb-10"
+            />
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4, ease }}
+            className="flex flex-wrap gap-4"
           >
-            <Link
-              href={ctaHref}
-              className="inline-block bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200"
-            >
-              {ctaText}
-            </Link>
+            {pricing && pricing.length > 0 ? (
+              <a
+                href="#pricing"
+                className="inline-block bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200"
+              >
+                View Pricing
+              </a>
+            ) : (
+              <Link
+                href={ctaHref}
+                className="inline-block bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200"
+              >
+                {ctaText}
+              </Link>
+            )}
+            {pricing && pricing.length > 0 && (
+              <Link
+                href={ctaHref}
+                className="inline-block border border-white/30 text-white font-semibold px-8 py-4 rounded-full hover:bg-white hover:text-[#0A0A0A] transition-colors duration-200"
+              >
+                {ctaText}
+              </Link>
+            )}
           </motion.div>
         </div>
       </section>
@@ -230,52 +293,6 @@ export default function ServicePageLayout({
           </div>
         </div>
       </section>
-
-      {/* ════════════════════════════════════════════════════════
-          PHOTO SHOWCASE (between features and process)
-      ════════════════════════════════════════════════════════ */}
-      {photos.length >= 2 && (
-        <section className="bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-20 lg:py-32 overflow-hidden">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-              <motion.div
-                initial={{ scale: 0.92, opacity: 0, y: 20 }}
-                whileInView={{ scale: 1, opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease }}
-                viewport={{ once: true, margin: '-80px' }}
-                className="overflow-hidden rounded-2xl shadow-xl"
-              >
-                <div className="relative h-[300px] md:h-[400px]">
-                  <Image
-                    src={photos[0].src}
-                    alt={photos[0].alt}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                </div>
-              </motion.div>
-              <motion.div
-                initial={{ scale: 0.92, opacity: 0, y: 20 }}
-                whileInView={{ scale: 1, opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.15, ease }}
-                viewport={{ once: true, margin: '-80px' }}
-                className="overflow-hidden rounded-2xl shadow-xl md:mt-12"
-              >
-                <div className="relative h-[300px] md:h-[400px]">
-                  <Image
-                    src={photos[1].src}
-                    alt={photos[1].alt}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ════════════════════════════════════════════════════════
           PROCESS SECTION
@@ -358,6 +375,7 @@ export default function ServicePageLayout({
                     alt={photos[2].alt}
                     fill
                     className="object-cover"
+                    style={{ objectPosition: photos[2].objectPosition || 'center' }}
                     sizes="(max-width: 1024px) 100vw, 42vw"
                   />
                 </div>
@@ -395,7 +413,7 @@ export default function ServicePageLayout({
           PRICING SECTION
       ════════════════════════════════════════════════════════ */}
       {pricing && pricing.length > 0 && (
-        <section className="bg-white px-6 md:px-16 lg:px-24 py-20 lg:py-32">
+        <section id="pricing" className="bg-white px-6 md:px-16 lg:px-24 py-20 lg:py-32">
           <div className="max-w-7xl mx-auto">
             <motion.p
               initial={{ opacity: 0, y: 16 }}
@@ -493,14 +511,17 @@ export default function ServicePageLayout({
                   </ul>
 
                   <Link
-                    href={ctaHref}
+                    href={productSlug && !tier.contactOnly
+                      ? `/products/${productSlug}?tier=${tier.name.toLowerCase()}&billing=monthly`
+                      : ctaHref
+                    }
                     className={`block text-center font-semibold px-6 py-3 rounded-full transition-colors duration-200 ${
                       tier.recommended
                         ? 'bg-[#F813BE] text-white hover:bg-[#d10fa3]'
                         : 'border border-[#14EAEA] text-[#14EAEA] hover:bg-[#14EAEA] hover:text-[#0A0A0A]'
                     }`}
                   >
-                    Get Started
+                    {tier.contactOnly ? 'Contact Us' : 'Buy Now'}
                   </Link>
                 </motion.div>
               ))}
@@ -621,6 +642,7 @@ export default function ServicePageLayout({
           </motion.div>
         </div>
       </section>
+
     </>
   )
 }

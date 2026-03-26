@@ -11,8 +11,12 @@ ENV NEXTAUTH_URL=https://dev.webink.solutions
 RUN npx prisma generate --schema=./prisma/schema.prisma
 RUN npm run build
 # Copy static files into standalone build (required for Next.js standalone mode)
+# Also copy Prisma adapter + mariadb driver which Next.js standalone tracer misses
 RUN cp -r .next/static .next/standalone/.next/static && \
-    cp -r public .next/standalone/public
+    cp -r public .next/standalone/public && \
+    cp -r node_modules/@prisma/adapter-mariadb .next/standalone/node_modules/@prisma/adapter-mariadb && \
+    cp -r node_modules/@prisma/driver-adapter-utils .next/standalone/node_modules/@prisma/driver-adapter-utils && \
+    cp -r node_modules/mariadb .next/standalone/node_modules/mariadb
 EXPOSE 3001
 ENV PORT=3001
 CMD ["node", ".next/standalone/server.js"]

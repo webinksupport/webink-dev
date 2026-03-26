@@ -46,14 +46,17 @@ interface SettingState {
 
 const GROUPS: GroupDef[] = [
   {
-    id: 'payments',
-    title: 'Payments',
+    id: 'stripe',
+    title: 'Stripe Payments',
     icon: CreditCard,
     color: '#14EAEA',
     fields: [
-      { key: 'STRIPE_PUBLISHABLE_KEY', label: 'Stripe Publishable Key', type: 'text', hint: 'pk_live_... or pk_test_...' },
-      { key: 'STRIPE_SECRET_KEY', label: 'Stripe Secret Key', type: 'password', hint: 'sk_live_... or sk_test_...' },
-      { key: 'STRIPE_WEBHOOK_SECRET', label: 'Stripe Webhook Secret', type: 'password', hint: 'whsec_...' },
+      { key: 'STRIPE_TEST_MODE', label: 'Use Stripe Test Mode', type: 'select', options: ['true', 'false'], hint: 'Enable to use test keys instead of live keys' },
+      { key: 'STRIPE_TEST_PUBLISHABLE_KEY', label: 'Test Publishable Key', type: 'text', hint: 'pk_test_...' },
+      { key: 'STRIPE_TEST_SECRET_KEY', label: 'Test Secret Key', type: 'password', hint: 'sk_test_...' },
+      { key: 'STRIPE_PUBLISHABLE_KEY', label: 'Live Publishable Key', type: 'password', hint: 'pk_live_...' },
+      { key: 'STRIPE_SECRET_KEY', label: 'Live Secret Key', type: 'password', hint: 'sk_live_...' },
+      { key: 'STRIPE_WEBHOOK_SECRET', label: 'Webhook Secret', type: 'password', hint: 'whsec_...' },
     ],
   },
   {
@@ -357,7 +360,7 @@ export default function IntegrationsPage() {
               </div>
 
               {/* Save Button */}
-              <div className="px-4 sm:px-6 py-4 border-t border-[#333] flex sm:justify-end">
+              <div className="px-4 sm:px-6 py-4 border-t border-[#333] flex flex-wrap gap-3 sm:justify-end">
                 <button
                   onClick={() => saveGroup(group)}
                   disabled={saving[group.id]}
@@ -370,6 +373,31 @@ export default function IntegrationsPage() {
                   )}
                   Save {group.title}
                 </button>
+                {group.id === 'stripe' && (
+                  <button
+                    onClick={async () => {
+                      setSaving((prev) => ({ ...prev, sync: true }))
+                      try {
+                        const res = await fetch('/api/admin/products/sync-stripe', { method: 'POST' })
+                        if (!res.ok) {
+                          const data = await res.json()
+                          throw new Error(data.error || 'Sync failed')
+                        }
+                        const data = await res.json()
+                        setToast({ message: data.message || 'Products synced to Stripe', type: 'success' })
+                      } catch (err) {
+                        setToast({ message: err instanceof Error ? err.message : 'Sync failed', type: 'error' })
+                      } finally {
+                        setSaving((prev) => ({ ...prev, sync: false }))
+                      }
+                    }}
+                    disabled={saving.sync}
+                    className="flex items-center justify-center gap-2 w-full sm:w-auto border border-[#F813BE] text-[#F813BE] font-semibold px-5 py-2.5 rounded-lg text-sm hover:bg-[#F813BE]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving.sync ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                    Sync Products to Stripe
+                  </button>
+                )}
               </div>
             </div>
           )

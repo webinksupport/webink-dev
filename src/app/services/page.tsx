@@ -4,13 +4,15 @@ import FooterI from '@/components/variant-i/FooterI'
 import ServicesHubContent from './ServicesHubContent'
 
 export const metadata: Metadata = {
-  title: 'Digital Marketing Services Sarasota | Webink Solutions',
+  title: 'Digital Marketing Services Sarasota & Tampa | Webink Solutions',
   description:
-    'Full-service digital marketing agency in Sarasota, FL — web design, SEO, social media, PPC, AI marketing, and custom CRM development for Tampa & Bradenton businesses.',
+    'Full-service digital marketing: web design, SEO, social media, PPC, hosting, AI marketing, and custom CRM. Serving Sarasota, Tampa & Bradenton.',
+  keywords: ['digital marketing services Sarasota', 'web design Tampa', 'SEO services Florida', 'social media marketing Bradenton'],
   openGraph: {
-    title: 'Digital Marketing Services Sarasota | Webink Solutions',
+    title: 'Digital Marketing Services | Webink Solutions',
     description:
-      'Web design, SEO, social media, PPC, and AI-powered marketing services in Sarasota, Tampa & Bradenton.',
+      'Web design, SEO, social media, PPC, and more for Florida businesses.',
+    url: 'https://webink.solutions/services',
     type: 'website',
     locale: 'en_US',
     siteName: 'Webink Solutions',

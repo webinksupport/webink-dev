@@ -2,6 +2,23 @@
 > **Read this file before making ANY changes to this codebase.**
 > Every design decision, animation, and component must conform to the standards documented here.
 
+## ðŸš¨ DATABASE SAFETY PROTOCOL â€” MANDATORY
+
+Customer data is sacred. This applies to Webink's ecommerce DB (users, subscriptions, orders).
+
+**BEFORE any schema change or deployment touching the DB:**
+1. Take a timestamped DB backup first
+2. Record row counts for: users, orders, subscriptions
+3. Only ADD new nullable columns/tables â€” never DROP or ALTER existing data columns
+4. Verify Prisma schema matches live DB before rebuilding
+
+**AFTER every deployment:**
+- Confirm row counts match pre-deploy numbers
+- Verify /admin/orders and /admin/customers load correctly
+- If data is missing: restore from backup immediately, report to Sparq
+
+**Prisma rule:** Schema file â‰  live DB. Always run the actual migration before deploying the new build. Use `deploy.js` (NOT `deploy-full.js`) to preserve Traefik routing.
+
 ---
 
 ## 1. PROJECT OVERVIEW
@@ -728,7 +745,7 @@ The homepage follows this section order:
 
 ---
 
-## 13. Phase 2 — Ecommerce & Backend Build Spec
+## 13. Phase 2 ï¿½ Ecommerce & Backend Build Spec
 
 ### Overview
 Build a full ecommerce system on top of the existing Next.js site. The WordPress/WooCommerce database has been exported and is available at C:\OpenClaw\workspace-webink\webinkso_wp552.sql for reference.
@@ -750,16 +767,16 @@ All products from WEBINK-PRODUCTS.md must be implemented as purchasable items:
 - Implement Stripe Customer Portal for subscription management
 - Webhooks: handle subscription.created, subscription.updated, subscription.deleted, payment_succeeded, payment_failed
 - Store Stripe customer_id + subscription_id in user records
-- DO NOT expose raw Stripe API keys client-side — server-side only
+- DO NOT expose raw Stripe API keys client-side ï¿½ server-side only
 
-### QuickBooks Integration — CRITICAL NOTES
+### QuickBooks Integration ï¿½ CRITICAL NOTES
 - The old WordPress site had a QBO sync plugin (mw_wc_qbo_sync) that caused DUPLICATE ENTRIES in QuickBooks due to Stripe fees creating separate line items
 - **DO NOT** sync Stripe fee transactions directly to QuickBooks
 - Sync only the WooCommerce/order total (what the customer paid) to QBO
 - Record GROSS revenue in QBO (full amount customer paid, e.g. $493.00)
 - Then create a SEPARATE expense entry for the Stripe processing fee (e.g. $14.40 as 'Payment Processing Fee' expense category)
 - This way: books show full revenue + Stripe fee as a business expense = clean reconciliation
-- Do NOT create the fee entry as part of the order sync — run it as a separate post-sync step after payment confirmation webhook
+- Do NOT create the fee entry as part of the order sync ï¿½ run it as a separate post-sync step after payment confirmation webhook
 - This is a hard requirement from the business owner to prevent accounting chaos
 
 ### User Accounts
@@ -778,6 +795,6 @@ All products from WEBINK-PRODUCTS.md must be implemented as purchasable items:
 ### Database
 - Use Prisma ORM with MySQL (consistent with VoltDesk pattern)
 - Reference the exported SQL for existing customer/order data migration path
-- Do NOT import raw WordPress data — use it as reference only for data structure
+- Do NOT import raw WordPress data ï¿½ use it as reference only for data structure
 
 

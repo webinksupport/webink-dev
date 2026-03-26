@@ -1,172 +1,65 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
-    }
-
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters')
-      return
-    }
-
-    setLoading(true)
-
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name }),
-    })
-
-    if (!res.ok) {
-      const data = await res.json()
-      setError(data.error || 'Registration failed')
-      setLoading(false)
-      return
-    }
-
-    // Auto sign-in after registration
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-      callbackUrl: '/dashboard',
-    })
-
-    setLoading(false)
-
-    if (result?.url) {
-      router.push(result.url)
-    }
-  }
+  useEffect(() => {
+    // Redirect to homepage after a short delay
+    const timer = setTimeout(() => {
+      router.push('/')
+    }, 4000)
+    return () => clearTimeout(timer)
+  }, [router])
 
   return (
-    <div className="min-h-screen bg-[#0F0F0F] flex items-center justify-center px-6">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Create Account
+    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-6 font-urbanist">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#0F0F0F] to-[#0A0A0A]" />
+
+      <div className="relative w-full max-w-md text-center">
+        <Link href="/" className="inline-block mb-8">
+          <Image
+            src="/images/logos/webink-white.png"
+            alt="Webink Solutions"
+            width={180}
+            height={48}
+            className="mx-auto"
+          />
+        </Link>
+
+        <div className="bg-[#0F0F0F] rounded-2xl p-8 border border-white/10 shadow-2xl">
+          <h1
+            className="text-2xl font-black text-white mb-3"
+            style={{ letterSpacing: '-0.03em' }}
+          >
+            Accounts are created during checkout
           </h1>
-          <p className="text-[#999]">Get started with Webink Solutions</p>
+          <p className="text-white/40 text-sm leading-relaxed mb-6">
+            To create an account, browse our services and start a purchase.
+            Your account will be created automatically during checkout.
+          </p>
+          <Link
+            href="/services"
+            className="inline-flex items-center gap-2 bg-[#14EAEA] text-[#0A0A0A] font-bold text-sm px-8 py-3.5 rounded-full hover:bg-white transition-colors duration-200"
+          >
+            Browse Services →
+          </Link>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-[#1A1A1A] rounded-2xl p-8 border border-[#333]"
-        >
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg p-3 mb-6 text-sm">
-              {error}
-            </div>
-          )}
+        <p className="text-white/25 text-xs mt-6">
+          Already have an account?{' '}
+          <Link href="/auth/signin" className="text-[#14EAEA] hover:underline font-semibold">
+            Sign in
+          </Link>
+        </p>
 
-          <div className="mb-5">
-            <label
-              htmlFor="name"
-              className="block text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] mb-2"
-            >
-              Full Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-[#0F0F0F] border border-[#333] text-white rounded-lg px-4 py-3 focus:outline-none focus:border-[#14EAEA] transition-colors"
-              placeholder="John Doe"
-            />
-          </div>
-
-          <div className="mb-5">
-            <label
-              htmlFor="email"
-              className="block text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] mb-2"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full bg-[#0F0F0F] border border-[#333] text-white rounded-lg px-4 py-3 focus:outline-none focus:border-[#14EAEA] transition-colors"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div className="mb-5">
-            <label
-              htmlFor="password"
-              className="block text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] mb-2"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full bg-[#0F0F0F] border border-[#333] text-white rounded-lg px-4 py-3 focus:outline-none focus:border-[#14EAEA] transition-colors"
-              placeholder="Min. 8 characters"
-            />
-          </div>
-
-          <div className="mb-6">
-            <label
-              htmlFor="confirmPassword"
-              className="block text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] mb-2"
-            >
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="w-full bg-[#0F0F0F] border border-[#333] text-white rounded-lg px-4 py-3 focus:outline-none focus:border-[#14EAEA] transition-colors"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#F813BE] text-white font-semibold py-3 rounded-full hover:bg-[#d10fa3] transition-colors duration-200 disabled:opacity-50"
-          >
-            {loading ? 'Creating account...' : 'Create Account'}
-          </button>
-
-          <p className="text-center text-[#999] text-sm mt-6">
-            Already have an account?{' '}
-            <Link
-              href="/auth/signin"
-              className="text-[#14EAEA] hover:underline"
-            >
-              Sign in
-            </Link>
-          </p>
-        </form>
+        <p className="text-white/15 text-[10px] mt-4">
+          Redirecting to homepage...
+        </p>
       </div>
     </div>
   )

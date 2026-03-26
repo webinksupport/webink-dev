@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import EditableImage from '@/components/editor/EditableImage'
 
 const testimonials = [
   {
@@ -204,11 +205,14 @@ export default function TestimonialsI() {
             className="overflow-hidden rounded-2xl shadow-xl"
           >
             <div className="relative h-[200px]">
-              <Image
+              <EditableImage
+                pageSlug="home"
+                blockKey="testimonials_photo_1"
                 src="/images/photos/team-kelley.jpg"
                 alt="Webink Solutions team member Kelley — Sarasota digital marketing"
                 fill
                 className="object-cover"
+                style={{ objectPosition: 'top center' }}
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>
@@ -221,11 +225,14 @@ export default function TestimonialsI() {
             className="overflow-hidden rounded-2xl shadow-xl"
           >
             <div className="relative h-[200px]">
-              <Image
+              <EditableImage
+                pageSlug="home"
+                blockKey="testimonials_photo_2"
                 src="/images/photoshoot/DSC04488.jpg"
                 alt="Webink Solutions professional team photo — client results"
                 fill
                 className="object-cover"
+                style={{ objectPosition: 'top center' }}
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>
@@ -238,11 +245,14 @@ export default function TestimonialsI() {
             className="overflow-hidden rounded-2xl shadow-xl"
           >
             <div className="relative h-[200px]">
-              <Image
+              <EditableImage
+                pageSlug="home"
+                blockKey="testimonials_photo_3"
                 src="/images/photos/team-family.jpg"
                 alt="The Webink Solutions family — Sarasota based digital agency team"
                 fill
                 className="object-cover"
+                style={{ objectPosition: 'top center' }}
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>

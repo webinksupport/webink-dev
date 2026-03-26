@@ -2,12 +2,24 @@ import Stripe from 'stripe'
 import { getSetting } from './settings'
 
 let _stripe: Stripe | null = null
+let _lastTestMode: string | null = null
 
 export async function getStripeAsync(): Promise<Stripe> {
+  const testMode = await getSetting('STRIPE_TEST_MODE')
+  const isTestMode = testMode === 'true'
+
+  // Reset cached client if test mode changed
+  if (_stripe && _lastTestMode !== null && _lastTestMode !== (testMode ?? 'false')) {
+    _stripe = null
+  }
+  _lastTestMode = testMode ?? 'false'
+
   if (!_stripe) {
-    const secretKey = await getSetting('STRIPE_SECRET_KEY')
+    const keyName = isTestMode ? 'STRIPE_TEST_SECRET_KEY' : 'STRIPE_SECRET_KEY'
+    const secretKey = await getSetting(keyName)
     if (!secretKey) {
-      throw new Error('STRIPE_SECRET_KEY is not set in environment variables or database')
+      const modeLabel = isTestMode ? 'Test' : 'Live'
+      throw new Error(`Stripe ${modeLabel} Secret Key is not configured. Please add it in Settings > Integrations.`)
     }
     _stripe = new Stripe(secretKey, {
       apiVersion: '2026-02-25.clover',

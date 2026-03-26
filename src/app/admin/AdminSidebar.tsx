@@ -8,6 +8,7 @@ import {
   Package,
   Users,
   ShoppingCart,
+  CreditCard,
   FileText,
   Image,
   Plug,
@@ -15,6 +16,8 @@ import {
   X,
   MenuSquare,
   Files,
+  Target,
+  Share2,
 } from 'lucide-react'
 
 const navSections = [
@@ -24,7 +27,9 @@ const navSections = [
       { href: '/admin', label: 'Overview', icon: LayoutDashboard },
       { href: '/admin/products', label: 'Products', icon: Package },
       { href: '/admin/customers', label: 'Customers', icon: Users },
+      { href: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
       { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+      { href: '/admin/leads', label: 'Leads', icon: Target },
     ],
   },
   {
@@ -34,6 +39,12 @@ const navSections = [
       { href: '/admin/content', label: 'Page Editor', icon: FileText },
       { href: '/admin/menu', label: 'Menu', icon: MenuSquare },
       { href: '/admin/media', label: 'Media Library', icon: Image },
+    ],
+  },
+  {
+    title: 'Social Media',
+    items: [
+      { href: '/admin/social', label: 'Social Studio', icon: Share2 },
     ],
   },
   {

@@ -2,6 +2,8 @@
 import Image from 'next/image'
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import EditableText from '@/components/editor/EditableText'
+import EditableImage from '@/components/editor/EditableImage'
 
 export default function AboutI() {
   const sectionRef = useRef<HTMLElement>(null)
@@ -39,11 +41,14 @@ export default function AboutI() {
               className="overflow-hidden rounded-[24px] shadow-2xl"
             >
               <div className="relative h-[500px] lg:h-[680px]">
-                <Image
+                <EditableImage
+                  pageSlug="home"
+                  blockKey="about_image"
                   src="/images/photoshoot/DSC05056-Edit-Edit.jpg"
                   alt="Webink Solutions workspace — Sarasota digital marketing agency"
                   fill
-                  className="object-cover object-center"
+                  className="object-cover"
+                  style={{ objectPosition: 'center' }}
                   sizes="(max-width: 1024px) 100vw, 40vw"
                 />
                 {/* Subtle bottom gradient */}
@@ -90,12 +95,20 @@ export default function AboutI() {
                 <span className="text-[#F813BE]">Agency.</span>
               </h2>
 
-              <p className="font-urbanist text-[#333]/60 text-xl leading-relaxed mb-6">
-                Sean Rowe founded Webink Solutions in Sarasota with a simple conviction: local businesses deserve world-class digital marketing — and the results to prove it.
-              </p>
-              <p className="font-urbanist text-[#333]/40 text-lg leading-relaxed mb-10">
-                We&apos;re a full-service digital agency serving Sarasota, Tampa, and Bradenton. No outsourcing. No cookie-cutter strategies. Just real work, real relationships, and real growth.
-              </p>
+              <EditableText
+                as="p"
+                pageSlug="home"
+                blockKey="about_body"
+                defaultValue="Sean Rowe founded Webink Solutions in Sarasota with a simple conviction: local businesses deserve world-class digital marketing — and the results to prove it."
+                className="font-urbanist text-[#333]/60 text-xl leading-relaxed mb-6"
+              />
+              <EditableText
+                as="p"
+                pageSlug="home"
+                blockKey="about_body_2"
+                defaultValue="We're a full-service digital agency serving Sarasota, Tampa, and Bradenton. No outsourcing. No cookie-cutter strategies. Just real work, real relationships, and real growth."
+                className="font-urbanist text-[#333]/40 text-lg leading-relaxed mb-10"
+              />
 
               {/* 3-step process */}
               <div className="space-y-6 mb-12">

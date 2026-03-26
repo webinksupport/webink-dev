@@ -6,6 +6,9 @@ import { prisma } from '@/lib/prisma'
 // All known setting keys and whether they are secrets
 const SETTING_DEFS: Record<string, { isSecret: boolean }> = {
   // Payments
+  STRIPE_TEST_MODE: { isSecret: false },
+  STRIPE_TEST_PUBLISHABLE_KEY: { isSecret: false },
+  STRIPE_TEST_SECRET_KEY: { isSecret: true },
   STRIPE_PUBLISHABLE_KEY: { isSecret: false },
   STRIPE_SECRET_KEY: { isSecret: true },
   STRIPE_WEBHOOK_SECRET: { isSecret: true },

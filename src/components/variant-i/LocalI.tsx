@@ -67,6 +67,7 @@ export default function LocalI() {
               width={800}
               height={600}
               className="w-full h-auto object-cover"
+              style={{ objectPosition: 'top center' }}
             />
           </motion.div>
         </div>

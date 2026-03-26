@@ -1,12 +1,21 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import EditableText from '@/components/editor/EditableText'
 
-const stats = [
+interface StatData {
+  value: number
+  suffix: string
+  label: string
+  sublabel: string
+  underlineColor: string
+}
+
+const defaultStats: StatData[] = [
   { value: 50, suffix: '+', label: 'Clients Served', sublabel: 'Across Florida', underlineColor: '#14EAEA' },
   { value: 6, suffix: '+', label: 'Years in Business', sublabel: 'Est. in Sarasota', underlineColor: '#F813BE' },
-  { value: 300, suffix: '%', label: 'Avg Traffic Growth', sublabel: 'For our SEO clients', underlineColor: '#B9FF33' },
-  { value: 5, suffix: '★', label: 'Google Rating', sublabel: '50+ five-star reviews', underlineColor: '#14EAEA' },
+  { value: 200, suffix: '%+', label: 'Avg Traffic Growth', sublabel: 'For our SEO clients', underlineColor: '#B9FF33' },
+  { value: 5.0, suffix: '★', label: 'Google Rating', sublabel: '50+ five-star reviews', underlineColor: '#14EAEA' },
 ]
 
 function useCountUp(target: number, duration: number, active: boolean) {
@@ -74,16 +83,21 @@ function StatCard({ value, suffix, label, sublabel, delay, underlineColor }: {
   )
 }
 
-export default function StatsI() {
+export default function StatsI({ stats }: { stats?: StatData[] }) {
+  // Only use DB stats if they contain non-zero values (prevents showing "0+" from empty DB)
+  const hasValidStats = stats && stats.length > 0 && stats.some(s => s.value > 0)
+  const displayStats = hasValidStats ? stats : defaultStats
+
   return (
     <section id="results" className="relative bg-[#0F0F0F] py-24 lg:py-36 overflow-hidden">
       {/* Background photo */}
       <div className="absolute inset-0">
         <Image
-          src="/images/photoshoot/_UTA4035-Edit.jpg"
+          src="/images/photoshoot/_UTA4057.jpg"
           alt=""
           fill
           className="object-cover opacity-10"
+          style={{ objectPosition: 'center' }}
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-[#0F0F0F]/80" />
@@ -109,15 +123,19 @@ export default function StatsI() {
               <span className="text-[#14EAEA]">Don&apos;t Lie.</span>
             </h2>
           </div>
-          <p className="font-urbanist text-white/40 text-lg leading-relaxed max-w-sm lg:text-right">
-            Six years of building digital foundations for Southwest Florida businesses. Here&apos;s what that looks like.
-          </p>
+          <EditableText
+            as="p"
+            pageSlug="home"
+            blockKey="stats_subtext"
+            defaultValue="Six years of building digital foundations for Southwest Florida businesses. Here's what that looks like."
+            className="font-urbanist text-white/40 text-lg leading-relaxed max-w-sm lg:text-right"
+          />
         </div>
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-16">
-          {stats.map((s, i) => (
-            <StatCard key={s.label} {...s} delay={i * 100} underlineColor={s.underlineColor} />
+          {displayStats.map((s, i) => (
+            <StatCard key={s.label} {...s} delay={i * 100} />
           ))}
         </div>
 

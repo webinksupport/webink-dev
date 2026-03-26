@@ -5,11 +5,11 @@ import Link from 'next/link'
 const footerLinks = {
   Services: [
     { label: 'Web Design', href: '/services/web-design' },
-    { label: 'SEO Services', href: '/services/sarasota-seo' },
-    { label: 'Digital Marketing', href: '/services/ppc-management-sarasota' },
-    { label: 'Social Media', href: '/services/social-media-marketing' },
+    { label: 'SEO Services', href: '/services/seo' },
+    { label: 'Paid Advertising', href: '/services/paid-advertising' },
+    { label: 'Social Media', href: '/services/social-media' },
     { label: 'Web Hosting', href: '/services/web-hosting' },
-    { label: 'Short Form Video', href: '/services' },
+    { label: 'AI Marketing', href: '/services/ai-marketing' },
   ],
   Company: [
     { label: 'About Us', href: '/about' },

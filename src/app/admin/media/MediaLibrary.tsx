@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import Image from 'next/image'
 import {
   Upload,
   Search,
@@ -146,22 +145,17 @@ function DetailPanel({
       >
         {/* Image preview */}
         <div className="flex-1 bg-[#0A0A0A] flex items-center justify-center min-h-[200px] md:min-h-[300px] p-4 md:p-6 md:rounded-l-2xl">
-          {file.name.endsWith('.svg') ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={file.path}
-              alt={file.altText || file.name}
-              className="max-w-full max-h-[50vh] object-contain"
-            />
-          ) : (
-            <Image
-              src={file.path}
-              alt={file.altText || file.name}
-              width={800}
-              height={600}
-              className="max-w-full max-h-[50vh] object-contain"
-            />
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={file.path}
+            alt={file.altText || file.name}
+            className="max-w-full max-h-[50vh] object-contain"
+            onError={(e) => {
+              const img = e.target as HTMLImageElement
+              img.style.display = 'none'
+              img.parentElement?.insertAdjacentHTML('beforeend', '<div class="text-white/30 text-sm">Image not found</div>')
+            }}
+          />
         </div>
 
         {/* Info panel */}
@@ -737,22 +731,13 @@ export default function MediaLibrary() {
                   className="relative h-36 bg-[#111]"
                   onClick={() => setSelectedFile(file)}
                 >
-                  {file.name.endsWith('.svg') ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={file.path}
-                      alt={file.altText || file.name}
-                      className="w-full h-full object-contain p-4"
-                    />
-                  ) : (
-                    <Image
-                      src={file.path}
-                      alt={file.altText || file.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                    />
-                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={file.path}
+                    alt={file.altText || file.name}
+                    className={`w-full h-full ${file.name.endsWith('.svg') ? 'object-contain p-4' : 'object-cover'}`}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
 
                   {/* Hover overlay with filename + size */}
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
@@ -820,22 +805,13 @@ export default function MediaLibrary() {
                     </td>
                     <td className="p-3">
                       <div className="w-10 h-10 rounded bg-[#111] overflow-hidden">
-                        {file.name.endsWith('.svg') ? (
-                          /* eslint-disable-next-line @next/next/no-img-element */
-                          <img
-                            src={file.path}
-                            alt={file.name}
-                            className="w-full h-full object-contain p-1"
-                          />
-                        ) : (
-                          <Image
-                            src={file.path}
-                            alt={file.name}
-                            width={40}
-                            height={40}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={file.path}
+                          alt={file.name}
+                          className={`w-full h-full ${file.name.endsWith('.svg') ? 'object-contain p-1' : 'object-cover'}`}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                        />
                       </div>
                     </td>
                     <td className="p-3">

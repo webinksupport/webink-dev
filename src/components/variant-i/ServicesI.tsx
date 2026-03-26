@@ -60,6 +60,7 @@ const processPanels = [
     title: 'Audit & Strategy',
     desc: 'We start by reviewing your current digital presence — website, SEO, ads, and social. We map gaps, find opportunities, and build a clear strategy before spending a single dollar.',
     image: '/images/photos/workspace-dark.jpg',
+    objectPosition: 'center',
   },
   {
     num: '02',
@@ -67,6 +68,7 @@ const processPanels = [
     title: 'Design & Build',
     desc: 'Every design decision is tied to conversion. We build fast, modern websites and launch campaigns that are engineered to perform — not just to look good.',
     image: '/images/digital-workspace-flatlay.png',
+    objectPosition: 'center',
   },
   {
     num: '03',
@@ -74,6 +76,7 @@ const processPanels = [
     title: 'Launch & Optimize',
     desc: 'We launch with precision and monitor everything. Real-time dashboards, A/B testing, and continuous refinement mean your results compound over time.',
     image: '/images/photos/tech-laptop.jpg',
+    objectPosition: 'center',
   },
   {
     num: '04',
@@ -81,6 +84,7 @@ const processPanels = [
     title: 'Measure & Grow',
     desc: 'Monthly reporting with zero jargon. You see exactly what\'s working, what\'s not, and what\'s next. No smoke and mirrors — just clear data and real results.',
     image: '/images/photos/sean-street.jpg',
+    objectPosition: 'top center',
   },
 ]
 
@@ -262,21 +266,16 @@ function HorizontalProcess() {
                   </p>
                 </div>
 
-                {/* Image side */}
+                {/* Image side — no whileInView here; GSAP horizontal scroll prevents IntersectionObserver from firing */}
                 <div className="relative hidden lg:block h-[420px]">
-                  <motion.div
-                    initial={{ scale: 0.92, opacity: 0, y: 20 }}
-                    whileInView={{ scale: 1, opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    viewport={{ once: true, margin: '-80px' }}
-                    className="w-full h-full rounded-[24px] overflow-hidden shadow-xl"
-                  >
+                  <div className="w-full h-full rounded-[24px] overflow-hidden shadow-xl">
                     <div className="relative w-full h-full">
                       <Image
                         src={panel.image}
                         alt={panel.title + ' — Webink Solutions process'}
                         fill
                         className="object-cover"
+                        style={{ objectPosition: panel.objectPosition }}
                         sizes="50vw"
                       />
                       {/* Accent bottom line */}
@@ -285,7 +284,7 @@ function HorizontalProcess() {
                         style={{ backgroundColor: panel.numColor }}
                       />
                     </div>
-                  </motion.div>
+                  </div>
                 </div>
               </div>
             </div>

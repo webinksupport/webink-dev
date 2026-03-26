@@ -1,23 +1,32 @@
 'use client'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
+import EditableText from '@/components/editor/EditableText'
+import EditableBackground, { type BackgroundData } from '@/components/editor/EditableBackground'
 
-export default function CTAI() {
+interface CTAIProps {
+  ctaBgData?: Partial<BackgroundData>
+}
+
+export default function CTAI({ ctaBgData }: CTAIProps = {}) {
   return (
     <section
       id="contact"
       className="bg-[#0A0A0A] py-32 lg:py-44 relative overflow-hidden"
     >
-      {/* Background photo */}
-      <div className="absolute inset-0">
-        <Image
-          src="/images/photos/baja-beach.jpg"
-          alt=""
-          fill
-          className="object-cover opacity-[0.07]"
-          sizes="100vw"
-        />
-      </div>
+      {/* Editable background photo */}
+      <EditableBackground
+        pageSlug="home"
+        blockKey="cta_bg"
+        defaultSrc="/images/photos/baja-beach.jpg"
+        defaultOverlayOpacity={0}
+        defaultPosition="center"
+        cmsData={ctaBgData}
+        imageClassName="object-cover opacity-[0.07]"
+        imageProps={{ quality: 75, sizes: '100vw' }}
+        className="absolute inset-0"
+      >
+        <span />
+      </EditableBackground>
 
       {/* Subtle radial gradient wash */}
       <div
@@ -59,20 +68,24 @@ export default function CTAI() {
             Your Business?
           </h2>
 
-          <p className="font-urbanist text-white/45 text-xl leading-relaxed mb-14 max-w-2xl mx-auto">
-            Free audit. No commitment. We&apos;ll review your website, SEO, and digital presence — and show you exactly what&apos;s holding you back.
-          </p>
+          <EditableText
+            as="p"
+            pageSlug="home"
+            blockKey="cta_subtext"
+            defaultValue="Free audit. No commitment. We'll review your website, SEO, and digital presence — and show you exactly what's holding you back."
+            className="font-urbanist text-white/45 text-xl leading-relaxed mb-14 max-w-2xl mx-auto"
+          />
 
           <div className="flex flex-wrap gap-5 justify-center">
             <a
-              href="https://webink.solutions/contact"
+              href="/contact"
               className="group inline-flex items-center gap-3 font-urbanist font-bold text-base px-10 py-5 bg-[#14EAEA] text-[#0A0A0A] rounded-full hover:bg-white transition-all duration-300 shadow-lg shadow-[#14EAEA]/20"
             >
               Get a Free Audit
               <span className="w-7 h-7 rounded-full bg-[#0A0A0A] text-[#14EAEA] group-hover:bg-[#14EAEA] group-hover:text-[#0A0A0A] flex items-center justify-center text-sm font-black transition-all duration-300">→</span>
             </a>
             <a
-              href="https://webink.solutions/portfolio"
+              href="/services"
               className="inline-flex items-center gap-3 font-urbanist font-bold text-base px-10 py-5 border-2 border-white/15 text-white rounded-full hover:border-[#14EAEA]/50 transition-all duration-300"
             >
               View Our Work

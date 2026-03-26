@@ -32,7 +32,7 @@ interface Product {
   slug: string
   description: string
   category: string
-  type: 'ONE_TIME' | 'SUBSCRIPTION'
+  type: 'ONE_TIME' | 'SUBSCRIPTION' | 'SIMPLE' | 'VARIABLE' | 'VARIABLE_SUBSCRIPTION'
   active: boolean
   sortOrder: number
   variants: ProductVariant[]
@@ -54,12 +54,9 @@ const FALLBACK_PRODUCTS: Product[] = [
     active: true,
     sortOrder: 0,
     variants: [
-      { id: 'fb-h1', productId: 'fb-hosting', name: 'Starter', priceMonthly: 3100, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 0 },
-      { id: 'fb-h2', productId: 'fb-hosting', name: 'Basic', priceMonthly: 3900, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 1 },
-      { id: 'fb-h3', productId: 'fb-hosting', name: 'Standard', priceMonthly: 5900, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 2 },
-      { id: 'fb-h4', productId: 'fb-hosting', name: 'Pro', priceMonthly: 6100, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 3 },
-      { id: 'fb-h5', productId: 'fb-hosting', name: 'Advanced', priceMonthly: 6900, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 4 },
-      { id: 'fb-h6', productId: 'fb-hosting', name: 'Premium', priceMonthly: 8900, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 5 },
+      { id: 'fb-h1', productId: 'fb-hosting', name: 'Basic - Monthly', priceMonthly: 3100, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 0 },
+      { id: 'fb-h2', productId: 'fb-hosting', name: 'Pro - Monthly', priceMonthly: 3900, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 1 },
+      { id: 'fb-h3', productId: 'fb-hosting', name: 'Ultimate - Monthly', priceMonthly: 5900, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 2 },
     ],
   },
   {
@@ -89,18 +86,17 @@ const FALLBACK_PRODUCTS: Product[] = [
     active: true,
     sortOrder: 2,
     variants: [
-      { id: 'fb-sm1', productId: 'fb-social', name: 'Entry', priceMonthly: 49300, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 0 },
-      { id: 'fb-sm2', productId: 'fb-social', name: 'Basic', priceMonthly: 61300, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 1 },
-      { id: 'fb-sm3', productId: 'fb-social', name: 'Standard', priceMonthly: 73300, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 2 },
-      { id: 'fb-sm4', productId: 'fb-social', name: 'Pro', priceMonthly: 79300, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 3 },
+      { id: 'fb-sm1', productId: 'fb-social', name: 'Basic', priceMonthly: 49300, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 0 },
+      { id: 'fb-sm2', productId: 'fb-social', name: 'Pro', priceMonthly: 79300, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 1 },
+      { id: 'fb-sm3', productId: 'fb-social', name: 'Ultimate', priceMonthly: 99300, priceAnnual: null, priceOneTime: null, salePrice: null, billingInterval: 'MONTHLY', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 2 },
     ],
   },
   {
     id: 'fb-lsa',
-    name: 'Google LSA Management',
+    name: 'Google Local Service Ads (LSA) Management & Optimization',
     slug: 'google-lsa-management',
     description:
-      'Google Local Service Ads setup and ongoing management to drive high-intent local leads.',
+      'Secure top-of-Google placement and qualified leads with professional management of your Local Service Ads.',
     category: 'other',
     type: 'SUBSCRIPTION',
     active: true,
@@ -134,13 +130,13 @@ const FALLBACK_PRODUCTS: Product[] = [
     active: true,
     sortOrder: 5,
     variants: [
-      { id: 'fb-sp1', productId: 'fb-seoprimer', name: 'SEO Primer Package', priceMonthly: null, priceAnnual: null, priceOneTime: 55300, salePrice: null, billingInterval: 'ONE_TIME', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 0 },
+      { id: 'fb-sp1', productId: 'fb-seoprimer', name: 'SEO Primer', priceMonthly: null, priceAnnual: null, priceOneTime: 65300, salePrice: 55300, billingInterval: 'ONE_TIME', stripePriceId: null, stripeProductId: null, contactOnly: false, active: true, sortOrder: 0 },
     ],
   },
   {
     id: 'fb-ppc',
-    name: 'Paid Advertising (PPC)',
-    slug: 'paid-advertising-ppc',
+    name: 'Paid Advertising',
+    slug: 'paid-advertising',
     description:
       'Expert pay-per-click campaign management across Google Ads, Meta Ads, and more. Custom pricing based on ad spend and goals.',
     category: 'other',
@@ -609,6 +605,7 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
             alt=""
             fill
             className="object-cover opacity-10"
+            style={{ objectPosition: 'center' }}
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-[#0F0F0F]/80" />
@@ -627,6 +624,7 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
                 alt="Sean Rowe — founder of Webink Solutions, ready to help grow your business"
                 fill
                 className="object-cover"
+                style={{ objectPosition: 'top center' }}
                 sizes="33vw"
               />
             </div>

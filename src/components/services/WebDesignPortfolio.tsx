@@ -6,9 +6,9 @@ import { motion } from 'framer-motion'
 const ease = [0.25, 0.46, 0.45, 0.94]
 
 const portfolioItems = [
-  { src: '/images/portfolio/Home.png', alt: 'Webink Solutions homepage design — modern web design Sarasota' },
-  { src: '/images/portfolio/about.png', alt: 'About page design — Sarasota web design agency portfolio' },
-  { src: '/images/portfolio/services.png', alt: 'Services page design — custom web development Tampa FL' },
+  { src: '/images/portfolio/showcase.jpg', alt: 'Webink Solutions homepage design — modern web design Sarasota' },
+  { src: '/images/portfolio/bca.jpg', alt: 'About page design — Sarasota web design agency portfolio' },
+  { src: '/images/portfolio/ankle.jpg', alt: 'Services page design — custom web development Tampa FL' },
 ]
 
 export default function WebDesignPortfolio() {
@@ -53,6 +53,7 @@ export default function WebDesignPortfolio() {
                   width={800}
                   height={600}
                   className="w-full h-full object-cover"
+                  style={{ objectPosition: 'center' }}
                 />
               </motion.div>
             ))}
@@ -77,6 +78,7 @@ export default function WebDesignPortfolio() {
                 width={800}
                 height={600}
                 className="w-full h-auto object-cover"
+                style={{ objectPosition: 'center' }}
               />
             </motion.div>
 

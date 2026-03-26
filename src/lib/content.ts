@@ -17,3 +17,23 @@ export async function getPageContent(pageSlug: string): Promise<Record<string, s
     return {}
   }
 }
+
+export async function getPageJsonContent(pageSlug: string): Promise<Record<string, unknown>> {
+  try {
+    const blocks = await prisma.pageContent.findMany({
+      where: { pageSlug },
+    })
+
+    const content: Record<string, unknown> = {}
+    for (const block of blocks) {
+      if (block.jsonValue !== null && block.jsonValue !== undefined) {
+        content[block.blockKey] = block.jsonValue
+      } else {
+        content[block.blockKey] = block.value
+      }
+    }
+    return content
+  } catch {
+    return {}
+  }
+}

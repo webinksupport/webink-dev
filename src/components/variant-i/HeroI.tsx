@@ -2,12 +2,16 @@
 import { useRef } from 'react'
 import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import EditableText from '@/components/editor/EditableText'
+import EditableImage from '@/components/editor/EditableImage'
+import EditableBackground, { type BackgroundData } from '@/components/editor/EditableBackground'
 
 interface HeroIProps {
   content?: Record<string, string>
+  heroBgData?: Partial<BackgroundData>
 }
 
-export default function HeroI({ content }: HeroIProps = {}) {
+export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
   const sectionRef = useRef<HTMLElement>(null)
 
   const { scrollYProgress } = useScroll({
@@ -23,27 +27,26 @@ export default function HeroI({ content }: HeroIProps = {}) {
     <section
       ref={sectionRef}
       className="relative min-h-screen overflow-hidden bg-[#0F0F0F]"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/images/photos/baja-beach.jpg'), radial-gradient(ellipse at 30% 50%, rgba(20,234,234,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(248,19,190,0.05) 0%, transparent 60%)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
     >
-      {/* Baja beach full-bleed background with parallax */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          style={{ y: bgY }}
-          className="absolute inset-0 h-[130%] top-[-15%]"
-        >
-          <Image
-            src="/images/photos/baja-beach.jpg"
-            alt="Baja beach — Webink Solutions Sarasota digital marketing"
-            fill
-            priority
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-        </motion.div>
-        {/* Single clean dark overlay for readability */}
-        <div className="absolute inset-0 bg-black/55" />
+      {/* Baja beach full-bleed background with parallax + editable background */}
+      <EditableBackground
+        pageSlug="home"
+        blockKey="hero_bg"
+        defaultSrc="/images/photos/baja-beach.jpg"
+        defaultOverlayOpacity={0.55}
+        defaultPosition="center"
+        cmsData={heroBgData}
+        imageProps={{ priority: true, quality: 75, sizes: '100vw' }}
+        className="absolute inset-0 overflow-hidden"
+      >
         {/* Subtle gradient — darker bottom for strip transition */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/70" />
-      </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/70 z-[1]" />
+      </EditableBackground>
 
       {/* Hero text content */}
       <motion.div
@@ -65,11 +68,10 @@ export default function HeroI({ content }: HeroIProps = {}) {
 
         {/* Main headline */}
         <motion.h1
-          className="font-urbanist font-black text-white leading-[0.88] mb-8"
+          className="font-urbanist font-black text-white leading-[0.88] mb-8 max-w-full md:max-w-[55%]"
           style={{
-            fontSize: 'clamp(3.5rem, 9vw, 9rem)',
+            fontSize: 'clamp(2.5rem, 9vw, 9rem)',
             letterSpacing: '-0.04em',
-            maxWidth: '55%',
           }}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -79,18 +81,18 @@ export default function HeroI({ content }: HeroIProps = {}) {
             const headline = content?.hero_headline || 'Websites That Work.\nMarketing That Converts.'
             const lines = headline.split('\n')
             return lines.map((line, i) => (
-              <span key={i}>
+              <span key={i} style={{ whiteSpace: 'nowrap' }}>
                 {i === 0 ? (
-                  <>
-                    {line.replace(/\.$/, '')}{' '}
-                    <span className="relative inline-block">
+                  <span style={{ whiteSpace: 'nowrap' }}>
+                    {line.replace(/\.$/, '')}
+                    <span className="relative inline-block" style={{ whiteSpace: 'nowrap' }}>
                       {line.endsWith('.') ? '.' : ''}
                       <span
                         className="absolute inset-x-0 bottom-0 h-[8px] bg-[#14EAEA] origin-left"
                         style={{ animation: 'highlightSweep 0.7s cubic-bezier(0.4,0,0.2,1) 1.1s forwards', transform: 'scaleX(0)', bottom: '6px' }}
                       />
                     </span>
-                  </>
+                  </span>
                 ) : line}
                 {i < lines.length - 1 && <br />}
               </span>
@@ -99,14 +101,20 @@ export default function HeroI({ content }: HeroIProps = {}) {
         </motion.h1>
 
         {/* Sub-headline */}
-        <motion.p
-          className="font-urbanist text-white/55 text-xl leading-relaxed mb-12 max-w-lg"
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.55 }}
         >
-          {content?.hero_subtext || 'Web design, SEO, and digital marketing for local businesses in Sarasota, Tampa & Bradenton. Real results, real relationships.'}
-        </motion.p>
+          <EditableText
+            as="p"
+            pageSlug="home"
+            blockKey="hero_subtext"
+            value={content?.hero_subtext}
+            defaultValue="Web design, SEO, and digital marketing for local businesses in Sarasota, Tampa & Bradenton. Real results, real relationships."
+            className="font-urbanist text-white/55 text-xl leading-relaxed mb-12 max-w-lg"
+          />
+        </motion.div>
 
         {/* CTAs */}
         <motion.div
@@ -116,10 +124,16 @@ export default function HeroI({ content }: HeroIProps = {}) {
           transition={{ duration: 0.7, delay: 0.7 }}
         >
           <a
-            href="#contact"
+            href={content?.hero_cta_link || '/pricing'}
             className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-5 bg-[#14EAEA] text-[#0F0F0F] rounded-full hover:bg-white transition-all duration-300 shadow-lg"
           >
-            {content?.hero_cta_text || 'Get a Free Audit'} →
+            <EditableText
+              as="span"
+              pageSlug="home"
+              blockKey="hero_cta_text"
+              value={content?.hero_cta_text}
+              defaultValue="Get Started"
+            /> →
           </a>
           <a
             href="#services"
@@ -131,7 +145,7 @@ export default function HeroI({ content }: HeroIProps = {}) {
 
         {/* Card fan hero image — right side, vertically centered */}
         <div
-          className="absolute hidden md:block"
+          className="absolute hidden lg:block pointer-events-none"
           style={{ right: '4%', top: '50%', marginTop: '-290px', width: '460px', height: '580px', overflow: 'visible' }}
         >
           {/* Card 1 — Cyan background card (fans in then fully tucks BEHIND photo) */}
@@ -180,12 +194,16 @@ export default function HeroI({ content }: HeroIProps = {}) {
             animate={{ opacity: 1, x: 0, rotate: 0 }}
             transition={{ duration: 1, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <Image
+            <EditableImage
+              pageSlug="home"
+              blockKey="hero_card_image"
               src="/images/photos/baja-6.jpg"
               alt="Baja California beach — Webink Solutions Sarasota digital marketing"
               fill
               priority
-              className="object-cover object-center"
+              quality={75}
+              className="object-cover"
+              style={{ objectPosition: 'center' }}
               sizes="460px"
             />
             {/* Subtle vignette */}
@@ -201,9 +219,11 @@ export default function HeroI({ content }: HeroIProps = {}) {
             transition={{ duration: 0.6, delay: 1.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             {/* White logo PNG — mix-blend-mode screen on dark bg = transparent background, logo glows */}
-            <img
+            <Image
               src="/images/logos/webink-white.png"
               alt="Webink Solutions logo"
+              width={340}
+              height={85}
               className="w-full block"
               style={{
                 mixBlendMode: 'screen',

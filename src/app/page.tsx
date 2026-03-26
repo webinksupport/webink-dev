@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+import type { BackgroundData } from '@/components/editor/EditableBackground'
 import NavI from '@/components/variant-i/NavI'
 import HeroI from '@/components/variant-i/HeroI'
 import MarqueeI from '@/components/variant-i/MarqueeI'
@@ -10,45 +12,128 @@ import TestimonialsI from '@/components/variant-i/TestimonialsI'
 import PricingI from '@/components/variant-i/PricingI'
 import CTAI from '@/components/variant-i/CTAI'
 import FooterI from '@/components/variant-i/FooterI'
-import { getPageContent } from '@/lib/content'
+import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
+import { getPageContent, getPageJsonContent } from '@/lib/content'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
-export const metadata = {
-  title: 'Digital Marketing Agency Sarasota | Webink Solutions',
+export const metadata: Metadata = {
+  title: 'Sarasota Web Design & Digital Marketing Agency | Webink Solutions',
   description:
     'Webink Solutions is Sarasota\'s premiere digital marketing agency — web design, SEO, paid ads, social media & hosting for local businesses in Sarasota, Tampa & Bradenton, FL.',
+  keywords: ['Sarasota web design', 'digital marketing Sarasota', 'web design Florida', 'SEO Sarasota', 'social media marketing Sarasota', 'web hosting Sarasota'],
   openGraph: {
-    title: 'Digital Marketing Agency Sarasota | Webink Solutions',
+    title: 'Sarasota Web Design & Digital Marketing Agency | Webink Solutions',
     description:
       'Web design, SEO, and digital marketing for local businesses in Sarasota, Tampa & Bradenton. Real results from a local team.',
+    url: 'https://webink.solutions',
     type: 'website',
     locale: 'en_US',
     siteName: 'Webink Solutions',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Digital Marketing Agency Sarasota | Webink Solutions',
+    title: 'Sarasota Web Design & Digital Marketing | Webink Solutions',
   },
+  alternates: {
+    canonical: 'https://webink.solutions',
+  },
+}
+
+function JsonLd() {
+  const localBusiness = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': 'https://webink.solutions/#business',
+    name: 'Webink Solutions',
+    image: 'https://webink.solutions/images/webink-logo.png',
+    url: 'https://webink.solutions',
+    telephone: '+19418401381',
+    email: 'hello@webink.solutions',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '1609 Georgetowne Blvd',
+      addressLocality: 'Sarasota',
+      addressRegion: 'FL',
+      postalCode: '34232',
+      addressCountry: 'US',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: 27.3364,
+      longitude: -82.5307,
+    },
+    areaServed: [
+      { '@type': 'City', name: 'Sarasota', '@id': 'https://en.wikipedia.org/wiki/Sarasota,_Florida' },
+      { '@type': 'City', name: 'Tampa' },
+      { '@type': 'City', name: 'Bradenton' },
+    ],
+    sameAs: [
+      'https://www.facebook.com/WebInkSolutionsLLC',
+      'https://www.instagram.com/webinksolutions',
+      'https://www.linkedin.com/company/webink-solutions-llc',
+      'https://twitter.com/WebinkSolutions',
+    ],
+    openingHoursSpecification: {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      opens: '09:00',
+      closes: '17:00',
+    },
+    priceRange: '$$',
+  }
+
+  const organization = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Webink Solutions',
+    legalName: 'Webink Solutions LLC',
+    url: 'https://webink.solutions',
+    logo: 'https://webink.solutions/images/webink-logo.png',
+    foundingDate: '2019',
+    founder: {
+      '@type': 'Person',
+      name: 'Sean Rowe',
+    },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      telephone: '+19418401381',
+      contactType: 'sales',
+      email: 'hello@webink.solutions',
+      areaServed: 'US',
+      availableLanguage: 'English',
+    },
+  }
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusiness) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
+    </>
+  )
 }
 
 export default async function HomePage() {
   const content = await getPageContent('home')
+  const jsonContent = await getPageJsonContent('home')
 
   return (
-    <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
-      <NavI />
-      <HeroI content={content} />
-      <MarqueeI />
-      <ServicesI />
-      <AboutI />
-      <FounderI />
-      <LocalI />
-      <StatsI />
-      <TestimonialsI />
-      <PricingI />
-      <CTAI />
-      <FooterI />
-    </main>
+    <PageEditorWrapper pageSlug="home">
+      <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
+        <JsonLd />
+        <NavI />
+        <HeroI content={content} heroBgData={jsonContent.hero_bg as Partial<BackgroundData> | undefined} />
+        <MarqueeI />
+        <ServicesI />
+        <AboutI />
+        <FounderI />
+        <LocalI />
+        <StatsI stats={jsonContent.stats as Array<{ value: number; suffix: string; label: string; sublabel: string; underlineColor: string }> | undefined} />
+        <TestimonialsI />
+        <PricingI />
+        <CTAI ctaBgData={jsonContent.cta_bg as Partial<BackgroundData> | undefined} />
+        <FooterI />
+      </main>
+    </PageEditorWrapper>
   )
 }

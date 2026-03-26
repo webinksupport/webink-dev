@@ -11,14 +11,18 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name } = await request.json()
+    const { name, phone } = await request.json()
+
+    const data: Record<string, string | null> = {}
+    if (name !== undefined) data.name = name || null
+    if (phone !== undefined) data.phone = phone || null
 
     const user = await prisma.user.update({
       where: { id: session.user.id },
-      data: { name: name || null },
+      data,
     })
 
-    return NextResponse.json({ name: user.name })
+    return NextResponse.json({ name: user.name, phone: user.phone })
   } catch {
     return NextResponse.json(
       { error: 'Failed to update profile' },

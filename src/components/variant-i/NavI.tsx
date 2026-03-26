@@ -13,13 +13,14 @@ const defaultServiceLinks = [
   { label: 'Paid Advertising', href: '/services/paid-advertising', desc: 'Google Ads & Meta campaigns for ROI' },
   { label: 'AI-Powered Marketing', href: '/services/ai-marketing', desc: 'Leverage AI to scale your marketing' },
   { label: 'Custom CRM & SaaS', href: '/services/custom-crm', desc: 'Tailored software for your business' },
+  { label: 'Web Hosting', href: '/services/web-hosting', desc: 'Fully managed hosting from $31/mo' },
 ]
 
 const defaultNavLinks = [
-  { label: 'About', href: '#about' },
-  { label: 'Results', href: '#results' },
-  { label: 'Testimonials', href: '#testimonials' },
-  { label: 'Pricing', href: '#pricing' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'Products', href: '/products' },
+  { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
 ]
 
 interface DBMenuItem {
@@ -48,6 +49,7 @@ export default function NavI() {
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const servicesRef = useRef<HTMLDivElement>(null)
+  const servicesCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isAdmin = session?.user?.role === 'ADMIN'
 
@@ -162,8 +164,13 @@ export default function NavI() {
             <div
               ref={servicesRef}
               className="relative"
-              onMouseEnter={() => setServicesOpen(true)}
-              onMouseLeave={() => setServicesOpen(false)}
+              onMouseEnter={() => {
+                if (servicesCloseTimer.current) { clearTimeout(servicesCloseTimer.current); servicesCloseTimer.current = null }
+                setServicesOpen(true)
+              }}
+              onMouseLeave={() => {
+                servicesCloseTimer.current = setTimeout(() => setServicesOpen(false), 120)
+              }}
             >
               <button
                 onClick={() => setServicesOpen(!servicesOpen)}
@@ -184,8 +191,9 @@ export default function NavI() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.96 }}
                     transition={{ duration: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-black/8 overflow-hidden z-50"
+                    className="absolute left-1/2 -translate-x-1/2 top-full pt-3 w-80 z-50"
                   >
+                    <div className="bg-white rounded-2xl shadow-2xl border border-black/8 overflow-hidden">
                     <div className="py-2">
                       {serviceLinks.map((svc) => (
                         <Link
@@ -211,6 +219,7 @@ export default function NavI() {
                       >
                         View All Services →
                       </Link>
+                    </div>
                     </div>
                   </motion.div>
                 )}

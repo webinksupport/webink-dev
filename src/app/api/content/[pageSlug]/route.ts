@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import type { ContentBlockType } from '@/generated/prisma/client'
+import { Prisma, type ContentBlockType } from '@/generated/prisma/client'
 
 export async function GET(
   _request: Request,
@@ -42,6 +42,7 @@ export async function PUT(
         blockKey: string
         blockType: ContentBlockType
         value: string
+        jsonValue?: unknown
       }[]
     }
 
@@ -54,23 +55,29 @@ export async function PUT(
 
     // Bulk upsert all blocks
     const results = await Promise.all(
-      blocks.map((block) =>
-        prisma.pageContent.upsert({
+      blocks.map((block) => {
+        const jsonVal = block.jsonValue !== undefined
+          ? (block.jsonValue === null ? Prisma.DbNull : block.jsonValue as Prisma.InputJsonValue)
+          : undefined
+
+        return prisma.pageContent.upsert({
           where: {
             pageSlug_blockKey: { pageSlug, blockKey: block.blockKey },
           },
           update: {
             value: block.value,
             blockType: block.blockType,
+            ...(jsonVal !== undefined ? { jsonValue: jsonVal } : {}),
           },
           create: {
             pageSlug,
             blockKey: block.blockKey,
             blockType: block.blockType,
             value: block.value,
+            ...(jsonVal !== undefined ? { jsonValue: jsonVal } : {}),
           },
         })
-      )
+      })
     )
 
     return NextResponse.json(results)

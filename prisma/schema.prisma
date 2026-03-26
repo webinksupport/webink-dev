@@ -13,10 +13,13 @@ model User {
   id               String   @id @default(cuid())
   email            String   @unique
   name             String?
+  phone            String?
   password         String?  // bcrypt hash
   role             Role     @default(CUSTOMER)
   stripeCustomerId String?  @unique
   emailVerified    Boolean  @default(false)
+  suspended        Boolean  @default(false)
+  notes            String?  @db.Text // internal admin notes
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -75,16 +78,23 @@ enum Role {
 // ─── Products ────────────────────────────────────────────────────────
 
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  slug        String      @unique
-  description String      @db.Text
-  category    String      // e.g. "hosting", "seo", "social", "video", "other"
-  type        ProductType
-  active      Boolean     @default(true)
-  sortOrder   Int         @default(0)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id               String        @id @default(cuid())
+  name             String
+  slug             String        @unique
+  description      String        @db.Text
+  shortDescription String?       @db.Text
+  category         String        // e.g. "hosting", "seo", "social", "video", "other"
+  type             ProductType
+  status           ProductStatus @default(ACTIVE)
+  active           Boolean       @default(true)
+  featured         Boolean       @default(false)
+  setupFee         Int?          // cents — optional one-time setup fee
+  billingInterval  String?       // "month" | "year" | null for one-time
+  trialDays        Int?
+  sortOrder        Int           @default(0)
+  stripeProductId  String?       // Stripe Product ID
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   variants ProductVariant[]
 
@@ -93,8 +103,17 @@ model Product {
 }
 
 enum ProductType {
-  ONE_TIME
+  SIMPLE
   SUBSCRIPTION
+  VARIABLE
+  VARIABLE_SUBSCRIPTION
+  ONE_TIME // kept for backward compat with existing data
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
 }
 
 model ProductVariant {
@@ -105,11 +124,14 @@ model ProductVariant {
   priceAnnual     Int?            // cents — annual billing option
   priceOneTime    Int?            // cents — for one-time products
   salePrice       Int?            // cents — promotional price (null = no sale)
+  setupFee        Int?            // cents — optional one-time setup fee for this variant
   billingInterval BillingInterval @default(MONTHLY)
+  trialDays       Int?
   stripePriceId   String?         // Stripe Price ID for this variant
   stripeProductId String?         // Stripe Product ID
   contactOnly     Boolean         @default(false) // true = "Contact for Pricing"
   active          Boolean         @default(true)
+  status          VariantStatus   @default(ACTIVE)
   sortOrder       Int             @default(0)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -120,6 +142,11 @@ model ProductVariant {
 
   @@index([productId])
   @@index([stripePriceId])
+}
+
+enum VariantStatus {
+  ACTIVE
+  INACTIVE
 }
 
 enum BillingInterval {
@@ -211,6 +238,7 @@ model PageContent {
   blockKey  String           // e.g. 'hero_headline', 'hero_subtext', 'hero_image'
   blockType ContentBlockType
   value     String           @db.LongText
+  jsonValue Json?            // structured data: arrays, objects (photos, features, FAQs, etc.)
   updatedAt DateTime         @updatedAt
 
   @@unique([pageSlug, blockKey])
@@ -224,6 +252,7 @@ enum ContentBlockType {
   LINK
   BUTTON
   SEO
+  JSON
 }
 
 // ─── Media ────────────────────────────────────────────────────────
@@ -264,4 +293,61 @@ model MenuItem {
 
   @@index([menuSlug])
   @@index([parentId])
+}
+
+// --- Social Media Studio ----------------------------------------------------
+
+model SocialPost {
+  id           String           @id @default(cuid())
+  title        String?
+  caption      String?          @db.Text
+  hashtags     String?          @db.Text
+  mediaPath    String?          // path to image/video
+  mediaType    String?          // "image" | "video"
+  platforms    String?          // JSON array: ["facebook","instagram","linkedin"]
+  status       SocialPostStatus @default(DRAFT)
+  scheduledAt  DateTime?
+  publishedAt  DateTime?
+  fbPostId     String?          // Facebook post ID after publish
+  igPostId     String?          // Instagram post ID after publish
+  liPostId     String?          // LinkedIn post ID after publish
+  fbLikes      Int?
+  fbComments   Int?
+  fbReach      Int?
+  igLikes      Int?
+  igComments   Int?
+  igReach      Int?
+  notes        String?          @db.Text
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+enum SocialPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+model SocialIdea {
+  id          String   @id @default(cuid())
+  topic       String
+  hook        String   @db.Text
+  caption     String   @db.Text
+  hashtags    String?  @db.Text
+  brandVoice  String?
+  used        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model SocialHashtagSet {
+  id        String   @id @default(cuid())
+  name      String
+  hashtags  String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

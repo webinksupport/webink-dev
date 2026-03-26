@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import ManageSubscriptionButton from '@/components/dashboard/ManageSubscriptionButton'
+import SubscriptionActions from '@/components/dashboard/SubscriptionActions'
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -58,7 +59,7 @@ export default async function SubscriptionsPage() {
                     statusColors[sub.status] || 'text-[#999]'
                   }`}
                 >
-                  {sub.status}
+                  {sub.cancelAtPeriodEnd ? 'CANCELING' : sub.status}
                 </span>
               </div>
 
@@ -72,13 +73,13 @@ export default async function SubscriptionsPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[#999] mb-1">Started</p>
+                  <p className="text-[#999] mb-1">Billing</p>
                   <p className="text-white">
-                    {new Date(sub.createdAt).toLocaleDateString()}
+                    {sub.variant.billingInterval === 'ANNUAL' ? 'Annual' : 'Monthly'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[#999] mb-1">Current Period</p>
+                  <p className="text-[#999] mb-1">Next Billing</p>
                   <p className="text-white">
                     {sub.currentPeriodEnd
                       ? new Date(sub.currentPeriodEnd).toLocaleDateString()
@@ -86,12 +87,27 @@ export default async function SubscriptionsPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[#999] mb-1">Auto-Renew</p>
+                  <p className="text-[#999] mb-1">Status</p>
                   <p className="text-white">
-                    {sub.cancelAtPeriodEnd ? 'Cancels at period end' : 'Yes'}
+                    {sub.cancelAtPeriodEnd ? 'Cancels at period end' : sub.status === 'ACTIVE' ? 'Auto-renewing' : sub.status}
                   </p>
                 </div>
               </div>
+
+              <SubscriptionActions
+                subscription={{
+                  id: sub.id,
+                  status: sub.status,
+                  cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
+                  currentPeriodEnd: sub.currentPeriodEnd ? sub.currentPeriodEnd.toISOString() : null,
+                  stripeSubscriptionId: sub.stripeSubscriptionId,
+                  variant: {
+                    name: sub.variant.name,
+                    priceMonthly: sub.variant.priceMonthly,
+                    product: { name: sub.variant.product.name },
+                  },
+                }}
+              />
             </div>
           ))}
         </div>

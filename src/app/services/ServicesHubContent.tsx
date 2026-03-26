@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import {
-  Globe, Search, TrendingUp, Share2, Brain, Code,
+  Globe, Search, TrendingUp, Share2, Brain, Code, Server,
 } from 'lucide-react'
 
 const services = [
@@ -48,6 +48,14 @@ const services = [
     image: '/images/services/ai-marketing-hero.png',
   },
   {
+    icon: Server,
+    title: 'Web Hosting',
+    desc: 'Fully managed web hosting with free SSL, daily backups, 99.9% uptime, and 24/7 monitoring. Starting at $31/mo.',
+    color: '#14EAEA',
+    href: '/services/web-hosting',
+    image: '/images/services/web-design-hero.png',
+  },
+  {
     icon: Code,
     title: 'Custom CRM & SaaS',
     desc: 'Purpose-built software and CRM systems tailored to your workflows. Own your tools, not rent them.',
@@ -66,10 +74,11 @@ export default function ServicesHubContent() {
       <section className="relative bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-32 lg:py-40 overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/images/photoshoot/_UTA4035-Edit.jpg"
+            src="/images/photoshoot/_UTA4057.jpg"
             alt=""
             fill
             className="object-cover opacity-15"
+            style={{ objectPosition: 'center' }}
             sizes="100vw"
             priority
           />
@@ -116,6 +125,7 @@ export default function ServicesHubContent() {
                 alt="Sean Rowe and the Webink Solutions team — full-service digital agency in Sarasota"
                 fill
                 className="object-cover"
+                style={{ objectPosition: 'top center' }}
                 sizes="50vw"
               />
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#14EAEA] via-[#F813BE] to-[#B9FF33]" />
@@ -169,6 +179,7 @@ export default function ServicesHubContent() {
                         alt={`${svc.title} — Webink Solutions`}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        style={{ objectPosition: 'center' }}
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
@@ -220,6 +231,7 @@ export default function ServicesHubContent() {
             alt="Sarasota waterfront skyline"
             fill
             className="object-cover"
+            style={{ objectPosition: 'center' }}
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-[#0F0F0F]/85" />

@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function SignInPage() {
   return (
@@ -40,13 +41,11 @@ function SignInForm() {
       return
     }
 
-    // If there's an explicit callbackUrl, use it
     if (callbackUrl) {
       router.push(callbackUrl)
       return
     }
 
-    // Otherwise, fetch session to route by role
     const res = await fetch('/api/auth/session')
     const session = await res.json()
     const role = session?.user?.role
@@ -59,28 +58,42 @@ function SignInForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F0F0F] flex items-center justify-center px-6">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-6 font-urbanist">
+      {/* Subtle background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#0F0F0F] to-[#0A0A0A]" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#14EAEA]/[0.03] blur-3xl" />
+
+      <div className="relative w-full max-w-md">
+        {/* Logo & Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Sign In</h1>
-          <p className="text-[#999]">Access your Webink account</p>
+          <Link href="/" className="inline-block mb-6">
+            <Image
+              src="/images/logos/webink-white.png"
+              alt="Webink Solutions"
+              width={180}
+              height={48}
+              className="mx-auto"
+            />
+          </Link>
+          <h1 className="text-3xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>
+            Welcome Back
+          </h1>
+          <p className="text-white/40 text-sm">Sign in to your Webink account</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-[#1A1A1A] rounded-2xl p-8 border border-[#333]"
+          className="bg-[#0F0F0F] rounded-2xl p-8 border border-white/10 shadow-2xl"
         >
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg p-3 mb-6 text-sm">
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl p-3 mb-6 text-sm flex items-center gap-2">
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
               {error}
             </div>
           )}
 
           <div className="mb-5">
-            <label
-              htmlFor="email"
-              className="block text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] mb-2"
-            >
+            <label htmlFor="email" className="block text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] mb-2">
               Email
             </label>
             <input
@@ -89,16 +102,13 @@ function SignInForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-[#0F0F0F] border border-[#333] text-white rounded-lg px-4 py-3 focus:outline-none focus:border-[#14EAEA] transition-colors"
+              className="w-full bg-[#0A0A0A] border border-[#333] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-[#14EAEA] transition-colors placeholder:text-white/20"
               placeholder="you@example.com"
             />
           </div>
 
           <div className="mb-6">
-            <label
-              htmlFor="password"
-              className="block text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] mb-2"
-            >
+            <label htmlFor="password" className="block text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] mb-2">
               Password
             </label>
             <input
@@ -107,29 +117,27 @@ function SignInForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full bg-[#0F0F0F] border border-[#333] text-white rounded-lg px-4 py-3 focus:outline-none focus:border-[#14EAEA] transition-colors"
-              placeholder="••••••••"
+              className="w-full bg-[#0A0A0A] border border-[#333] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-[#14EAEA] transition-colors placeholder:text-white/20"
+              placeholder="Enter your password"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#F813BE] text-white font-semibold py-3 rounded-full hover:bg-[#d10fa3] transition-colors duration-200 disabled:opacity-50"
+            className="w-full bg-[#F813BE] text-white font-semibold py-3.5 rounded-full hover:bg-[#d10fa3] transition-colors duration-200 disabled:opacity-50 text-sm tracking-wide"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
 
-          <p className="text-center text-[#999] text-sm mt-6">
-            Don&apos;t have an account?{' '}
-            <Link
-              href="/auth/register"
-              className="text-[#14EAEA] hover:underline"
-            >
-              Create one
-            </Link>
+          <p className="text-center text-white/30 text-[11px] mt-6">
+            Need to create an account? Accounts are created during checkout.
           </p>
         </form>
+
+        <p className="text-center text-white/20 text-xs mt-6">
+          <Link href="/" className="hover:text-white/40 transition-colors">← Back to Webink Solutions</Link>
+        </p>
       </div>
     </div>
   )
