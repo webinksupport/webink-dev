@@ -46,10 +46,16 @@ export default async function ProductDetailPage({ params, searchParams }: Produc
   const { slug } = await params
   const sp = await searchParams
 
-  const product = await prisma.product.findFirst({
-    where: { slug, active: true, status: 'ACTIVE' },
-    include: { variants: { where: { active: true }, orderBy: { sortOrder: 'asc' } } },
-  })
+  let product
+  try {
+    product = await prisma.product.findFirst({
+      where: { slug, active: true, status: 'ACTIVE' },
+      include: { variants: { where: { active: true }, orderBy: { sortOrder: 'asc' } } },
+    })
+  } catch (err) {
+    console.error('Product page DB error:', err)
+    throw err
+  }
 
   if (!product) notFound()
 

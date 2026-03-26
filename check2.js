@@ -1,15 +1,49 @@
-const { Client } = require('ssh2');
-const fs = require('fs');
-const conn = new Client();
-conn.on('ready', () => {
-  const cmd = 'cat /opt/webink-dev/docker-compose.yml ; echo "---LOGS---" ; docker logs webink-dev --tail=20 2>&1';
-  conn.exec(cmd, (err, stream) => {
-    if (err) { console.error(err); conn.end(); return; }
-    stream.on('data', d => process.stdout.write(d.toString()));
-    stream.stderr.on('data', d => process.stderr.write(d.toString()));
-    stream.on('close', () => conn.end());
-  });
-}).connect({
-  host: '31.97.11.49', port: 2222, username: 'root',
-  privateKey: fs.readFileSync('C:/Users/OpenClaw/.ssh/id_ed25519_agent'),
-});
+// Test Prisma connection in standalone mode
+async function test() {
+  console.log("DATABASE_URL:", process.env.DATABASE_URL);
+  console.log("CWD:", process.cwd());
+  console.log("Checking for generated client...");
+  
+  try {
+    // Try to import the Prisma adapter + client
+    const { PrismaMariaDb } = require("@prisma/adapter-mariadb");
+    console.log("PrismaMariaDb loaded OK");
+    
+    const adapter = new PrismaMariaDb(process.env.DATABASE_URL);
+    console.log("Adapter created OK");
+    
+    // Try loading Prisma client from generated path
+    let PrismaClient;
+    try {
+      PrismaClient = require("./src/generated/prisma/client").PrismaClient;
+      console.log("PrismaClient loaded from src/generated");
+    } catch (e) {
+      console.log("Failed to load from src/generated:", e.message);
+      try {
+        PrismaClient = require("./.next/standalone/src/generated/prisma/client").PrismaClient;
+        console.log("PrismaClient loaded from standalone");
+      } catch (e2) {
+        console.log("Failed to load from standalone:", e2.message);
+      }
+    }
+    
+    if (!PrismaClient) {
+      console.error("Could not load PrismaClient");
+      return;
+    }
+    
+    const prisma = new PrismaClient({ adapter });
+    console.log("PrismaClient created");
+    
+    const count = await prisma.product.count();
+    console.log("Product count:", count);
+    
+    await prisma.$disconnect();
+    console.log("Disconnected OK");
+  } catch (e) {
+    console.error("Error:", e.message);
+    console.error("Stack:", e.stack);
+  }
+}
+
+test();

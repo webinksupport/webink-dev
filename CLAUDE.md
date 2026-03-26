@@ -19,6 +19,15 @@ Customer data is sacred. This applies to Webink's ecommerce DB (users, subscript
 
 **Prisma rule:** Schema file ≠ live DB. Always run the actual migration before deploying the new build. Use `deploy.js` (NOT `deploy-full.js`) to preserve Traefik routing.
 
+## ⚠️ DATABASE SETUP — SEPARATE CONTAINERS
+Webink has its OWN database — completely separate from VoltDesk and Peptides.
+- **DB Container:** `webink-mysql` (NOT voltdesk-mysql)
+- **DB Name:** `webinkdb`
+- **DB User:** `webink` / `WebinkDB2026!`
+- **DB Root:** `WebinkRoot2026!`
+- **DATABASE_URL:** `mysql://webink:WebinkDB2026!@webink-mysql:3306/webinkdb`
+- **NEVER reference voltdesk-mysql or srq-db — those are separate products.**
+
 ---
 
 ## 1. PROJECT OVERVIEW

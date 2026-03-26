@@ -3,6 +3,8 @@ import NavI from '@/components/variant-i/NavI'
 import FooterI from '@/components/variant-i/FooterI'
 import SuccessContent from './SuccessContent'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Order Confirmed | Webink Solutions',
   description: 'Your order has been confirmed. Welcome to Webink Solutions managed services.',
