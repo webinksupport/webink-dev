@@ -4,10 +4,7 @@ export async function register() {
     // Delay startup sync to let the server fully initialize
     setTimeout(async () => {
       try {
-        // Dynamic import to avoid bundling issues
-        const { syncProductsToStripe } = await import(
-          './app/api/admin/stripe-sync/route'
-        )
+        const { syncProductsToStripe } = await import('@/lib/stripe-sync')
         console.log('[Startup] Running Stripe product sync...')
         const result = await syncProductsToStripe()
         console.log(
@@ -23,6 +20,6 @@ export async function register() {
           err instanceof Error ? err.message : err
         )
       }
-    }, 5000) // 5s delay for DB connection pool to warm up
+    }, 5000)
   }
 }

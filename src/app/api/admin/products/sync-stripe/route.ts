@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { syncProductsToStripe } from '@/app/api/admin/stripe-sync/route'
+import { syncProductsToStripe } from '@/lib/stripe-sync'
 
 /**
  * POST /api/admin/products/sync-stripe
- * Legacy endpoint — delegates to the canonical /api/admin/stripe-sync
+ * Legacy endpoint — delegates to shared sync logic.
  */
 export async function POST() {
   try {
