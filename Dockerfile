@@ -16,7 +16,10 @@ RUN cp -r .next/static .next/standalone/.next/static && \
     cp -r public .next/standalone/public && \
     cp -r node_modules/@prisma/adapter-mariadb .next/standalone/node_modules/@prisma/adapter-mariadb && \
     cp -r node_modules/@prisma/driver-adapter-utils .next/standalone/node_modules/@prisma/driver-adapter-utils && \
-    cp -r node_modules/mariadb .next/standalone/node_modules/mariadb
+    cp -r node_modules/mariadb .next/standalone/node_modules/mariadb && \
+    rm -f .next/standalone/.env .next/standalone/.env.local .next/standalone/.env.production
+# Remove .env files so runtime uses only docker-compose env vars
+RUN rm -f .env .env.local .env.production
 EXPOSE 3001
 ENV PORT=3001
 CMD ["node", ".next/standalone/server.js"]

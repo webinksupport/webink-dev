@@ -9,3 +9,6 @@ WEBINK-PRODUCTS.md
 *.sql
 *.md
 !README.md
+.env
+.env.local
+.env.production
