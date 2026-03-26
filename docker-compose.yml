@@ -10,6 +10,11 @@ services:
       - DATABASE_URL=mysql://webink:WebinkDB2026!@webink-mysql:3306/webinkdb
       - NEXTAUTH_URL=https://dev.webink.solutions
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-webink-dev-secret-2026}
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=sean@webink.solutions
+      - SMTP_PASS=sxhm mtsg tfjk gbjf
+      - SMTP_FROM=hello@webink.solutions
     networks:
       - traefik_default
       - default

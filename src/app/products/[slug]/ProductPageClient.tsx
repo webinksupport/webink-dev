@@ -362,8 +362,8 @@ export default function ProductPageClient({
                       onClick={() => handleBillingChange('monthly')}
                       className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border ${
                         billing === 'monthly'
-                          ? 'bg-white/10 text-white border-white/20'
-                          : 'text-white/35 border-white/8 hover:border-white/15'
+                          ? 'bg-[#14EAEA] text-[#0A0A0A] border-[#14EAEA]'
+                          : 'bg-[#1A1A1A] text-[#666] border-[#333] hover:border-[#555]'
                       }`}
                     >
                       Monthly
@@ -372,13 +372,15 @@ export default function ProductPageClient({
                       onClick={() => handleBillingChange('annual')}
                       className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border ${
                         billing === 'annual'
-                          ? 'bg-white/10 text-white border-white/20'
-                          : 'text-white/35 border-white/8 hover:border-white/15'
+                          ? 'bg-[#14EAEA] text-[#0A0A0A] border-[#14EAEA]'
+                          : 'bg-[#1A1A1A] text-[#666] border-[#333] hover:border-[#555]'
                       }`}
                     >
                       Annual
                       {savings > 0 && (
-                        <span className="block text-[9px] text-[#B9FF33] font-bold mt-0.5">
+                        <span className={`block text-[9px] font-bold mt-0.5 ${
+                          billing === 'annual' ? 'text-[#0A0A0A]/70' : 'text-[#14EAEA]'
+                        }`}>
                           Save {formatPrice(savings)}/yr
                         </span>
                       )}

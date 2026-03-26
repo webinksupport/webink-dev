@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import Stripe from 'stripe'
-import { stripe } from '@/lib/stripe'
+import { getStripeAsync } from '@/lib/stripe'
+import { getSetting } from '@/lib/settings'
 import { prisma } from '@/lib/prisma'
+import { sendPurchaseConfirmation } from '@/lib/email'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -16,13 +18,34 @@ export async function POST(request: Request) {
     )
   }
 
+  // Read webhook secret from DB (Settings table), falling back to env
+  const webhookSecret = await getSetting('STRIPE_WEBHOOK_SECRET')
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET not found in Settings DB or environment')
+    return NextResponse.json(
+      { error: 'Webhook secret not configured' },
+      { status: 500 }
+    )
+  }
+
+  let stripe: Stripe
+  try {
+    stripe = await getStripeAsync()
+  } catch (err) {
+    console.error('Failed to initialize Stripe:', err)
+    return NextResponse.json(
+      { error: 'Stripe not configured' },
+      { status: 500 }
+    )
+  }
+
   let event: Stripe.Event
 
   try {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      webhookSecret
     )
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -36,7 +59,7 @@ export async function POST(request: Request) {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutComplete(event.data.object as Stripe.Checkout.Session)
+        await handleCheckoutComplete(event.data.object as Stripe.Checkout.Session, stripe)
         break
 
       case 'customer.subscription.created':
@@ -49,7 +72,7 @@ export async function POST(request: Request) {
         break
 
       case 'invoice.payment_succeeded':
-        await handlePaymentSucceeded(event.data.object as Stripe.Invoice)
+        await handlePaymentSucceeded(event.data.object as Stripe.Invoice, stripe)
         break
 
       case 'invoice.payment_failed':
@@ -71,11 +94,19 @@ export async function POST(request: Request) {
   return NextResponse.json({ received: true })
 }
 
-async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
+async function handleCheckoutComplete(session: Stripe.Checkout.Session, stripe: Stripe) {
   const userId = session.metadata?.userId
   const variantId = session.metadata?.variantId
 
   if (!userId || !variantId) return
+
+  // Load variant + product info for email
+  const variant = await prisma.productVariant.findUnique({
+    where: { id: variantId },
+    include: { product: true },
+  })
+
+  const user = await prisma.user.findUnique({ where: { id: userId } })
 
   if (session.mode === 'payment') {
     // One-time purchase — create order
@@ -96,8 +127,89 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         },
       },
     })
+    console.log(`[webhook] Created order for user ${userId}, variant ${variantId}`)
+  } else if (session.mode === 'subscription') {
+    // Subscription checkout — create Subscription record
+    // The subscription ID is on the session
+    const stripeSubId = session.subscription as string | null
+
+    if (stripeSubId) {
+      // Fetch the subscription from Stripe to get details
+      const stripeSub = await stripe.subscriptions.retrieve(stripeSubId)
+
+      const periodStart = new Date(stripeSub.start_date * 1000)
+      const periodEnd = stripeSub.cancel_at
+        ? new Date(stripeSub.cancel_at * 1000)
+        : null
+
+      await prisma.subscription.upsert({
+        where: { stripeSubscriptionId: stripeSubId },
+        update: {
+          status: 'ACTIVE',
+          variantId,
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
+        },
+        create: {
+          userId,
+          variantId,
+          stripeSubscriptionId: stripeSubId,
+          status: 'ACTIVE',
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
+          cancelAtPeriodEnd: false,
+        },
+      })
+      console.log(`[webhook] Created/updated subscription ${stripeSubId} for user ${userId}`)
+
+      // Also update the Stripe subscription metadata with variantId for future events
+      try {
+        await stripe.subscriptions.update(stripeSubId, {
+          metadata: { variantId, userId },
+        })
+      } catch {
+        // Non-critical — metadata update failed
+      }
+    }
+
+    // Create an order record for the initial subscription payment too
+    await prisma.order.create({
+      data: {
+        userId,
+        stripeSessionId: session.id,
+        stripePaymentId: session.payment_intent as string | null,
+        status: 'PAID',
+        totalAmount: session.amount_total ?? 0,
+        items: {
+          create: {
+            variantId,
+            quantity: 1,
+            unitPrice: session.amount_total ?? 0,
+            total: session.amount_total ?? 0,
+          },
+        },
+      },
+    })
+    console.log(`[webhook] Created initial order for subscription checkout, user ${userId}`)
   }
-  // Subscription checkouts are handled by customer.subscription.created
+
+  // Send purchase confirmation email
+  if (user?.email && variant) {
+    try {
+      await sendPurchaseConfirmation({
+        to: user.email,
+        customerName: user.name || 'Customer',
+        productName: variant.product.name,
+        variantName: variant.name,
+        amount: session.amount_total ?? 0,
+        isSubscription: session.mode === 'subscription',
+      })
+      console.log(`[webhook] Sent purchase confirmation email to ${user.email}`)
+    } catch (emailErr) {
+      console.error('[webhook] Failed to send confirmation email:', emailErr)
+      // Don't fail the webhook — email is non-critical
+    }
+  }
 }
 
 async function handleSubscriptionChange(subscription: Stripe.Subscription) {
@@ -136,8 +248,6 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 
   if (!variantId) return
 
-  // In Stripe API 2026+, current_period_start/end are on invoice items, not subscription.
-  // Use start_date for period start, and cancel_at or next_pending_invoice for period end.
   const periodStart = new Date(subscription.start_date * 1000)
   const periodEnd = subscription.cancel_at
     ? new Date(subscription.cancel_at * 1000)
@@ -176,13 +286,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   })
 }
 
-/**
- * On successful payment, record order with GROSS revenue.
- * Stripe fee is stored separately for later QBO expense entry.
- * Per CLAUDE.md Section 13: DO NOT sync Stripe fees as part of order —
- * record gross revenue, then create separate expense entry for the fee.
- */
-async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
+async function handlePaymentSucceeded(invoice: Stripe.Invoice, stripe: Stripe) {
   // Only process subscription-related invoices
   const isSubscriptionInvoice =
     invoice.billing_reason === 'subscription_create' ||
@@ -204,7 +308,6 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 
   if (!user) return
 
-  // Use invoice ID as the unique reference for dedup
   const invoiceId = invoice.id
 
   // Check if order already exists for this invoice
@@ -213,11 +316,10 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   })
   if (existingOrder) return
 
-  // Retrieve Stripe fee from the invoice's payment via Stripe API
+  // Retrieve Stripe fee
   let stripeFeeAmount: number | null = null
 
   try {
-    // Expand the invoice to get charge/balance_transaction for fee info
     const fullInvoice = await stripe.invoices.retrieve(invoiceId, {
       expand: ['charge.balance_transaction'],
     })
@@ -229,7 +331,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
       }
     }
   } catch {
-    // Fee lookup failed — record order without fee info
+    // Fee lookup failed
   }
 
   // Find the subscription from the invoice line items
@@ -253,8 +355,8 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
       userId: user.id,
       stripePaymentId: invoiceId,
       status: 'PAID',
-      totalAmount: invoice.amount_paid, // GROSS revenue — full amount customer paid
-      stripeFeeAmount, // Stored separately — will become QBO expense entry
+      totalAmount: invoice.amount_paid,
+      stripeFeeAmount,
       items: sub
         ? {
             create: {
@@ -270,7 +372,6 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  // Only process subscription invoices
   const isSubscriptionInvoice =
     invoice.billing_reason === 'subscription_create' ||
     invoice.billing_reason === 'subscription_cycle' ||
@@ -278,7 +379,6 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 
   if (!isSubscriptionInvoice) return
 
-  // Find subscription from line items
   const failedLineItem = invoice.lines?.data?.find(
     (line) => line.subscription != null
   )

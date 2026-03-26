@@ -21,7 +21,7 @@ function formatCents(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
 }
 
-export default function CustomerSearch({ customers }: { customers: Customer[]; formatCents: (cents: number) => string }) {
+export default function CustomerSearch({ customers }: { customers: Customer[] }) {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'active' | 'no-subs' | 'suspended'>('all')
 

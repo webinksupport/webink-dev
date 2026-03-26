@@ -2,10 +2,6 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import CustomerSearch from './CustomerSearch'
 
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
-}
-
 export default async function AdminCustomersPage() {
   const customers = await prisma.user.findMany({
     include: {
@@ -48,7 +44,7 @@ export default async function AdminCustomersPage() {
         </div>
       </div>
 
-      <CustomerSearch customers={serialized} formatCents={formatCents} />
+      <CustomerSearch customers={serialized} />
     </div>
   )
 }

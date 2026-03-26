@@ -441,39 +441,34 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
         <div className="max-w-7xl mx-auto">
           {/* Toggle */}
           {hasAnnualPricing && (
-            <motion.div {...fadeUp} className="flex items-center justify-center gap-4 mb-16">
-              <span
-                className={`font-semibold transition-colors ${
-                  !annual ? 'text-[#1A1A1A]' : 'text-[#333]/40'
-                }`}
-              >
-                Monthly
-              </span>
-              <button
-                onClick={() => setAnnual(!annual)}
-                className={`relative w-14 h-7 rounded-full transition-colors ${
-                  annual ? 'bg-[#14EAEA]' : 'bg-[#E5E5E5]'
-                }`}
-                aria-label="Toggle annual billing"
-              >
-                <span
-                  className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                    annual ? 'left-8' : 'left-1'
+            <motion.div {...fadeUp} className="flex items-center justify-center gap-3 mb-16">
+              <div className="inline-flex items-center bg-[#1A1A1A] rounded-full p-1 border border-[#333]">
+                <button
+                  onClick={() => setAnnual(false)}
+                  className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 ${
+                    !annual
+                      ? 'bg-[#14EAEA] text-[#0A0A0A]'
+                      : 'bg-transparent text-[#666] hover:text-[#999]'
                   }`}
-                />
-              </button>
-              <span
-                className={`font-semibold transition-colors ${
-                  annual ? 'text-[#1A1A1A]' : 'text-[#333]/40'
-                }`}
-              >
-                Annual
-              </span>
-              {annual && (
-                <span className="text-xs font-bold text-[#14EAEA] bg-[#14EAEA]/10 px-3 py-1 rounded-full">
-                  Save up to 10%
-                </span>
-              )}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setAnnual(true)}
+                  className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 flex items-center gap-2 ${
+                    annual
+                      ? 'bg-[#14EAEA] text-[#0A0A0A]'
+                      : 'bg-transparent text-[#666] hover:text-[#999]'
+                  }`}
+                >
+                  Annual
+                  <span className={`text-[10px] font-bold ${
+                    annual ? 'text-[#0A0A0A]/70' : 'text-[#14EAEA]'
+                  }`}>
+                    Save 10%
+                  </span>
+                </button>
+              </div>
             </motion.div>
           )}
 
