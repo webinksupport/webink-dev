@@ -27,6 +27,7 @@ const SETTING_DEFS: Record<string, { isSecret: boolean }> = {
   SMTP_PASSWORD: { isSecret: true },
   EMAIL_FROM_NAME: { isSecret: false },
   EMAIL_FROM_ADDRESS: { isSecret: false },
+  NOTIFICATION_EMAILS: { isSecret: false },
   // Analytics
   GA4_MEASUREMENT_ID: { isSecret: false },
   FACEBOOK_PIXEL_ID: { isSecret: false },

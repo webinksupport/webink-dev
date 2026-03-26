@@ -4,7 +4,15 @@ import Stripe from 'stripe'
 import { getStripeAsync } from '@/lib/stripe'
 import { getSetting } from '@/lib/settings'
 import { prisma } from '@/lib/prisma'
-import { sendPurchaseConfirmation } from '@/lib/email'
+import {
+  sendPurchaseConfirmation,
+  sendAdminOrderNotification,
+  sendCancellationEmail,
+  sendAdminCancellationNotification,
+  sendPaymentFailedEmail,
+  sendAdminPaymentFailedNotification,
+} from '@/lib/email'
+import { addSubscriptionNote, formatCentsForNote } from '@/lib/subscription-notes'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -12,20 +20,13 @@ export async function POST(request: Request) {
   const signature = headersList.get('stripe-signature')
 
   if (!signature) {
-    return NextResponse.json(
-      { error: 'Missing stripe-signature header' },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 })
   }
 
-  // Read webhook secret from DB (Settings table), falling back to env
   const webhookSecret = await getSetting('STRIPE_WEBHOOK_SECRET')
   if (!webhookSecret) {
     console.error('STRIPE_WEBHOOK_SECRET not found in Settings DB or environment')
-    return NextResponse.json(
-      { error: 'Webhook secret not configured' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
   }
 
   let stripe: Stripe
@@ -33,27 +34,16 @@ export async function POST(request: Request) {
     stripe = await getStripeAsync()
   } catch (err) {
     console.error('Failed to initialize Stripe:', err)
-    return NextResponse.json(
-      { error: 'Stripe not configured' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
   }
 
   let event: Stripe.Event
-
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      webhookSecret
-    )
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error('Webhook signature verification failed:', message)
-    return NextResponse.json(
-      { error: `Webhook Error: ${message}` },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: `Webhook Error: ${message}` }, { status: 400 })
   }
 
   try {
@@ -61,34 +51,25 @@ export async function POST(request: Request) {
       case 'checkout.session.completed':
         await handleCheckoutComplete(event.data.object as Stripe.Checkout.Session, stripe)
         break
-
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
         await handleSubscriptionChange(event.data.object as Stripe.Subscription)
         break
-
       case 'customer.subscription.deleted':
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
         break
-
       case 'invoice.payment_succeeded':
         await handlePaymentSucceeded(event.data.object as Stripe.Invoice, stripe)
         break
-
       case 'invoice.payment_failed':
-        await handlePaymentFailed(event.data.object as Stripe.Invoice)
+        await handlePaymentFailed(event.data.object as Stripe.Invoice, stripe)
         break
-
       default:
-        // Unhandled event type — log and move on
         break
     }
   } catch (error) {
     console.error(`Error handling ${event.type}:`, error)
-    return NextResponse.json(
-      { error: 'Webhook handler failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 
   return NextResponse.json({ received: true })
@@ -97,19 +78,15 @@ export async function POST(request: Request) {
 async function handleCheckoutComplete(session: Stripe.Checkout.Session, stripe: Stripe) {
   const userId = session.metadata?.userId
   const variantId = session.metadata?.variantId
-
   if (!userId || !variantId) return
 
-  // Load variant + product info for email
   const variant = await prisma.productVariant.findUnique({
     where: { id: variantId },
     include: { product: true },
   })
-
   const user = await prisma.user.findUnique({ where: { id: userId } })
 
   if (session.mode === 'payment') {
-    // One-time purchase — create order
     await prisma.order.create({
       data: {
         userId,
@@ -129,20 +106,14 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, stripe: 
     })
     console.log(`[webhook] Created order for user ${userId}, variant ${variantId}`)
   } else if (session.mode === 'subscription') {
-    // Subscription checkout — create Subscription record
-    // The subscription ID is on the session
     const stripeSubId = session.subscription as string | null
 
     if (stripeSubId) {
-      // Fetch the subscription from Stripe to get details
       const stripeSub = await stripe.subscriptions.retrieve(stripeSubId)
-
       const periodStart = new Date(stripeSub.start_date * 1000)
-      const periodEnd = stripeSub.cancel_at
-        ? new Date(stripeSub.cancel_at * 1000)
-        : null
+      const periodEnd = stripeSub.cancel_at ? new Date(stripeSub.cancel_at * 1000) : null
 
-      await prisma.subscription.upsert({
+      const sub = await prisma.subscription.upsert({
         where: { stripeSubscriptionId: stripeSubId },
         update: {
           status: 'ACTIVE',
@@ -162,17 +133,23 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, stripe: 
       })
       console.log(`[webhook] Created/updated subscription ${stripeSubId} for user ${userId}`)
 
-      // Also update the Stripe subscription metadata with variantId for future events
+      // Log subscription note
+      await addSubscriptionNote({
+        subscriptionId: sub.id,
+        type: 'CREATED',
+        message: `Subscription created: ${variant?.product.name} — ${variant?.name} (${formatCentsForNote(session.amount_total ?? 0)})`,
+        metadata: { variantId, amount: session.amount_total },
+      })
+
       try {
         await stripe.subscriptions.update(stripeSubId, {
           metadata: { variantId, userId },
         })
       } catch {
-        // Non-critical — metadata update failed
+        // Non-critical
       }
     }
 
-    // Create an order record for the initial subscription payment too
     await prisma.order.create({
       data: {
         userId,
@@ -193,7 +170,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, stripe: 
     console.log(`[webhook] Created initial order for subscription checkout, user ${userId}`)
   }
 
-  // Send purchase confirmation email
+  // Send purchase confirmation email to customer
   if (user?.email && variant) {
     try {
       await sendPurchaseConfirmation({
@@ -207,7 +184,23 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, stripe: 
       console.log(`[webhook] Sent purchase confirmation email to ${user.email}`)
     } catch (emailErr) {
       console.error('[webhook] Failed to send confirmation email:', emailErr)
-      // Don't fail the webhook — email is non-critical
+    }
+  }
+
+  // Send admin notification
+  if (user && variant) {
+    try {
+      await sendAdminOrderNotification({
+        customerName: user.name || 'Customer',
+        customerEmail: user.email,
+        productName: variant.product.name,
+        variantName: variant.name,
+        amount: session.amount_total ?? 0,
+        isSubscription: session.mode === 'subscription',
+      })
+      console.log(`[webhook] Sent admin order notification`)
+    } catch (emailErr) {
+      console.error('[webhook] Failed to send admin notification:', emailErr)
     }
   }
 }
@@ -221,10 +214,8 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
   const user = await prisma.user.findFirst({
     where: { stripeCustomerId: customerId },
   })
-
   if (!user) return
 
-  // Map Stripe status to our enum
   const statusMap: Record<string, 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'UNPAID' | 'PAUSED' | 'PENDING'> = {
     active: 'ACTIVE',
     past_due: 'PAST_DUE',
@@ -238,20 +229,15 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 
   const status = statusMap[subscription.status] || 'PENDING'
 
-  // Try to find variant from metadata or existing subscription
   const existingSub = await prisma.subscription.findUnique({
     where: { stripeSubscriptionId: subscription.id },
   })
 
-  const variantId =
-    subscription.metadata?.variantId || existingSub?.variantId
-
+  const variantId = subscription.metadata?.variantId || existingSub?.variantId
   if (!variantId) return
 
   const periodStart = new Date(subscription.start_date * 1000)
-  const periodEnd = subscription.cancel_at
-    ? new Date(subscription.cancel_at * 1000)
-    : null
+  const periodEnd = subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null
 
   await prisma.subscription.upsert({
     where: { stripeSubscriptionId: subscription.id },
@@ -260,9 +246,7 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
       currentPeriodStart: periodStart,
       currentPeriodEnd: periodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      canceledAt: subscription.canceled_at
-        ? new Date(subscription.canceled_at * 1000)
-        : null,
+      canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
     },
     create: {
       userId: user.id,
@@ -274,20 +258,71 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   })
+
+  // Log status change note if status changed
+  if (existingSub && existingSub.status !== status) {
+    await addSubscriptionNote({
+      subscriptionId: existingSub.id,
+      type: 'STATUS_CHANGED',
+      message: `Status changed from ${existingSub.status} to ${status}`,
+      metadata: { from: existingSub.status, to: status, stripeStatus: subscription.status },
+    })
+  }
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  await prisma.subscription.updateMany({
+  const sub = await prisma.subscription.findUnique({
     where: { stripeSubscriptionId: subscription.id },
-    data: {
-      status: 'CANCELED',
-      canceledAt: new Date(),
+    include: {
+      user: { select: { name: true, email: true } },
+      variant: { include: { product: { select: { name: true } } } },
     },
   })
+
+  await prisma.subscription.updateMany({
+    where: { stripeSubscriptionId: subscription.id },
+    data: { status: 'CANCELED', canceledAt: new Date() },
+  })
+
+  if (sub) {
+    // Log cancellation note
+    await addSubscriptionNote({
+      subscriptionId: sub.id,
+      type: 'CANCELLED',
+      message: `Subscription cancelled via Stripe (customer.subscription.deleted)`,
+      metadata: { cancelledBy: 'stripe' },
+    })
+
+    // Send cancellation email to customer
+    try {
+      await sendCancellationEmail({
+        to: sub.user.email,
+        customerName: sub.user.name || 'Customer',
+        productName: sub.variant.product.name,
+        variantName: sub.variant.name,
+        periodEndDate: sub.currentPeriodEnd,
+      })
+      console.log(`[webhook] Sent cancellation email to ${sub.user.email}`)
+    } catch (err) {
+      console.error('[webhook] Failed to send cancellation email:', err)
+    }
+
+    // Send admin cancellation notification
+    try {
+      await sendAdminCancellationNotification({
+        customerName: sub.user.name || 'Customer',
+        customerEmail: sub.user.email,
+        productName: sub.variant.product.name,
+        variantName: sub.variant.name,
+        cancelledBy: 'stripe',
+      })
+    } catch (err) {
+      console.error('[webhook] Failed to send admin cancellation notification:', err)
+    }
+  }
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice, stripe: Stripe) {
-  // Only process subscription-related invoices
   const isSubscriptionInvoice =
     invoice.billing_reason === 'subscription_create' ||
     invoice.billing_reason === 'subscription_cycle' ||
@@ -296,29 +331,17 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, stripe: Stripe) {
   if (!isSubscriptionInvoice) return
 
   const customerId =
-    typeof invoice.customer === 'string'
-      ? invoice.customer
-      : invoice.customer?.id
-
+    typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
   if (!customerId) return
 
-  const user = await prisma.user.findFirst({
-    where: { stripeCustomerId: customerId },
-  })
-
+  const user = await prisma.user.findFirst({ where: { stripeCustomerId: customerId } })
   if (!user) return
 
   const invoiceId = invoice.id
-
-  // Check if order already exists for this invoice
-  const existingOrder = await prisma.order.findFirst({
-    where: { stripePaymentId: invoiceId },
-  })
+  const existingOrder = await prisma.order.findFirst({ where: { stripePaymentId: invoiceId } })
   if (existingOrder) return
 
-  // Retrieve Stripe fee
   let stripeFeeAmount: number | null = null
-
   try {
     const fullInvoice = await stripe.invoices.retrieve(invoiceId, {
       expand: ['charge.balance_transaction'],
@@ -334,20 +357,14 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, stripe: Stripe) {
     // Fee lookup failed
   }
 
-  // Find the subscription from the invoice line items
-  const subscriptionLineItem = invoice.lines?.data?.find(
-    (line) => line.subscription != null
-  )
-
+  const subscriptionLineItem = invoice.lines?.data?.find((line) => line.subscription != null)
   const stripeSubId =
     typeof subscriptionLineItem?.subscription === 'string'
       ? subscriptionLineItem.subscription
       : subscriptionLineItem?.subscription?.id
 
   const sub = stripeSubId
-    ? await prisma.subscription.findUnique({
-        where: { stripeSubscriptionId: stripeSubId },
-      })
+    ? await prisma.subscription.findUnique({ where: { stripeSubscriptionId: stripeSubId } })
     : null
 
   await prisma.order.create({
@@ -369,9 +386,19 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, stripe: Stripe) {
         : undefined,
     },
   })
+
+  // Log payment success note
+  if (sub) {
+    await addSubscriptionNote({
+      subscriptionId: sub.id,
+      type: 'PAYMENT_SUCCESS',
+      message: `Payment of ${formatCentsForNote(invoice.amount_paid)} succeeded`,
+      metadata: { amount: invoice.amount_paid, invoiceId, billingReason: invoice.billing_reason },
+    })
+  }
 }
 
-async function handlePaymentFailed(invoice: Stripe.Invoice) {
+async function handlePaymentFailed(invoice: Stripe.Invoice, stripe: Stripe) {
   const isSubscriptionInvoice =
     invoice.billing_reason === 'subscription_create' ||
     invoice.billing_reason === 'subscription_cycle' ||
@@ -379,10 +406,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 
   if (!isSubscriptionInvoice) return
 
-  const failedLineItem = invoice.lines?.data?.find(
-    (line) => line.subscription != null
-  )
-
+  const failedLineItem = invoice.lines?.data?.find((line) => line.subscription != null)
   const failedSubId =
     typeof failedLineItem?.subscription === 'string'
       ? failedLineItem.subscription
@@ -394,4 +418,64 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     where: { stripeSubscriptionId: failedSubId },
     data: { status: 'PAST_DUE' },
   })
+
+  // Get subscription details for notifications
+  const sub = await prisma.subscription.findUnique({
+    where: { stripeSubscriptionId: failedSubId },
+    include: {
+      user: { select: { name: true, email: true } },
+      variant: { include: { product: { select: { name: true } } } },
+    },
+  })
+
+  // Get failure reason from Stripe
+  let failureReason: string | undefined
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const invoiceAny = invoice as any
+    if (invoiceAny.charge) {
+      const chargeId = typeof invoiceAny.charge === 'string' ? invoiceAny.charge : invoiceAny.charge.id
+      const charge = await stripe.charges.retrieve(chargeId)
+      failureReason = charge.failure_code || charge.failure_message || undefined
+    }
+  } catch {
+    // couldn't get failure reason
+  }
+
+  if (sub) {
+    // Log payment failed note
+    await addSubscriptionNote({
+      subscriptionId: sub.id,
+      type: 'PAYMENT_FAILED',
+      message: `Payment of ${formatCentsForNote(invoice.amount_due)} failed${failureReason ? ` — ${failureReason.replace(/_/g, ' ')}` : ''}`,
+      metadata: { amount: invoice.amount_due, failureReason, invoiceId: invoice.id },
+    })
+
+    // Send payment failed email to customer
+    try {
+      await sendPaymentFailedEmail({
+        to: sub.user.email,
+        customerName: sub.user.name || 'Customer',
+        productName: sub.variant.product.name,
+        amount: invoice.amount_due,
+        failureReason,
+      })
+      console.log(`[webhook] Sent payment failed email to ${sub.user.email}`)
+    } catch (err) {
+      console.error('[webhook] Failed to send payment failed email:', err)
+    }
+
+    // Send admin payment failed notification
+    try {
+      await sendAdminPaymentFailedNotification({
+        customerName: sub.user.name || 'Customer',
+        customerEmail: sub.user.email,
+        productName: sub.variant.product.name,
+        amount: invoice.amount_due,
+        failureReason,
+      })
+    } catch (err) {
+      console.error('[webhook] Failed to send admin payment failed notification:', err)
+    }
+  }
 }

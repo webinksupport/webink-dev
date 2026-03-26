@@ -183,7 +183,9 @@ export default function SubscriptionsManager({
                   </Link>
                 </td>
                 <td className="px-6 py-4 text-white text-sm">
-                  {sub.variant.product.name}
+                  <Link href={`/admin/subscriptions/${sub.id}`} className="hover:text-[#14EAEA] transition-colors underline decoration-[#333] underline-offset-2">
+                    {sub.variant.product.name}
+                  </Link>
                 </td>
                 <td className="px-6 py-4 text-white text-sm">
                   {sub.variant.name}

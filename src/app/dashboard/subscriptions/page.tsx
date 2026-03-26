@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
 import ManageSubscriptionButton from '@/components/dashboard/ManageSubscriptionButton'
 import SubscriptionActions from '@/components/dashboard/SubscriptionActions'
 
@@ -49,9 +50,11 @@ export default async function SubscriptionsPage() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-white">
-                    {sub.variant.product.name}
-                  </h3>
+                  <Link href={`/dashboard/subscriptions/${sub.id}`} className="hover:text-[#14EAEA] transition-colors">
+                    <h3 className="text-lg font-bold text-white hover:text-[#14EAEA]">
+                      {sub.variant.product.name}
+                    </h3>
+                  </Link>
                   <p className="text-[#999] text-sm">{sub.variant.name} tier</p>
                 </div>
                 <span

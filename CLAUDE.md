@@ -19,6 +19,39 @@ Customer data is sacred. This applies to Webink's ecommerce DB (users, subscript
 
 **Prisma rule:** Schema file ≠ live DB. Always run the actual migration before deploying the new build. Use `deploy.js` (NOT `deploy-full.js`) to preserve Traefik routing.
 
+## ⚠️ DEPLOY WORKFLOW — MANDATORY (ALL AGENTS: Mason, Claude Code, anyone)
+
+### Git Rules — NO EXCEPTIONS
+- **ALL work happens in `C:\OpenClaw\workspace-webink\webink-dev`** — the single source of truth
+- **ALL changes MUST be committed and pushed to GitHub** before deploying
+- **NEVER make changes directly on the VPS** — they will be wiped on next deploy
+- **NEVER work on a separate branch** — everything goes to `master`
+- **Branch: `master`** — Mason, Claude Code, and all agents work on the SAME branch
+
+### Before Starting ANY Work
+1. `cd C:\OpenClaw\workspace-webink\webink-dev`
+2. `git pull origin master` — get the latest code first
+3. `git log --oneline -5` — review recent changes to understand what others have done
+4. Check for uncommitted changes: `git status` — if dirty, commit or stash before starting
+
+### Deploy Steps
+1. Make your changes in `C:\OpenClaw\workspace-webink\webink-dev`
+2. `git add -A && git commit -m "description of changes"`
+3. `git push origin master`
+4. `node deploy.js`
+5. Verify on VPS: `ssh -p 2222 root@31.97.11.49 "cd /opt/webink-dev && git log --oneline -1; docker logs webink-dev --tail 10"`
+6. Confirm the VPS commit hash matches what you just pushed
+7. Check for zombies: `ps aux | grep node | grep -v grep | grep -v docker`
+
+**If you skip the git push, your changes will NOT deploy. deploy.js pulls from GitHub.**
+**If the VPS commit doesn't match your local commit, the deploy FAILED.**
+
+### Stripe Sync Rules
+- Products sync to Stripe via /api/admin/stripe-sync
+- Sync uses UPSERT logic — if a Stripe product already exists, update it, don't create a duplicate
+- Check for existing stripeProductId/stripePriceId before creating new ones
+- Auto-sync runs on container startup to ensure products are always in Stripe
+
 ## ⚠️ DATABASE SETUP — SEPARATE CONTAINERS
 Webink has its OWN database — completely separate from VoltDesk and Peptides.
 - **DB Container:** `webink-mysql` (NOT voltdesk-mysql)

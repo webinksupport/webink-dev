@@ -86,6 +86,7 @@ const GROUPS: GroupDef[] = [
       { key: 'SMTP_PASSWORD', label: 'SMTP Password', type: 'password' },
       { key: 'EMAIL_FROM_NAME', label: 'From Name', type: 'text', hint: 'e.g. Webink Solutions' },
       { key: 'EMAIL_FROM_ADDRESS', label: 'From Email', type: 'text', hint: 'e.g. hello@webink.solutions' },
+      { key: 'NOTIFICATION_EMAILS', label: 'Notification Recipients', type: 'text', hint: 'Comma-separated emails for order/subscription alerts (e.g. sean@webink.solutions)' },
     ],
   },
   {
