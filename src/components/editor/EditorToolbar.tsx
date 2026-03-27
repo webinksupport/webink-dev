@@ -5,7 +5,7 @@ import { useEditor, type TextProps, type ImageProps } from './EditorContext'
 import MediaPicker from './MediaPicker'
 import {
   Save, Check, X, Type, AlignLeft, AlignCenter, AlignRight,
-  ImageIcon, Move, ZoomIn, Sparkles, ChevronDown,
+  ImageIcon, Move, ZoomIn, Sparkles, ChevronDown, Database,
 } from 'lucide-react'
 
 const BRAND_COLORS = [
@@ -95,6 +95,19 @@ export function EditorToolbar() {
       window.removeEventListener('resize', updatePosition)
     }
   }, [selectedElement])
+
+  const handleClearCache = async () => {
+    try {
+      const res = await fetch('/api/clear-cache', { method: 'POST' })
+      if (res.ok) {
+        alert('Cache cleared! Refresh the page to see changes.')
+      } else {
+        alert('Failed to clear cache')
+      }
+    } catch {
+      alert('Failed to clear cache')
+    }
+  }
 
   const handleSave = useCallback(async () => {
     if (!selectedElement) return
@@ -392,6 +405,16 @@ export function EditorToolbar() {
             >
               <ImageIcon size={12} />
               Swap Image
+            </button>
+
+            {/* Clear Cache button */}
+            <button
+              onClick={handleClearCache}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 mt-2 bg-[#F813BE]/20 border border-[#F813BE]/30 rounded-lg font-urbanist font-bold text-xs text-[#F813BE] hover:bg-[#F813BE]/30 hover:text-white transition-colors"
+              title="Clear cache to force immediate content refresh"
+            >
+              <Database size={12} />
+              Clear Cache
             </button>
           </div>
         )}
