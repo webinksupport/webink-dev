@@ -96,6 +96,8 @@ function ServiceCard({
   color,
   href,
   index,
+  titleValue,
+  descValue,
 }: {
   icon: React.ElementType
   title: string
@@ -103,7 +105,10 @@ function ServiceCard({
   color: string
   href: string
   index: number
+  titleValue?: string
+  descValue?: string
 }) {
+  const cardNum = index + 1
   return (
     <motion.a
       href={href}
@@ -124,13 +129,25 @@ function ServiceCard({
 
       {/* Title */}
       <h3 className="font-urbanist font-black text-[20px] text-[#0F0F0F] mb-3 leading-tight">
-        {title}
+        <EditableText
+          as="span"
+          pageSlug="home"
+          blockKey={`services_card_${cardNum}_title`}
+          value={titleValue}
+          defaultValue={title}
+        />
       </h3>
 
       {/* Description */}
-      <p className="font-urbanist text-[14px] text-[#333]/60 leading-relaxed flex-1 mb-6">
-        {desc}
-      </p>
+      <div className="font-urbanist text-[14px] text-[#333]/60 leading-relaxed flex-1 mb-6">
+        <EditableText
+          as="span"
+          pageSlug="home"
+          blockKey={`services_card_${cardNum}_desc`}
+          value={descValue}
+          defaultValue={desc}
+        />
+      </div>
 
       {/* Learn More link */}
       <span
@@ -305,7 +322,7 @@ function HorizontalProcess() {
 }
 
 /* ── MAIN EXPORT ─────────────────────────────────────────── */
-export default function ServicesI() {
+export default function ServicesI({ content }: { content?: Record<string, string> } = {}) {
   return (
     <>
       {/* ── SERVICES GRID SECTION ── */}
@@ -315,21 +332,32 @@ export default function ServicesI() {
           {/* Section label */}
           <div className="flex items-center gap-3 mb-6">
             <span className="w-8 h-[2px] bg-[#F813BE]" />
-            <span className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase">Our Services</span>
+            <EditableText
+              as="span"
+              pageSlug="home"
+              blockKey="services_eyebrow"
+              value={content?.services_eyebrow}
+              defaultValue="Our Services"
+              className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase"
+            />
           </div>
 
           {/* Heading */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16">
             <EditableText
               as="h2"
+              pageSlug="home"
               blockKey="services_heading"
+              value={content?.services_heading}
               defaultValue="Full-Service Digital Agency."
               className="font-urbanist font-black text-[#0F0F0F] leading-[0.88]"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)', letterSpacing: '-0.04em' }}
             />
             <EditableText
               as="p"
+              pageSlug="home"
               blockKey="services_subtext"
+              value={content?.services_subtext}
               defaultValue="Everything your business needs to dominate the digital landscape — under one roof."
               className="font-urbanist text-[#333]/50 text-lg leading-relaxed max-w-sm lg:text-right"
             />
@@ -338,7 +366,13 @@ export default function ServicesI() {
           {/* 3×2 card grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {services.map((svc, i) => (
-              <ServiceCard key={svc.title} {...svc} index={i} />
+              <ServiceCard
+                key={svc.title}
+                {...svc}
+                index={i}
+                titleValue={content?.[`services_card_${i + 1}_title`]}
+                descValue={content?.[`services_card_${i + 1}_desc`]}
+              />
             ))}
           </div>
 

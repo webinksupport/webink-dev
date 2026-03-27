@@ -15,7 +15,7 @@ import FooterI from '@/components/variant-i/FooterI'
 import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageContent, getPageJsonContent } from '@/lib/content'
 
-export const revalidate = 3600
+export const revalidate = 0
 
 export const metadata: Metadata = {
   title: 'Sarasota Web Design & Digital Marketing Agency | Webink Solutions',
@@ -124,14 +124,14 @@ export default async function HomePage() {
         <NavI />
         <HeroI content={content} heroBgData={jsonContent.hero_bg as Partial<BackgroundData> | undefined} />
         <MarqueeI />
-        <ServicesI />
-        <AboutI />
-        <FounderI />
-        <LocalI />
-        <StatsI stats={jsonContent.stats as Array<{ value: number; suffix: string; label: string; sublabel: string; underlineColor: string }> | undefined} />
-        <TestimonialsI />
-        <PricingI />
-        <CTAI ctaBgData={jsonContent.cta_bg as Partial<BackgroundData> | undefined} />
+        <ServicesI content={content} />
+        <AboutI content={content} />
+        <FounderI content={content} />
+        <LocalI content={content} />
+        <StatsI content={content} stats={jsonContent.stats as Array<{ value: number; suffix: string; label: string; sublabel: string; underlineColor: string }> | undefined} />
+        <TestimonialsI content={content} />
+        <PricingI content={content} />
+        <CTAI content={content} ctaBgData={jsonContent.cta_bg as Partial<BackgroundData> | undefined} />
         <FooterI />
       </main>
     </PageEditorWrapper>

@@ -130,6 +130,7 @@ export function EditorProvider({
     try {
       const res = await fetch(`/api/content/${encodeURIComponent(slug)}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           blocks: [{

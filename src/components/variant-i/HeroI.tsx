@@ -61,9 +61,14 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
           transition={{ duration: 0.7, delay: 0.2 }}
         >
           <span className="w-8 h-[2px] bg-[#14EAEA]" />
-          <span className="font-urbanist text-xs font-black tracking-[0.5em] text-white/60 uppercase">
-            Sarasota Digital Marketing Agency
-          </span>
+          <EditableText
+            as="span"
+            pageSlug="home"
+            blockKey="hero_eyebrow"
+            value={content?.hero_eyebrow}
+            defaultValue="Sarasota Digital Marketing Agency"
+            className="font-urbanist text-xs font-black tracking-[0.5em] text-white/60 uppercase"
+          />
         </motion.div>
 
         {/* Main headline */}
@@ -77,27 +82,14 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          {(() => {
-            const headline = content?.hero_headline || 'Websites That Work.\nMarketing That Converts.'
-            const lines = headline.split('\n')
-            return lines.map((line, i) => (
-              <span key={i} style={{ whiteSpace: 'nowrap' }}>
-                {i === 0 ? (
-                  <span style={{ whiteSpace: 'nowrap' }}>
-                    {line.replace(/\.$/, '')}
-                    <span className="relative inline-block" style={{ whiteSpace: 'nowrap' }}>
-                      {line.endsWith('.') ? '.' : ''}
-                      <span
-                        className="absolute inset-x-0 bottom-0 h-[8px] bg-[#14EAEA] origin-left"
-                        style={{ animation: 'highlightSweep 0.7s cubic-bezier(0.4,0,0.2,1) 1.1s forwards', transform: 'scaleX(0)', bottom: '6px' }}
-                      />
-                    </span>
-                  </span>
-                ) : line}
-                {i < lines.length - 1 && <br />}
-              </span>
-            ))
-          })()}
+          <EditableText
+            as="span"
+            pageSlug="home"
+            blockKey="hero_headline"
+            value={content?.hero_headline}
+            defaultValue="Websites That Work. Marketing That Converts."
+            className="font-urbanist font-black text-white"
+          />
         </motion.h1>
 
         {/* Sub-headline */}
@@ -139,7 +131,13 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
             href="#services"
             className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-5 border-2 border-white/25 text-white rounded-full hover:border-white/60 transition-all duration-300"
           >
-            View Our Work
+            <EditableText
+              as="span"
+              pageSlug="home"
+              blockKey="hero_cta2_text"
+              value={content?.hero_cta2_text}
+              defaultValue="View Our Work"
+            />
           </a>
         </motion.div>
 
@@ -244,16 +242,19 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
         <div className="bg-black/80 backdrop-blur-md border-t border-white/10">
           <div className="max-w-[1400px] mx-auto px-6 lg:px-20 py-4 flex flex-wrap items-center gap-0 divide-x divide-white/10">
             {[
-              'Sarasota & Tampa Digital Marketing',
-              'AI-Powered Results',
-              'Free Consultation →',
-            ].map((item, i) => (
-              <span
+              { key: 'hero_strip_1', def: 'Sarasota & Tampa Digital Marketing', cyan: false },
+              { key: 'hero_strip_2', def: 'AI-Powered Results', cyan: false },
+              { key: 'hero_strip_3', def: 'Free Consultation →', cyan: true },
+            ].map(({ key, def, cyan }, i) => (
+              <EditableText
                 key={i}
-                className={`font-urbanist text-xs font-semibold tracking-wide px-6 first:pl-0 ${i === 2 ? 'text-[#14EAEA] cursor-pointer hover:text-white transition-colors' : 'text-white/50'}`}
-              >
-                {item}
-              </span>
+                as="span"
+                pageSlug="home"
+                blockKey={key}
+                value={content?.[key]}
+                defaultValue={def}
+                className={`font-urbanist text-xs font-semibold tracking-wide px-6 first:pl-0 ${cyan ? 'text-[#14EAEA] cursor-pointer hover:text-white transition-colors' : 'text-white/50'}`}
+              />
             ))}
           </div>
         </div>
