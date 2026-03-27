@@ -5,7 +5,7 @@ import EditableImage from '@/components/editor/EditableImage'
 
 const ease = [0.25, 0.46, 0.45, 0.94]
 
-export default function LocalI() {
+export default function LocalI({ content }: { content?: Record<string, string> } = {}) {
   return (
     <section className="bg-white py-24 lg:py-36 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">

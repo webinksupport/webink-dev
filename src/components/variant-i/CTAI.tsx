@@ -4,10 +4,11 @@ import EditableText from '@/components/editor/EditableText'
 import EditableBackground, { type BackgroundData } from '@/components/editor/EditableBackground'
 
 interface CTAIProps {
+  content?: Record<string, string>
   ctaBgData?: Partial<BackgroundData>
 }
 
-export default function CTAI({ ctaBgData }: CTAIProps = {}) {
+export default function CTAI({ content = {}, ctaBgData }: CTAIProps = {}) {
   return (
     <section
       id="contact"

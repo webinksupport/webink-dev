@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import EditableText from '@/components/editor/EditableText'
 import EditableImage from '@/components/editor/EditableImage'
 
-export default function AboutI() {
+export default function AboutI({ content }: { content?: Record<string, string> } = {}) {
   const sectionRef = useRef<HTMLElement>(null)
 
   const { scrollYProgress } = useScroll({

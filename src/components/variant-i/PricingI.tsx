@@ -60,7 +60,7 @@ const plans = [
   },
 ]
 
-export default function PricingI() {
+export default function PricingI({ content }: { content?: Record<string, string> } = {}) {
   return (
     <section id="pricing" className="bg-[#F8F8F8] py-24 lg:py-36 border-y border-black/5">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">

@@ -163,7 +163,7 @@ function FlipCard({ t, index }: { t: typeof testimonials[0]; index: number }) {
   )
 }
 
-export default function TestimonialsI() {
+export default function TestimonialsI({ content }: { content?: Record<string, string> } = {}) {
   return (
     <section id="testimonials" className="bg-white py-24 lg:py-36">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">

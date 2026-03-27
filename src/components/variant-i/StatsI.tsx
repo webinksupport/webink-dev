@@ -83,7 +83,7 @@ function StatCard({ value, suffix, label, sublabel, delay, underlineColor }: {
   )
 }
 
-export default function StatsI({ stats }: { stats?: StatData[] }) {
+export default function StatsI({ content = {}, stats }: { content?: Record<string, string>; stats?: StatData[] }) {
   // Only use DB stats if they contain non-zero values (prevents showing "0+" from empty DB)
   const hasValidStats = stats && stats.length > 0 && stats.some(s => s.value > 0)
   const displayStats = hasValidStats ? stats : defaultStats
