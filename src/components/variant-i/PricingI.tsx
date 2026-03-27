@@ -1,6 +1,7 @@
 'use client'
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
+import EditableText from '@/components/editor/EditableText'
 
 const plans = [
   {
@@ -71,16 +72,19 @@ export default function PricingI() {
             <span className="font-urbanist text-xs font-black tracking-[0.5em] text-black/30 uppercase">Pricing</span>
             <span className="w-8 h-[2px] bg-[#F813BE]" />
           </div>
-          <h2
+          <EditableText
+            as="h2"
+            blockKey="pricing_heading"
+            defaultValue="Transparent Pricing. Real Results."
             className="font-urbanist font-black text-[#0A0A0A] leading-[0.9] mb-6"
             style={{ fontSize: 'clamp(2.5rem, 6vw, 6rem)', letterSpacing: '-0.04em' }}
-          >
-            Transparent Pricing.<br />
-            <span className="text-[#F813BE]">Real Results.</span>
-          </h2>
-          <p className="font-urbanist text-[#0A0A0A]/50 text-lg max-w-xl mx-auto leading-relaxed">
-            No hidden fees. No lock-in contracts. Month-to-month flexibility with agency-grade results.
-          </p>
+          />
+          <EditableText
+            as="p"
+            blockKey="pricing_subtext"
+            defaultValue="No hidden fees. No lock-in contracts. Month-to-month flexibility with agency-grade results."
+            className="font-urbanist text-[#0A0A0A]/50 text-lg max-w-xl mx-auto leading-relaxed"
+          />
         </div>
 
         {/* Pricing cards */}

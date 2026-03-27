@@ -5,11 +5,11 @@ import { useEditor, type TextProps } from './EditorContext'
 interface EditableTextProps {
   /** The tag to render (h1, h2, p, span, etc.) */
   as?: ElementType
-  /** Page slug for content save */
-  pageSlug: string
+  /** Page slug for content save (optional — falls back to context pageSlug) */
+  pageSlug?: string
   /** Block key for content save */
   blockKey: string
-  /** Current text value */
+  /** Current text value (explicit override) */
   value?: string
   /** Fallback if no CMS value */
   defaultValue: string
@@ -33,9 +33,9 @@ interface EditableTextProps {
 
 export default function EditableText({
   as: Tag = 'p',
-  pageSlug,
+  pageSlug: explicitPageSlug,
   blockKey,
-  value,
+  value: explicitValue,
   defaultValue,
   className = '',
   style,
@@ -46,8 +46,13 @@ export default function EditableText({
   alignment,
   dangerouslySetInnerHTML,
 }: EditableTextProps) {
-  const { editMode, selectElement } = useEditor()
+  const { editMode, selectElement, pageSlug: contextPageSlug, getContent } = useEditor()
   const ref = useRef<HTMLElement>(null)
+
+  const pageSlug = explicitPageSlug || contextPageSlug
+  // Resolve value: explicit prop > DB content > defaultValue
+  const dbValue = getContent(blockKey)
+  const resolvedValue = explicitValue !== undefined ? explicitValue : (dbValue !== undefined ? dbValue : defaultValue)
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!editMode) return
@@ -58,7 +63,7 @@ export default function EditableText({
 
     const rect = el.getBoundingClientRect()
     const textData: TextProps = {
-      text: value || defaultValue,
+      text: resolvedValue,
       fontSize: fontSize || '',
       fontWeight: fontWeight || '',
       color: color || '',
@@ -73,7 +78,7 @@ export default function EditableText({
       element: el,
       data: textData,
     })
-  }, [editMode, selectElement, pageSlug, blockKey, value, defaultValue, fontSize, fontWeight, color, alignment])
+  }, [editMode, selectElement, pageSlug, blockKey, resolvedValue, fontSize, fontWeight, color, alignment])
 
   // Use inline styles for edit mode to avoid Tailwind JIT compilation issues with arbitrary values
   const editStyle: React.CSSProperties = editMode
@@ -105,7 +110,7 @@ export default function EditableText({
       data-editable="text"
       data-block-key={blockKey}
     >
-      {children ?? (value || defaultValue)}
+      {children ?? resolvedValue}
     </Tag>
   )
 }

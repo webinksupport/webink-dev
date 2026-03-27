@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Phone, Mail, MapPin, Clock, Send, Loader2, Check, AlertCircle } from 'lucide-react'
+import EditableText from '@/components/editor/EditableText'
+import EditableImage from '@/components/editor/EditableImage'
 
 const ease = [0.25, 0.46, 0.45, 0.94]
 
@@ -64,8 +65,9 @@ export default function ContactContent({ content }: { content: Record<string, st
       {/* ═══ HERO ═══ */}
       <section className="relative min-h-screen flex items-center bg-[#0F0F0F] overflow-hidden">
         <div className="absolute inset-0">
-          <Image
-            src={content.hero_image || '/images/photos/workspace-laptop.jpg'}
+          <EditableImage
+            blockKey="hero_image"
+            src="/images/photos/workspace-laptop.jpg"
             alt="Contact Webink Solutions"
             fill
             className="object-cover"
@@ -75,32 +77,43 @@ export default function ContactContent({ content }: { content: Record<string, st
           <div className="absolute inset-0 bg-black/70" />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 lg:px-24 py-32">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
-            className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
           >
-            Contact Us
-          </motion.p>
-          <motion.h1
+            <EditableText
+              as="p"
+              blockKey="hero_eyebrow"
+              defaultValue="Contact Us"
+              className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.0, ease }}
-            className="font-urbanist font-black text-white leading-[0.92] mb-6"
-            style={{ fontSize: 'clamp(2.75rem, 7vw, 5.5rem)', letterSpacing: '-0.04em' }}
           >
-            {content.hero_headline || 'Let\'s'}{' '}
-            <span className="text-[#F813BE]">Talk.</span>
-          </motion.h1>
-          <motion.p
+            <EditableText
+              as="h1"
+              blockKey="hero_headline"
+              defaultValue="Let's Talk."
+              className="font-urbanist font-black text-white leading-[0.92] mb-6"
+              style={{ fontSize: 'clamp(2.75rem, 7vw, 5.5rem)', letterSpacing: '-0.04em' }}
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease }}
-            className="font-urbanist text-white/70 text-lg md:text-xl leading-relaxed max-w-2xl"
           >
-            {content.hero_subtext || 'Ready to grow your business? Send us a message or give us a call — we\'d love to hear about your project.'}
-          </motion.p>
+            <EditableText
+              as="p"
+              blockKey="hero_subtext"
+              defaultValue="Ready to grow your business? Send us a message or give us a call — we'd love to hear about your project."
+              className="font-urbanist text-white/70 text-lg md:text-xl leading-relaxed max-w-2xl"
+            />
+          </motion.div>
         </div>
       </section>
 
@@ -116,9 +129,12 @@ export default function ContactContent({ content }: { content: Record<string, st
               viewport={{ once: true }}
               className="lg:col-span-3"
             >
-              <h2 className="font-urbanist font-black text-white text-2xl mb-8">
-                {content.form_heading || 'Send Us a Message'}
-              </h2>
+              <EditableText
+                as="h2"
+                blockKey="form_heading"
+                defaultValue="Send Us a Message"
+                className="font-urbanist font-black text-white text-2xl mb-8"
+              />
 
               {status === 'sent' ? (
                 <div className="bg-[#14EAEA]/10 border border-[#14EAEA]/30 rounded-2xl p-8 text-center">
@@ -189,7 +205,12 @@ export default function ContactContent({ content }: { content: Record<string, st
               viewport={{ once: true }}
               className="lg:col-span-2"
             >
-              <h3 className="font-urbanist font-bold text-white text-xl mb-8">Get in Touch</h3>
+              <EditableText
+                as="h3"
+                blockKey="info_heading"
+                defaultValue="Get in Touch"
+                className="font-urbanist font-bold text-white text-xl mb-8"
+              />
 
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
@@ -198,7 +219,9 @@ export default function ContactContent({ content }: { content: Record<string, st
                   </div>
                   <div>
                     <h4 className="font-urbanist font-bold text-white text-sm mb-1">Phone</h4>
-                    <a href="tel:9418401381" className="font-urbanist text-white/60 hover:text-[#14EAEA] transition-colors">(941) 840-1381</a>
+                    <a href="tel:9418401381" className="font-urbanist text-white/60 hover:text-[#14EAEA] transition-colors">
+                      <EditableText as="span" blockKey="info_phone" defaultValue="(941) 840-1381" />
+                    </a>
                   </div>
                 </div>
 
@@ -208,7 +231,9 @@ export default function ContactContent({ content }: { content: Record<string, st
                   </div>
                   <div>
                     <h4 className="font-urbanist font-bold text-white text-sm mb-1">Email</h4>
-                    <a href="mailto:hello@webink.solutions" className="font-urbanist text-white/60 hover:text-[#F813BE] transition-colors">hello@webink.solutions</a>
+                    <a href="mailto:hello@webink.solutions" className="font-urbanist text-white/60 hover:text-[#F813BE] transition-colors">
+                      <EditableText as="span" blockKey="info_email" defaultValue="hello@webink.solutions" />
+                    </a>
                   </div>
                 </div>
 
@@ -218,11 +243,12 @@ export default function ContactContent({ content }: { content: Record<string, st
                   </div>
                   <div>
                     <h4 className="font-urbanist font-bold text-white text-sm mb-1">Address</h4>
-                    <p className="font-urbanist text-white/60">
-                      Webink Solutions<br />
-                      1609 Georgetowne Blvd<br />
-                      Sarasota, FL 34232
-                    </p>
+                    <EditableText
+                      as="p"
+                      blockKey="info_address"
+                      defaultValue="Webink Solutions\n1609 Georgetowne Blvd\nSarasota, FL 34232"
+                      className="font-urbanist text-white/60"
+                    />
                   </div>
                 </div>
 
@@ -232,10 +258,12 @@ export default function ContactContent({ content }: { content: Record<string, st
                   </div>
                   <div>
                     <h4 className="font-urbanist font-bold text-white text-sm mb-1">Hours</h4>
-                    <p className="font-urbanist text-white/60">
-                      Mon - Fri: 9:00 AM - 5:00 PM<br />
-                      Sat - Sun: By appointment
-                    </p>
+                    <EditableText
+                      as="p"
+                      blockKey="info_hours"
+                      defaultValue="Mon - Fri: 9:00 AM - 5:00 PM\nSat - Sun: By appointment"
+                      className="font-urbanist text-white/60"
+                    />
                   </div>
                 </div>
               </div>

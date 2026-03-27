@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ChevronDown, Loader2 } from 'lucide-react'
+import EditableText from '@/components/editor/EditableText'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -406,31 +407,43 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
       {/* ============================================================ */}
       <section className="relative bg-[#0F0F0F] pt-40 pb-20 lg:pb-28 px-6 md:px-16 lg:px-24">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
           >
-            Pricing
-          </motion.p>
-          <motion.h1
+            <EditableText
+              as="p"
+              blockKey="hero_eyebrow"
+              defaultValue="Pricing"
+              className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="text-white font-light text-5xl md:text-6xl lg:text-7xl mb-6"
-            style={{ fontSize: 'clamp(3rem, 8vw, 5rem)' }}
           >
-            {content?.hero_headline || 'Transparent Pricing'}
-          </motion.h1>
-          <motion.p
+            <EditableText
+              as="h1"
+              blockKey="hero_headline"
+              defaultValue="Transparent Pricing"
+              className="text-white font-light text-5xl md:text-6xl lg:text-7xl mb-6"
+              style={{ fontSize: 'clamp(3rem, 8vw, 5rem)' }}
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto"
           >
-            {content?.hero_subtext || 'No hidden fees. No long-term contracts. Just straightforward plans built to grow your business.'}
-          </motion.p>
+            <EditableText
+              as="p"
+              blockKey="hero_subtext"
+              defaultValue="No hidden fees. No long-term contracts. Just straightforward plans built to grow your business."
+              className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto"
+            />
+          </motion.div>
         </div>
       </section>
 
@@ -628,16 +641,24 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
             {...fadeUp}
             className="lg:col-span-8 text-center lg:text-left"
           >
-            <p className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4">
-              Ready to Grow?
-            </p>
-            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-              Not sure which plan is right for you?
-            </h2>
-            <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto lg:mx-0">
-              Schedule a free consultation and we will build a custom strategy tailored to your
-              business goals and budget.
-            </p>
+            <EditableText
+              as="p"
+              blockKey="cta_eyebrow"
+              defaultValue="Ready to Grow?"
+              className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
+            />
+            <EditableText
+              as="h2"
+              blockKey="cta_heading"
+              defaultValue="Not sure which plan is right for you?"
+              className="text-3xl lg:text-4xl font-bold text-white mb-4"
+            />
+            <EditableText
+              as="p"
+              blockKey="cta_subtext"
+              defaultValue="Schedule a free consultation and we will build a custom strategy tailored to your business goals and budget."
+              className="text-white/60 text-lg mb-8 max-w-xl mx-auto lg:mx-0"
+            />
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <Link
                 href="/contact"

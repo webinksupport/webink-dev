@@ -5,6 +5,8 @@ import { motion } from 'framer-motion'
 import {
   Globe, Search, TrendingUp, Share2, Brain, Code, Server,
 } from 'lucide-react'
+import EditableText from '@/components/editor/EditableText'
+import EditableImage from '@/components/editor/EditableImage'
 
 const services = [
   {
@@ -14,6 +16,7 @@ const services = [
     color: '#14EAEA',
     href: '/services/web-design',
     image: '/images/services/web-design-hero.png',
+    key: 'svc_web_design',
   },
   {
     icon: Search,
@@ -22,6 +25,7 @@ const services = [
     color: '#F813BE',
     href: '/services/seo',
     image: '/images/services/seo-hero.png',
+    key: 'svc_seo',
   },
   {
     icon: Share2,
@@ -30,6 +34,7 @@ const services = [
     color: '#B9FF33',
     href: '/services/social-media',
     image: '/images/services/social-media-hero.png',
+    key: 'svc_social',
   },
   {
     icon: TrendingUp,
@@ -38,6 +43,7 @@ const services = [
     color: '#14EAEA',
     href: '/services/paid-advertising',
     image: '/images/services/ppc-ads-hero.png',
+    key: 'svc_ppc',
   },
   {
     icon: Brain,
@@ -46,6 +52,7 @@ const services = [
     color: '#F813BE',
     href: '/services/ai-marketing',
     image: '/images/services/ai-marketing-hero.png',
+    key: 'svc_ai',
   },
   {
     icon: Server,
@@ -54,6 +61,7 @@ const services = [
     color: '#14EAEA',
     href: '/services/web-hosting',
     image: '/images/services/web-design-hero.png',
+    key: 'svc_hosting',
   },
   {
     icon: Code,
@@ -62,6 +70,7 @@ const services = [
     color: '#B9FF33',
     href: '/services/custom-crm',
     image: '/images/services/crm-hero.png',
+    key: 'svc_crm',
   },
 ]
 
@@ -86,32 +95,43 @@ export default function ServicesHubContent() {
         </div>
         <div className="relative max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <motion.p
+            <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease }}
-              className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
             >
-              Our Services
-            </motion.p>
-            <motion.h1
+              <EditableText
+                as="p"
+                blockKey="hero_eyebrow"
+                defaultValue="Our Services"
+                className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
+              />
+            </motion.div>
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.0, ease }}
-              className="font-urbanist font-black text-white leading-[0.92] mb-6"
-              style={{ fontSize: 'clamp(2.75rem, 7vw, 5.5rem)', letterSpacing: '-0.04em' }}
             >
-              Full-Service{' '}
-              <span className="text-[#F813BE]">Digital Agency.</span>
-            </motion.h1>
-            <motion.p
+              <EditableText
+                as="h1"
+                blockKey="hero_headline"
+                defaultValue="Full-Service Digital Agency."
+                className="font-urbanist font-black text-white leading-[0.92] mb-6"
+                style={{ fontSize: 'clamp(2.75rem, 7vw, 5.5rem)', letterSpacing: '-0.04em' }}
+              />
+            </motion.div>
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease }}
-              className="font-urbanist text-white/60 text-lg md:text-xl leading-relaxed max-w-2xl"
             >
-              Everything your Sarasota business needs to dominate the digital landscape — web design, SEO, social media, paid ads, AI marketing, and custom software — all under one roof.
-            </motion.p>
+              <EditableText
+                as="p"
+                blockKey="hero_subtext"
+                defaultValue="Everything your Sarasota business needs to dominate the digital landscape — web design, SEO, social media, paid ads, AI marketing, and custom software — all under one roof."
+                className="font-urbanist text-white/60 text-lg md:text-xl leading-relaxed max-w-2xl"
+              />
+            </motion.div>
           </div>
           <motion.div
             initial={{ scale: 0.9, opacity: 0, x: 40 }}
@@ -120,7 +140,8 @@ export default function ServicesHubContent() {
             className="hidden lg:block overflow-hidden rounded-2xl shadow-2xl"
           >
             <div className="relative h-[400px]">
-              <Image
+              <EditableImage
+                blockKey="hero_image"
                 src="/images/photoshoot/DSC04500-2.jpg"
                 alt="Sean Rowe and the Webink Solutions team — full-service digital agency in Sarasota"
                 fill
@@ -137,25 +158,33 @@ export default function ServicesHubContent() {
       {/* ── Services Grid ── */}
       <section className="bg-white px-6 md:px-16 lg:px-24 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
           >
-            What We Do
-          </motion.p>
-          <motion.h2
+            <EditableText
+              as="p"
+              blockKey="grid_eyebrow"
+              defaultValue="What We Do"
+              className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="font-urbanist font-black text-[#1A1A1A] mb-16 leading-tight"
-            style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
           >
-            Services Built for Growth
-          </motion.h2>
+            <EditableText
+              as="h2"
+              blockKey="grid_heading"
+              defaultValue="Services Built for Growth"
+              className="font-urbanist font-black text-[#1A1A1A] mb-16 leading-tight"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
+            />
+          </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((svc, i) => {
@@ -194,13 +223,19 @@ export default function ServicesHubContent() {
                         <Icon size={18} style={{ color: svc.color }} strokeWidth={2} />
                       </div>
 
-                      <h3 className="font-urbanist font-black text-[20px] text-[#0F0F0F] mb-3 leading-tight">
-                        {svc.title}
-                      </h3>
+                      <EditableText
+                        as="h3"
+                        blockKey={`${svc.key}_title`}
+                        defaultValue={svc.title}
+                        className="font-urbanist font-black text-[20px] text-[#0F0F0F] mb-3 leading-tight"
+                      />
 
-                      <p className="font-urbanist text-[14px] text-[#333]/60 leading-relaxed flex-1 mb-6">
-                        {svc.desc}
-                      </p>
+                      <EditableText
+                        as="p"
+                        blockKey={`${svc.key}_desc`}
+                        defaultValue={svc.desc}
+                        className="font-urbanist text-[14px] text-[#333]/60 leading-relaxed flex-1 mb-6"
+                      />
 
                       <span
                         className="font-urbanist font-bold text-sm transition-colors duration-200"
@@ -237,34 +272,46 @@ export default function ServicesHubContent() {
           <div className="absolute inset-0 bg-[#0F0F0F]/85" />
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
           >
-            Get Started
-          </motion.p>
-          <motion.h2
+            <EditableText
+              as="p"
+              blockKey="cta_eyebrow"
+              defaultValue="Get Started"
+              className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="font-urbanist font-black text-white mb-6 leading-tight"
-            style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
           >
-            Not Sure Where to Start?
-          </motion.h2>
-          <motion.p
+            <EditableText
+              as="h2"
+              blockKey="cta_heading"
+              defaultValue="Not Sure Where to Start?"
+              className="font-urbanist font-black text-white mb-6 leading-tight"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="font-urbanist text-white/60 text-lg leading-relaxed max-w-xl mx-auto mb-10"
           >
-            Book a free consultation and we will audit your digital presence, identify quick wins, and build a custom strategy for your business.
-          </motion.p>
+            <EditableText
+              as="p"
+              blockKey="cta_subtext"
+              defaultValue="Book a free consultation and we will audit your digital presence, identify quick wins, and build a custom strategy for your business."
+              className="font-urbanist text-white/60 text-lg leading-relaxed max-w-xl mx-auto mb-10"
+            />
+          </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -276,13 +323,13 @@ export default function ServicesHubContent() {
               href="/contact"
               className="bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200"
             >
-              Get a Free Quote
+              <EditableText as="span" blockKey="cta_button_1" defaultValue="Get a Free Quote" />
             </Link>
             <a
               href="tel:9418401381"
               className="border border-[#14EAEA] text-[#14EAEA] font-semibold px-8 py-4 rounded-full hover:bg-[#14EAEA] hover:text-[#0A0A0A] transition-colors duration-200"
             >
-              Call (941) 840-1381
+              <EditableText as="span" blockKey="cta_button_2" defaultValue="Call (941) 840-1381" />
             </a>
           </motion.div>
         </div>

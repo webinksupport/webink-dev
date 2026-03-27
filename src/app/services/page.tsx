@@ -2,6 +2,10 @@ import type { Metadata } from 'next'
 import NavI from '@/components/variant-i/NavI'
 import FooterI from '@/components/variant-i/FooterI'
 import ServicesHubContent from './ServicesHubContent'
+import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
+import { getPageContent } from '@/lib/content'
+
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Digital Marketing Services Sarasota & Tampa | Webink Solutions',
@@ -19,12 +23,16 @@ export const metadata: Metadata = {
   },
 }
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const content = await getPageContent('services')
+
   return (
-    <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
-      <NavI />
-      <ServicesHubContent />
-      <FooterI />
-    </main>
+    <PageEditorWrapper pageSlug="services" initialContent={content}>
+      <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
+        <NavI />
+        <ServicesHubContent />
+        <FooterI />
+      </main>
+    </PageEditorWrapper>
   )
 }

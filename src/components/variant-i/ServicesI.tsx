@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import {
   Globe, Search, TrendingUp, Share2, Server, Brain,
 } from 'lucide-react'
+import EditableText from '@/components/editor/EditableText'
 
 /* ── SERVICE CARDS (3x2 grid) ─────────────────────────────── */
 const services = [
@@ -319,16 +320,19 @@ export default function ServicesI() {
 
           {/* Heading */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16">
-            <h2
+            <EditableText
+              as="h2"
+              blockKey="services_heading"
+              defaultValue="Full-Service Digital Agency."
               className="font-urbanist font-black text-[#0F0F0F] leading-[0.88]"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)', letterSpacing: '-0.04em' }}
-            >
-              Full-Service<br />
-              <span className="text-[#F813BE]">Digital Agency.</span>
-            </h2>
-            <p className="font-urbanist text-[#333]/50 text-lg leading-relaxed max-w-sm lg:text-right">
-              Everything your business needs to dominate the digital landscape — under one roof.
-            </p>
+            />
+            <EditableText
+              as="p"
+              blockKey="services_subtext"
+              defaultValue="Everything your business needs to dominate the digital landscape — under one roof."
+              className="font-urbanist text-[#333]/50 text-lg leading-relaxed max-w-sm lg:text-right"
+            />
           </div>
 
           {/* 3×2 card grid */}

@@ -4,7 +4,8 @@ import Image, { type ImageProps } from 'next/image'
 import { useEditor, type ImageProps as EditorImageProps } from './EditorContext'
 
 interface EditableImageProps extends Omit<ImageProps, 'onClick'> {
-  pageSlug: string
+  /** Page slug for content save (optional — falls back to context pageSlug) */
+  pageSlug?: string
   blockKey: string
   /** Override object-position from CMS */
   cmsObjectPosition?: string
@@ -15,7 +16,7 @@ interface EditableImageProps extends Omit<ImageProps, 'onClick'> {
 }
 
 export default function EditableImage({
-  pageSlug,
+  pageSlug: explicitPageSlug,
   blockKey,
   cmsObjectPosition,
   cmsZoom,
@@ -25,12 +26,18 @@ export default function EditableImage({
   className,
   ...rest
 }: EditableImageProps) {
-  const { editMode, selectElement } = useEditor()
+  const { editMode, selectElement, pageSlug: contextPageSlug, getContent, getJsonContent } = useEditor()
   const imgRef = useRef<HTMLImageElement>(null)
 
-  const resolvedSrc = cmsSrc || src
-  const resolvedPosition = cmsObjectPosition || (style?.objectPosition as string) || 'center'
-  const resolvedZoom = cmsZoom || 1
+  const pageSlug = explicitPageSlug || contextPageSlug
+
+  // Resolve from DB content if available
+  const dbValue = getContent(blockKey)
+  const dbJson = getJsonContent(blockKey) as { src?: string; objectPosition?: string; zoom?: number } | undefined
+
+  const resolvedSrc = cmsSrc || dbJson?.src || dbValue || src
+  const resolvedPosition = cmsObjectPosition || dbJson?.objectPosition || (style?.objectPosition as string) || 'center'
+  const resolvedZoom = cmsZoom || dbJson?.zoom || 1
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!editMode) return

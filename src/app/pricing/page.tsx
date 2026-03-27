@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import NavI from '@/components/variant-i/NavI'
 import FooterI from '@/components/variant-i/FooterI'
 import PricingContent from './PricingContent'
+import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageContent } from '@/lib/content'
 
 export const revalidate = 3600
@@ -25,10 +26,12 @@ export default async function PricingPage() {
   const content = await getPageContent('pricing')
 
   return (
-    <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
-      <NavI />
-      <PricingContent content={content} />
-      <FooterI />
-    </main>
+    <PageEditorWrapper pageSlug="pricing" initialContent={content}>
+      <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
+        <NavI />
+        <PricingContent content={content} />
+        <FooterI />
+      </main>
+    </PageEditorWrapper>
   )
 }

@@ -3,6 +3,7 @@ import NavI from '@/components/variant-i/NavI'
 import FooterI from '@/components/variant-i/FooterI'
 import { getPageContent } from '@/lib/content'
 import ContactContent from './ContactContent'
+import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 
 export const revalidate = 3600
 
@@ -25,10 +26,12 @@ export default async function ContactPage() {
   const content = await getPageContent('contact')
 
   return (
-    <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
-      <NavI />
-      <ContactContent content={content} />
-      <FooterI />
-    </main>
+    <PageEditorWrapper pageSlug="contact" initialContent={content}>
+      <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
+        <NavI />
+        <ContactContent content={content} />
+        <FooterI />
+      </main>
+    </PageEditorWrapper>
   )
 }

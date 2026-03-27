@@ -66,9 +66,23 @@ function EditorOverlay() {
   )
 }
 
-export default function VisualEditor({ children, pageSlug }: { children: ReactNode; pageSlug: string }) {
+export default function VisualEditor({ 
+  children, 
+  pageSlug,
+  initialContent,
+  initialJsonContent,
+}: { 
+  children: ReactNode
+  pageSlug: string
+  initialContent?: Record<string, string>
+  initialJsonContent?: Record<string, unknown>
+}) {
   return (
-    <EditorProvider pageSlug={pageSlug}>
+    <EditorProvider 
+      pageSlug={pageSlug} 
+      initialContent={initialContent}
+      initialJsonContent={initialJsonContent}
+    >
       {children}
       <EditorOverlay />
     </EditorProvider>

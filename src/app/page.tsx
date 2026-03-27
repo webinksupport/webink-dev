@@ -118,7 +118,7 @@ export default async function HomePage() {
   const jsonContent = await getPageJsonContent('home')
 
   return (
-    <PageEditorWrapper pageSlug="home">
+    <PageEditorWrapper pageSlug="home" initialContent={content} initialJsonContent={jsonContent}>
       <main className="bg-white text-[#0A0A0A] font-urbanist antialiased overflow-x-hidden">
         <JsonLd />
         <NavI />
