@@ -114,8 +114,14 @@ function JsonLd() {
 }
 
 export default async function HomePage() {
-  const content = await getPageContent('home').catch(() => ({}))
-  const jsonContent = await getPageJsonContent('home').catch(() => ({}))
+  let content: Record<string, string> = {}
+  let jsonContent: Record<string, unknown> = {}
+  try {
+    content = await getPageContent('home')
+  } catch {}
+  try {
+    jsonContent = await getPageJsonContent('home')
+  } catch {}
 
   return (
     <PageEditorWrapper pageSlug="home" initialContent={content} initialJsonContent={jsonContent}>
