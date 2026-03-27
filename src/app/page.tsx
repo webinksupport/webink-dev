@@ -15,7 +15,7 @@ import FooterI from '@/components/variant-i/FooterI'
 import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageContent, getPageJsonContent } from '@/lib/content'
 
-export const revalidate = 0
+export const revalidate = 1
 
 export const metadata: Metadata = {
   title: 'Sarasota Web Design & Digital Marketing Agency | Webink Solutions',
@@ -114,8 +114,8 @@ function JsonLd() {
 }
 
 export default async function HomePage() {
-  const content = await getPageContent('home')
-  const jsonContent = await getPageJsonContent('home')
+  const content = await getPageContent('home').catch(() => ({}))
+  const jsonContent = await getPageJsonContent('home').catch(() => ({}))
 
   return (
     <PageEditorWrapper pageSlug="home" initialContent={content} initialJsonContent={jsonContent}>
