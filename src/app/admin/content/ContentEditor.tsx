@@ -743,6 +743,23 @@ export default function ContentEditor() {
     showToast('Reverted to last saved state', 'success')
   }
 
+  const handleClearCache = async () => {
+    if (!confirm('Clear cache to force immediate content refresh? This will trigger a server restart and clear the revalidate cache.')) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/clear-cache', { method: 'POST' })
+      if (res.ok) {
+        showToast('Cache cleared! Refresh the page to see changes.', 'success')
+      } else {
+        showToast('Failed to clear cache', 'error')
+      }
+    } catch {
+      showToast('Failed to clear cache', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleValueChange = (blockKey: string, newValue: string) => {
     setBlocks((prev) => prev.map((b) => b.blockKey === blockKey ? { ...b, value: newValue } : b))
   }
@@ -854,6 +871,9 @@ export default function ContentEditor() {
 
             <button onClick={handleRevert} disabled={!hasDirtyBlocks} className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#555] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Revert">
               <RotateCcw className="w-3.5 h-3.5" /><span className="hidden sm:inline">Revert</span>
+            </button>
+            <button onClick={handleClearCache} className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-sm text-[#F813BE] border border-[#F813BE]/30 hover:border-[#F813BE] hover:text-[#F813BE] rounded-lg transition-colors" title="Clear cache to force immediate content refresh">
+              <Database className="w-3.5 h-3.5" /><span className="hidden sm:inline">Clear Cache</span>
             </button>
             <button onClick={handleSave} disabled={!hasDirtyBlocks || saving} className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm rounded-lg hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
               <Save className="w-3.5 h-3.5" /> Save
