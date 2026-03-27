@@ -15,7 +15,7 @@ import FooterI from '@/components/variant-i/FooterI'
 import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageContent, getPageJsonContent } from '@/lib/content'
 
-export const revalidate = 3600
+// Dynamic - revalidate on every request
 
 export const metadata: Metadata = {
   title: 'Sarasota Web Design & Digital Marketing Agency | Webink Solutions',
