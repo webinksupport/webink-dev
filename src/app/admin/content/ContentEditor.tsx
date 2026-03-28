@@ -13,7 +13,6 @@ import {
   Check,
   AlertCircle,
   ChevronRight,
-  ChevronDown,
   X,
   Eye,
   ExternalLink,
@@ -32,6 +31,12 @@ import {
   Type,
   GripVertical,
   Database,
+  Globe,
+  PenLine,
+  CircleDot,
+  Clock,
+  FilePlus2,
+  Shield,
 } from 'lucide-react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -52,6 +57,17 @@ interface ContentBlock {
   blockType: BlockType
   value: string
   jsonValue?: unknown
+  updatedAt: string
+}
+
+interface PageRecord {
+  id: string
+  title: string
+  slug: string
+  status: 'PUBLISHED' | 'DRAFT'
+  isCore: boolean
+  template: string
+  createdAt: string
   updatedAt: string
 }
 
@@ -109,6 +125,37 @@ function fieldTypeToBlockType(fieldType: string): BlockType {
     default: return 'TEXT'
   }
 }
+
+function slugFromTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+function getPageUrl(slug: string): string {
+  const schema = PAGE_SCHEMAS.find((p) => p.slug === slug)
+  if (schema) return schema.url
+  return `/${slug}`
+}
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// Generic blocks for new custom pages
+const GENERIC_PAGE_FIELDS: ContentFieldSchema[] = [
+  { key: 'hero_headline', label: 'Hero Headline', type: 'text' },
+  { key: 'hero_subtext', label: 'Hero Subtext', type: 'textarea' },
+  { key: 'hero_image', label: 'Hero Image', type: 'image' },
+  { key: 'body_content', label: 'Body Content', type: 'html' },
+  { key: 'seo_meta_title', label: 'Meta Title', type: 'seo' },
+  { key: 'seo_meta_description', label: 'Meta Description', type: 'seo' },
+  { key: 'seo_og_image', label: 'OG / Featured Image', type: 'image' },
+]
 
 // ---------------------------------------------------------------------------
 // TipTap Rich Text Editor
@@ -638,10 +685,122 @@ function AddBlockForm({ onCreated }: { onCreated: (key: string, type: BlockType,
 }
 
 // ---------------------------------------------------------------------------
+// New Page Modal
+// ---------------------------------------------------------------------------
+
+function NewPageModal({ onCreated, onClose }: { onCreated: (page: PageRecord) => void; onClose: () => void }) {
+  const [title, setTitle] = useState('')
+  const [slug, setSlug] = useState('')
+  const [slugEdited, setSlugEdited] = useState(false)
+  const [status, setStatus] = useState<'PUBLISHED' | 'DRAFT'>('DRAFT')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleTitleChange = (v: string) => {
+    setTitle(v)
+    if (!slugEdited) setSlug(slugFromTitle(v))
+  }
+
+  const handleCreate = async () => {
+    if (!title.trim() || !slug.trim()) {
+      setError('Title and slug are required')
+      return
+    }
+    setSaving(true)
+    setError('')
+    try {
+      const res = await fetch('/api/admin/pages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title.trim(), slug: slug.trim(), status }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        setError(data.error || 'Failed to create page')
+        return
+      }
+      const page = await res.json()
+      onCreated(page)
+    } catch {
+      setError('Failed to create page')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
+      <div className="bg-[#111] rounded-2xl border border-white/10 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-white/10">
+          <h3 className="text-white font-bold text-lg">Create New Page</h3>
+          <button onClick={onClose} className="p-1 rounded hover:bg-white/10 text-white/60 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="text-[#999] text-[10px] font-bold uppercase tracking-wider block mb-1.5">Page Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              placeholder="My New Page"
+              className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#14EAEA]"
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="text-[#999] text-[10px] font-bold uppercase tracking-wider block mb-1.5">URL Slug</label>
+            <div className="flex items-center gap-0">
+              <span className="bg-[#1A1A1A] text-[#666] text-sm border border-r-0 border-[#333] rounded-l-lg px-3 py-2.5">/</span>
+              <input
+                type="text"
+                value={slug}
+                onChange={(e) => { setSlug(e.target.value); setSlugEdited(true) }}
+                placeholder="my-new-page"
+                className="flex-1 bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-r-lg px-3 py-2.5 focus:outline-none focus:border-[#14EAEA] font-mono"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-[#999] text-[10px] font-bold uppercase tracking-wider block mb-1.5">Status</label>
+            <div className="flex gap-2">
+              {(['DRAFT', 'PUBLISHED'] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatus(s)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold border transition-colors ${
+                    status === s
+                      ? s === 'PUBLISHED'
+                        ? 'bg-[#14EAEA]/10 border-[#14EAEA]/40 text-[#14EAEA]'
+                        : 'bg-[#F813BE]/10 border-[#F813BE]/40 text-[#F813BE]'
+                      : 'border-[#333] text-[#666] hover:text-white hover:border-[#555]'
+                  }`}
+                >
+                  <CircleDot className="w-3.5 h-3.5" />
+                  {s === 'PUBLISHED' ? 'Published' : 'Draft'}
+                </button>
+              ))}
+            </div>
+          </div>
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+        </div>
+        <div className="flex items-center justify-end gap-2 p-5 border-t border-white/10">
+          <button onClick={onClose} className="px-4 py-2 text-sm text-[#999] hover:text-white border border-[#333] rounded-lg transition-colors">Cancel</button>
+          <button onClick={handleCreate} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm rounded-lg hover:bg-white transition-colors disabled:opacity-50">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <FilePlus2 className="w-4 h-4" />}
+            Create Page
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main Editor
 // ---------------------------------------------------------------------------
 
 export default function ContentEditor() {
+  const [view, setView] = useState<'list' | 'edit'>('list')
   const [selectedPage, setSelectedPage] = useState<string | null>(null)
   const [blocks, setBlocks] = useState<ContentBlock[]>([])
   const [savedBlocks, setSavedBlocks] = useState<ContentBlock[]>([])
@@ -652,11 +811,81 @@ export default function ContentEditor() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const autoSaveTimer = useRef<NodeJS.Timeout | null>(null)
 
+  // Page records from DB
+  const [pages, setPages] = useState<PageRecord[]>([])
+  const [pagesLoading, setPagesLoading] = useState(true)
+  const [pageSearch, setPageSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'PUBLISHED' | 'DRAFT'>('all')
+  const [showNewPageModal, setShowNewPageModal] = useState(false)
+
+  // Fetch pages from DB
+  const fetchPages = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/pages')
+      if (res.ok) {
+        const data = await res.json()
+        setPages(data)
+      }
+    } catch {
+      // Pages table might not exist yet; fall back to schema-only
+    } finally {
+      setPagesLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchPages()
+  }, [fetchPages])
+
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 4000)
   }, [])
 
+  // Build a merged page list: all PAGE_SCHEMAS + any custom DB pages not in schemas
+  const mergedPages = (() => {
+    const schemaPages = PAGE_SCHEMAS.map((s) => {
+      const dbPage = pages.find((p) => p.slug === s.slug)
+      return {
+        slug: s.slug,
+        title: s.label,
+        url: s.url,
+        status: dbPage?.status || ('PUBLISHED' as const),
+        isCore: dbPage?.isCore ?? true,
+        updatedAt: dbPage?.updatedAt || '',
+        dbId: dbPage?.id || null,
+        hasSchema: true,
+        fieldCount: s.fields.length,
+      }
+    })
+    // Custom pages (in DB but not in PAGE_SCHEMAS)
+    const schemaSlugs = new Set(PAGE_SCHEMAS.map((s) => s.slug))
+    const customPages = pages
+      .filter((p) => !schemaSlugs.has(p.slug))
+      .map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        url: `/${p.slug}`,
+        status: p.status,
+        isCore: p.isCore,
+        updatedAt: p.updatedAt,
+        dbId: p.id,
+        hasSchema: false,
+        fieldCount: GENERIC_PAGE_FIELDS.length,
+      }))
+    return [...schemaPages, ...customPages]
+  })()
+
+  const filteredPages = mergedPages.filter((p) => {
+    if (statusFilter !== 'all' && p.status !== statusFilter) return false
+    if (pageSearch) {
+      const q = pageSearch.toLowerCase()
+      return p.title.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q) || p.url.toLowerCase().includes(q)
+    }
+    return true
+  })
+
+  // Content editing logic
   const fetchBlocks = useCallback(async (slug: string) => {
     setLoading(true)
     try {
@@ -678,7 +907,17 @@ export default function ContentEditor() {
   const handleSelectPage = (slug: string) => {
     if (hasDirtyBlocks && !confirm('You have unsaved changes. Switch pages?')) return
     setSelectedPage(slug)
+    setView('edit')
     fetchBlocks(slug)
+    setSaveStatus('idle')
+  }
+
+  const handleBackToList = () => {
+    if (hasDirtyBlocks && !confirm('You have unsaved changes. Go back?')) return
+    setSelectedPage(null)
+    setView('list')
+    setBlocks([])
+    setSavedBlocks([])
     setSaveStatus('idle')
   }
 
@@ -744,7 +983,7 @@ export default function ContentEditor() {
   }
 
   const handleClearCache = async () => {
-    if (!confirm('Clear cache to force immediate content refresh? This will trigger a server restart and clear the revalidate cache.')) return
+    if (!confirm('Clear cache to force immediate content refresh?')) return
     setSaving(true)
     try {
       const res = await fetch('/api/clear-cache', { method: 'POST' })
@@ -801,10 +1040,11 @@ export default function ContentEditor() {
   const handleSeedFromSchema = () => {
     if (!selectedPage) return
     const schema = PAGE_SCHEMAS.find((p) => p.slug === selectedPage)
-    if (!schema) return
+    // For custom pages not in PAGE_SCHEMAS, use generic fields
+    const fields = schema?.fields || GENERIC_PAGE_FIELDS
     const existingKeys = new Set(blocks.map((b) => b.blockKey))
     let added = 0
-    for (const field of schema.fields) {
+    for (const field of fields) {
       if (!existingKeys.has(field.key)) {
         handleAddBlock(field.key, fieldTypeToBlockType(field.type), '')
         added++
@@ -813,169 +1053,435 @@ export default function ContentEditor() {
     if (added > 0) showToast(`Added ${added} field(s) from schema`, 'success')
   }
 
-  // Get page schema
-  const schema = selectedPage ? PAGE_SCHEMAS.find((p) => p.slug === selectedPage) : null
-  const schemaFieldMap = new Map<string, ContentFieldSchema>()
-  if (schema) {
-    for (const f of schema.fields) schemaFieldMap.set(f.key, f)
+  // Toggle page status
+  const handleToggleStatus = async (pageSlug: string) => {
+    const page = pages.find((p) => p.slug === pageSlug)
+    if (!page) {
+      // Page might not be in DB yet (schema-only). Create it.
+      const schemaPage = PAGE_SCHEMAS.find((p) => p.slug === pageSlug)
+      if (!schemaPage) return
+      try {
+        const res = await fetch('/api/admin/pages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: schemaPage.label, slug: pageSlug, status: 'DRAFT' }),
+        })
+        if (res.ok) {
+          await fetchPages()
+          showToast(`"${schemaPage.label}" set to Draft`, 'success')
+        }
+      } catch {
+        showToast('Failed to update status', 'error')
+      }
+      return
+    }
+
+    const newStatus = page.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
+    try {
+      const res = await fetch('/api/admin/pages', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: page.id, status: newStatus }),
+      })
+      if (res.ok) {
+        await fetchPages()
+        showToast(`"${page.title}" set to ${newStatus === 'PUBLISHED' ? 'Published' : 'Draft'}`, 'success')
+      }
+    } catch {
+      showToast('Failed to update status', 'error')
+    }
   }
 
-  const existingKeys = new Set(blocks.map((b) => b.blockKey))
-  const missingSchemaFields = schema ? schema.fields.filter((f) => !existingKeys.has(f.key)).length : 0
+  // Delete page
+  const handleDeletePage = async (pageSlug: string) => {
+    const page = pages.find((p) => p.slug === pageSlug)
+    if (!page || page.isCore) return
+    if (!confirm(`Delete page "${page.title}"? This will also delete all its content blocks.`)) return
+    try {
+      const res = await fetch('/api/admin/pages', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: page.id }),
+      })
+      if (res.ok) {
+        await fetchPages()
+        showToast(`"${page.title}" deleted`, 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Failed to delete', 'error')
+      }
+    } catch {
+      showToast('Failed to delete page', 'error')
+    }
+  }
 
-  const pageUrl = schema?.url || PAGE_SCHEMAS.find((p) => p.slug === selectedPage)?.url
+  // Handle new page created
+  const handleNewPageCreated = async (page: PageRecord) => {
+    setShowNewPageModal(false)
+    await fetchPages()
+    showToast(`Page "${page.title}" created`, 'success')
+    // Open it for editing
+    handleSelectPage(page.slug)
+  }
+
+  // Get page schema
+  const schema = selectedPage ? PAGE_SCHEMAS.find((p) => p.slug === selectedPage) : null
+  const activeFields = schema?.fields || (selectedPage && !schema ? GENERIC_PAGE_FIELDS : [])
+  const schemaFieldMap = new Map<string, ContentFieldSchema>()
+  for (const f of activeFields) schemaFieldMap.set(f.key, f)
+
+  const existingKeys = new Set(blocks.map((b) => b.blockKey))
+  const missingSchemaFields = activeFields.filter((f) => !existingKeys.has(f.key)).length
+
+  const pageUrl = selectedPage ? getPageUrl(selectedPage) : undefined
+
+  // -----------------------------------------------------------------------
+  // RENDER — Page List View
+  // -----------------------------------------------------------------------
+
+  if (view === 'list') {
+    return (
+      <div>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+          <div>
+            <p className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-2">Content</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">Pages</h1>
+            <p className="text-[#999] text-sm">Manage all site pages, content, SEO, and publishing status.</p>
+          </div>
+          <button
+            onClick={() => setShowNewPageModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm rounded-lg hover:bg-white transition-colors shrink-0"
+          >
+            <FilePlus2 className="w-4 h-4" /> New Page
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+          <div className="relative flex-1 w-full sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+            <input
+              type="text"
+              placeholder="Search pages..."
+              value={pageSearch}
+              onChange={(e) => setPageSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-[#1A1A1A] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#14EAEA]/50"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            {(['all', 'PUBLISHED', 'DRAFT'] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setStatusFilter(f)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  statusFilter === f
+                    ? 'bg-[#14EAEA]/20 text-[#14EAEA] border border-[#14EAEA]/30'
+                    : 'text-[#666] hover:text-white border border-[#333] hover:border-[#555]'
+                }`}
+              >
+                {f === 'all' ? 'All' : f === 'PUBLISHED' ? 'Published' : 'Drafts'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Page count */}
+        <p className="text-[#666] text-sm mb-4">
+          {filteredPages.length} page{filteredPages.length !== 1 ? 's' : ''}
+          {pageSearch && ` matching "${pageSearch}"`}
+        </p>
+
+        {pagesLoading ? (
+          <div className="flex items-center justify-center py-32">
+            <Loader2 className="w-8 h-8 text-[#14EAEA] animate-spin" />
+          </div>
+        ) : (
+          <>
+            {/* Desktop table */}
+            <div className="bg-[#0A0A0A] border border-[#333] rounded-2xl overflow-hidden hidden sm:block">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#333] text-[#666] text-xs uppercase tracking-wider">
+                    <th className="p-4 text-left">Page</th>
+                    <th className="p-4 text-left">URL</th>
+                    <th className="p-4 text-left">Status</th>
+                    <th className="p-4 text-left">Modified</th>
+                    <th className="p-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPages.map((page) => (
+                    <tr key={page.slug} className="border-b border-[#222] hover:bg-[#1A1A1A]/50 transition-colors group">
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-[#1A1A1A] flex items-center justify-center shrink-0">
+                            {page.hasSchema ? (
+                              <Globe className="w-4 h-4 text-[#14EAEA]" />
+                            ) : (
+                              <FileText className="w-4 h-4 text-[#F813BE]" />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-white font-medium block truncate">{page.title}</span>
+                            {page.isCore && (
+                              <span className="flex items-center gap-1 text-[10px] text-[#666]">
+                                <Shield className="w-2.5 h-2.5" /> Core
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <code className="text-[#14EAEA]/60 text-xs font-mono">{page.url}</code>
+                      </td>
+                      <td className="p-4">
+                        <button
+                          onClick={() => handleToggleStatus(page.slug)}
+                          className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full transition-colors ${
+                            page.status === 'PUBLISHED'
+                              ? 'bg-[#14EAEA]/10 text-[#14EAEA] hover:bg-[#14EAEA]/20'
+                              : 'bg-[#F813BE]/10 text-[#F813BE] hover:bg-[#F813BE]/20'
+                          }`}
+                        >
+                          <CircleDot className="w-3 h-3" />
+                          {page.status === 'PUBLISHED' ? 'Published' : 'Draft'}
+                        </button>
+                      </td>
+                      <td className="p-4">
+                        {page.updatedAt ? (
+                          <span className="flex items-center gap-1.5 text-[#666] text-xs">
+                            <Clock className="w-3 h-3" />
+                            {formatDate(page.updatedAt)}
+                          </span>
+                        ) : (
+                          <span className="text-[#444] text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleSelectPage(page.slug)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#14EAEA] border border-[#14EAEA]/30 rounded-lg hover:bg-[#14EAEA]/10 transition-colors"
+                          >
+                            <PenLine className="w-3 h-3" />
+                            Edit
+                          </button>
+                          <a
+                            href={page.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#999] border border-[#333] rounded-lg hover:border-[#14EAEA] hover:text-[#14EAEA] transition-colors"
+                          >
+                            <Eye className="w-3 h-3" />
+                            Preview
+                          </a>
+                          {!page.isCore && (
+                            <button
+                              onClick={() => handleDeletePage(page.slug)}
+                              className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-[#666] border border-[#333] rounded-lg hover:border-red-500/50 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="sm:hidden space-y-3">
+              {filteredPages.map((page) => (
+                <div key={page.slug} className="bg-[#0A0A0A] border border-[#333] rounded-xl p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-white font-medium text-sm truncate">{page.title}</p>
+                      <code className="text-[#14EAEA]/60 text-xs font-mono">{page.url}</code>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                      page.status === 'PUBLISHED'
+                        ? 'bg-[#14EAEA]/10 text-[#14EAEA]'
+                        : 'bg-[#F813BE]/10 text-[#F813BE]'
+                    }`}>
+                      {page.status === 'PUBLISHED' ? 'Published' : 'Draft'}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleSelectPage(page.slug)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#14EAEA] border border-[#14EAEA]/30 rounded-lg">
+                      <PenLine className="w-3 h-3" /> Edit
+                    </button>
+                    <a href={page.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#999] border border-[#333] rounded-lg">
+                      <Eye className="w-3 h-3" /> Preview
+                    </a>
+                    {!page.isCore && (
+                      <button onClick={() => handleDeletePage(page.slug)} className="flex items-center gap-1 px-2 py-1.5 text-xs text-[#666] border border-[#333] rounded-lg hover:text-red-400">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {filteredPages.length === 0 && (
+              <div className="text-center py-16 text-[#555]">
+                <Globe className="w-8 h-8 mx-auto mb-3 opacity-40" />
+                <p className="text-sm">No pages match your filter.</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {showNewPageModal && <NewPageModal onCreated={handleNewPageCreated} onClose={() => setShowNewPageModal(false)} />}
+        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      </div>
+    )
+  }
+
+  // -----------------------------------------------------------------------
+  // RENDER — Edit View
+  // -----------------------------------------------------------------------
+
+  const currentPageInfo = mergedPages.find((p) => p.slug === selectedPage)
 
   return (
     <div>
-      {/* Page header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">Page Editor</h1>
-        <p className="text-[#999]">Edit content, images, structured data, and SEO across the site. Changes auto-save after 3 seconds.</p>
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 bg-[#1A1A1A] border border-white/10 rounded-xl px-4 sm:px-5 py-3">
+        <button onClick={handleBackToList} className="text-white/60 hover:text-white text-sm transition-colors">&larr; Pages</button>
+        <div className="w-px h-5 bg-[#333] hidden sm:block" />
+        <h2 className="text-white font-bold text-sm sm:text-base">{currentPageInfo?.title || schema?.label || formatBlockKey(selectedPage || '')}</h2>
+        <span className="text-[#666] text-xs font-mono hidden sm:inline">{pageUrl}</span>
+
+        {/* Status badge */}
+        {currentPageInfo && (
+          <button
+            onClick={() => selectedPage && handleToggleStatus(selectedPage)}
+            className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full transition-colors ${
+              currentPageInfo.status === 'PUBLISHED'
+                ? 'bg-[#14EAEA]/10 text-[#14EAEA] hover:bg-[#14EAEA]/20'
+                : 'bg-[#F813BE]/10 text-[#F813BE] hover:bg-[#F813BE]/20'
+            }`}
+          >
+            <CircleDot className="w-3 h-3" />
+            {currentPageInfo.status === 'PUBLISHED' ? 'Published' : 'Draft'}
+          </button>
+        )}
+
+        <div className="flex-1 min-w-0" />
+
+        {saveStatus === 'saving' && <span className="flex items-center gap-2 text-xs sm:text-sm text-white/50"><Loader2 className="w-3.5 h-3.5 animate-spin" /><span className="hidden sm:inline">Saving...</span></span>}
+        {saveStatus === 'saved' && <span className="flex items-center gap-2 text-xs sm:text-sm text-[#14EAEA]"><Check className="w-3.5 h-3.5" /><span className="hidden sm:inline">Saved</span></span>}
+        {saveStatus === 'error' && <span className="flex items-center gap-2 text-xs sm:text-sm text-red-400"><AlertCircle className="w-3.5 h-3.5" /><span className="hidden sm:inline">Error</span></span>}
+
+        <button onClick={handleRevert} disabled={!hasDirtyBlocks} className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#555] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Revert">
+          <RotateCcw className="w-3.5 h-3.5" /><span className="hidden sm:inline">Revert</span>
+        </button>
+        <button onClick={handleClearCache} className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-sm text-[#F813BE] border border-[#F813BE]/30 hover:border-[#F813BE] hover:text-[#F813BE] rounded-lg transition-colors" title="Clear cache">
+          <Database className="w-3.5 h-3.5" /><span className="hidden sm:inline">Clear Cache</span>
+        </button>
+        <button onClick={handleSave} disabled={!hasDirtyBlocks || saving} className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm rounded-lg hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          <Save className="w-3.5 h-3.5" /> Save
+        </button>
+        {pageUrl && (
+          <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#14EAEA] hover:text-[#14EAEA] transition-colors" title="Preview">
+            <ExternalLink className="w-3.5 h-3.5" /><span className="hidden sm:inline">Preview</span>
+          </a>
+        )}
       </div>
 
-      {/* Page list (when no page selected) */}
-      {!selectedPage && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {PAGE_SCHEMAS.map((page) => (
-            <div key={page.slug} className="bg-[#1A1A1A] border border-white/10 rounded-xl p-5 hover:border-[#14EAEA]/40 transition-all group cursor-pointer" onClick={() => handleSelectPage(page.slug)}>
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="text-white font-bold text-lg group-hover:text-[#14EAEA] transition-colors">{page.label}</h3>
-                  <p className="text-[#666] text-xs font-mono mt-0.5">{page.url}</p>
-                </div>
-                <span className="text-[#666] text-xs">{page.fields.length} fields</span>
-              </div>
-              <div className="flex items-center gap-2 mt-4">
-                <button className="flex items-center gap-2 text-sm text-[#14EAEA] font-semibold hover:underline"><FileText className="w-4 h-4" /> Edit Page</button>
-                <a href={page.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-sm text-[#999] hover:text-white ml-auto"><Eye className="w-3.5 h-3.5" /> Preview</a>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Editor view */}
-      {selectedPage && (
-        <div>
-          {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 bg-[#1A1A1A] border border-white/10 rounded-xl px-4 sm:px-5 py-3">
-            <button onClick={() => { if (hasDirtyBlocks && !confirm('You have unsaved changes. Go back?')) return; setSelectedPage(null); setBlocks([]); setSavedBlocks([]); setSaveStatus('idle') }} className="text-white/60 hover:text-white text-sm transition-colors">← Back</button>
-            <div className="w-px h-5 bg-[#333] hidden sm:block" />
-            <h2 className="text-white font-bold text-sm sm:text-base">{schema?.label || formatBlockKey(selectedPage)}</h2>
-            <span className="text-[#666] text-xs font-mono hidden sm:inline">{selectedPage}</span>
-            <div className="flex-1 min-w-0" />
-
-            {saveStatus === 'saving' && <span className="flex items-center gap-2 text-xs sm:text-sm text-white/50"><Loader2 className="w-3.5 h-3.5 animate-spin" /><span className="hidden sm:inline">Saving...</span></span>}
-            {saveStatus === 'saved' && <span className="flex items-center gap-2 text-xs sm:text-sm text-[#14EAEA]"><Check className="w-3.5 h-3.5" /><span className="hidden sm:inline">Saved</span></span>}
-            {saveStatus === 'error' && <span className="flex items-center gap-2 text-xs sm:text-sm text-red-400"><AlertCircle className="w-3.5 h-3.5" /><span className="hidden sm:inline">Error</span></span>}
-
-            <button onClick={handleRevert} disabled={!hasDirtyBlocks} className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#555] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Revert">
-              <RotateCcw className="w-3.5 h-3.5" /><span className="hidden sm:inline">Revert</span>
-            </button>
-            <button onClick={handleClearCache} className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-sm text-[#F813BE] border border-[#F813BE]/30 hover:border-[#F813BE] hover:text-[#F813BE] rounded-lg transition-colors" title="Clear cache to force immediate content refresh">
-              <Database className="w-3.5 h-3.5" /><span className="hidden sm:inline">Clear Cache</span>
-            </button>
-            <button onClick={handleSave} disabled={!hasDirtyBlocks || saving} className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-[#14EAEA] text-[#0A0A0A] font-semibold text-sm rounded-lg hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-              <Save className="w-3.5 h-3.5" /> Save
-            </button>
-            {pageUrl && (
-              <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-sm text-[#999] border border-[#333] rounded-lg hover:border-[#14EAEA] hover:text-[#14EAEA] transition-colors" title="Preview">
-                <ExternalLink className="w-3.5 h-3.5" /><span className="hidden sm:inline">Preview</span>
-              </a>
-            )}
-          </div>
-
-          {/* Content */}
-          {loading ? (
-            <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 text-[#14EAEA] animate-spin" /></div>
-          ) : (
-            <div className="max-w-4xl">
-              {/* Schema seed button */}
-              {missingSchemaFields > 0 && (
-                <div className="mb-4 flex items-center gap-3">
-                  <button onClick={handleSeedFromSchema} className="flex items-center gap-2 text-sm text-[#F813BE] border border-[#F813BE]/30 hover:border-[#F813BE] px-3 py-1.5 rounded-lg transition-colors">
-                    <Plus className="w-4 h-4" /> Add {missingSchemaFields} schema field{missingSchemaFields > 1 ? 's' : ''}
-                  </button>
-                  <span className="text-[#666] text-xs">Fields defined in content schema but not yet in DB</span>
-                </div>
-              )}
-
-              {blocks.length === 0 && (
-                <div className="text-center py-16 text-[#555]">
-                  <Type className="w-10 h-10 mx-auto mb-4 opacity-40" />
-                  <p className="text-sm mb-2">No content blocks yet.</p>
-                  {schema && <p className="text-xs">Click &quot;Add schema fields&quot; above to populate from the content schema.</p>}
-                </div>
-              )}
-
-              {/* Field list — accordion style */}
-              <div className="space-y-2">
-                {blocks.map((block) => {
-                  const schemaField = schemaFieldMap.get(block.blockKey)
-                  const label = schemaField?.label || formatBlockKey(block.blockKey)
-                  const isExpanded = expandedField === block.blockKey
-                  const dirty = isDirty(block.blockKey)
-                  const blockType = block.blockType
-
-                  return (
-                    <div key={block.blockKey} className={`bg-[#1A1A1A] border rounded-xl transition-all ${isExpanded ? 'border-[#14EAEA]/40' : 'border-white/10 hover:border-white/20'}`}>
-                      {/* Header */}
-                      <button onClick={() => setExpandedField(isExpanded ? null : block.blockKey)} className="w-full flex items-center gap-3 px-4 py-3 text-left">
-                        <ChevronRight className={`w-4 h-4 text-[#555] transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                        <span className={`shrink-0 ${blockTypeColor(blockType)}`}>{blockTypeIcon(blockType)}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-white text-sm font-medium truncate">{label}</h4>
-                            {dirty && <span className="w-2 h-2 rounded-full bg-yellow-400 shrink-0" title="Unsaved changes" />}
-                            {schemaField && <span className="text-[8px] font-bold tracking-wider uppercase text-[#14EAEA]/40">{schemaField.type}</span>}
-                          </div>
-                          {!isExpanded && (
-                            <p className="text-[#666] text-xs truncate mt-0.5">
-                              {blockType === 'JSON' && block.jsonValue
-                                ? `${Array.isArray(block.jsonValue) ? block.jsonValue.length + ' items' : 'object'}`
-                                : truncate(block.value.replace(/<[^>]*>/g, ''), 60) || '(empty)'}
-                            </p>
-                          )}
-                        </div>
-                        <button onClick={(e) => { e.stopPropagation(); handleDeleteBlock(block.blockKey) }} className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/20 text-[#666] hover:text-red-400 transition-all">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </button>
-
-                      {/* Editor */}
-                      {isExpanded && (
-                        <div className="px-4 pb-4">
-                          {schemaField?.description && (
-                            <p className="text-[#666] text-xs mb-3">{schemaField.description}</p>
-                          )}
-                          {schemaField ? (
-                            <SchemaFieldEditor
-                              field={schemaField}
-                              block={block}
-                              onValueChange={(v) => handleValueChange(block.blockKey, v)}
-                              onJsonChange={(v) => handleJsonChange(block.blockKey, v)}
-                            />
-                          ) : blockType === 'HTML' ? (
-                            <RichTextEditor content={block.value} onChange={(v) => handleValueChange(block.blockKey, v)} />
-                          ) : blockType === 'IMAGE' ? (
-                            <SchemaFieldEditor field={{ key: block.blockKey, label, type: 'image' }} block={block} onValueChange={(v) => handleValueChange(block.blockKey, v)} onJsonChange={(v) => handleJsonChange(block.blockKey, v)} />
-                          ) : (
-                            <textarea value={block.value} onChange={(e) => handleValueChange(block.blockKey, e.target.value)} rows={3} className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA] resize-y leading-relaxed" />
-                          )}
-                          <p className="text-[#555] text-xs font-mono mt-2">Key: {block.blockKey}</p>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Add custom block */}
-              <div className="mt-4">
-                <AddBlockForm onCreated={handleAddBlock} />
-              </div>
+      {/* Content */}
+      {loading ? (
+        <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 text-[#14EAEA] animate-spin" /></div>
+      ) : (
+        <div className="max-w-4xl">
+          {/* Schema seed button */}
+          {missingSchemaFields > 0 && (
+            <div className="mb-4 flex items-center gap-3">
+              <button onClick={handleSeedFromSchema} className="flex items-center gap-2 text-sm text-[#F813BE] border border-[#F813BE]/30 hover:border-[#F813BE] px-3 py-1.5 rounded-lg transition-colors">
+                <Plus className="w-4 h-4" /> Add {missingSchemaFields} schema field{missingSchemaFields > 1 ? 's' : ''}
+              </button>
+              <span className="text-[#666] text-xs">Fields defined in content schema but not yet in DB</span>
             </div>
           )}
+
+          {blocks.length === 0 && (
+            <div className="text-center py-16 text-[#555]">
+              <Type className="w-10 h-10 mx-auto mb-4 opacity-40" />
+              <p className="text-sm mb-2">No content blocks yet.</p>
+              <p className="text-xs">Click &quot;Add schema fields&quot; above to populate from the content schema.</p>
+            </div>
+          )}
+
+          {/* Field list — accordion style */}
+          <div className="space-y-2">
+            {blocks.map((block) => {
+              const schemaField = schemaFieldMap.get(block.blockKey)
+              const label = schemaField?.label || formatBlockKey(block.blockKey)
+              const isExpanded = expandedField === block.blockKey
+              const dirty = isDirty(block.blockKey)
+              const blockType = block.blockType
+
+              return (
+                <div key={block.blockKey} className={`bg-[#1A1A1A] border rounded-xl transition-all ${isExpanded ? 'border-[#14EAEA]/40' : 'border-white/10 hover:border-white/20'}`}>
+                  {/* Header */}
+                  <button onClick={() => setExpandedField(isExpanded ? null : block.blockKey)} className="w-full flex items-center gap-3 px-4 py-3 text-left">
+                    <ChevronRight className={`w-4 h-4 text-[#555] transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                    <span className={`shrink-0 ${blockTypeColor(blockType)}`}>{blockTypeIcon(blockType)}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-white text-sm font-medium truncate">{label}</h4>
+                        {dirty && <span className="w-2 h-2 rounded-full bg-yellow-400 shrink-0" title="Unsaved changes" />}
+                        {schemaField && <span className="text-[8px] font-bold tracking-wider uppercase text-[#14EAEA]/40">{schemaField.type}</span>}
+                      </div>
+                      {!isExpanded && (
+                        <p className="text-[#666] text-xs truncate mt-0.5">
+                          {blockType === 'JSON' && block.jsonValue
+                            ? `${Array.isArray(block.jsonValue) ? block.jsonValue.length + ' items' : 'object'}`
+                            : truncate(block.value.replace(/<[^>]*>/g, ''), 60) || '(empty)'}
+                        </p>
+                      )}
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); handleDeleteBlock(block.blockKey) }} className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/20 text-[#666] hover:text-red-400 transition-all">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </button>
+
+                  {/* Editor */}
+                  {isExpanded && (
+                    <div className="px-4 pb-4">
+                      {schemaField?.description && (
+                        <p className="text-[#666] text-xs mb-3">{schemaField.description}</p>
+                      )}
+                      {schemaField ? (
+                        <SchemaFieldEditor
+                          field={schemaField}
+                          block={block}
+                          onValueChange={(v) => handleValueChange(block.blockKey, v)}
+                          onJsonChange={(v) => handleJsonChange(block.blockKey, v)}
+                        />
+                      ) : blockType === 'HTML' ? (
+                        <RichTextEditor content={block.value} onChange={(v) => handleValueChange(block.blockKey, v)} />
+                      ) : blockType === 'IMAGE' ? (
+                        <SchemaFieldEditor field={{ key: block.blockKey, label, type: 'image' }} block={block} onValueChange={(v) => handleValueChange(block.blockKey, v)} onJsonChange={(v) => handleJsonChange(block.blockKey, v)} />
+                      ) : (
+                        <textarea value={block.value} onChange={(e) => handleValueChange(block.blockKey, e.target.value)} rows={3} className="w-full bg-[#0A0A0A] text-white text-sm border border-[#333] rounded-lg px-3 py-2 focus:outline-none focus:border-[#14EAEA] resize-y leading-relaxed" />
+                      )}
+                      <p className="text-[#555] text-xs font-mono mt-2">Key: {block.blockKey}</p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Add custom block */}
+          <div className="mt-4">
+            <AddBlockForm onCreated={handleAddBlock} />
+          </div>
         </div>
       )}
 

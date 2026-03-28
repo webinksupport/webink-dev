@@ -9,7 +9,7 @@ import {
   Users,
   ShoppingCart,
   CreditCard,
-  FileText,
+
   Image,
   Plug,
   Menu,
@@ -35,8 +35,7 @@ const navSections = [
   {
     title: 'Content',
     items: [
-      { href: '/admin/pages', label: 'Pages', icon: Files },
-      { href: '/admin/content', label: 'Page Editor', icon: FileText },
+      { href: '/admin/content', label: 'Pages', icon: Files },
       { href: '/admin/menu', label: 'Menu', icon: MenuSquare },
       { href: '/admin/media', label: 'Media Library', icon: Image },
     ],

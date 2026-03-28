@@ -261,6 +261,27 @@ enum OrderStatus {
   REFUNDED
 }
 
+// ─── Pages (CMS Page Manager) ───────────────────────────────────────
+
+model Page {
+  id        String     @id @default(cuid())
+  title     String
+  slug      String     @unique       // URL slug, e.g. "my-new-page"
+  status    PageStatus @default(DRAFT)
+  isCore    Boolean    @default(false) // true for /, /about, /contact, /services — cannot be deleted
+  template  String     @default("generic") // template type
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([slug])
+  @@index([status])
+}
+
+enum PageStatus {
+  PUBLISHED
+  DRAFT
+}
+
 // ─── CMS Content ────────────────────────────────────────────────────
 
 model PageContent {

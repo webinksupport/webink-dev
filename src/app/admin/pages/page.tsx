@@ -1,7 +1,5 @@
-import { requireAdmin } from '@/lib/admin'
-import PageManager from './PageManager'
+import { redirect } from 'next/navigation'
 
-export default async function AdminPagesPage() {
-  await requireAdmin()
-  return <PageManager />
+export default function AdminPagesRedirect() {
+  redirect('/admin/content')
 }

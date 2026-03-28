@@ -47,6 +47,7 @@ function servicePageFields(serviceName: string): ContentFieldSchema[] {
     { key: 'hero_cta_link', label: 'Hero CTA Link', type: 'link' },
     { key: 'seo_meta_title', label: 'Meta Title', type: 'seo' },
     { key: 'seo_meta_description', label: 'Meta Description', type: 'seo' },
+    { key: 'seo_og_image', label: 'OG / Featured Image', type: 'image', description: 'Social sharing image (Open Graph)' },
   ]
 }
 
@@ -72,6 +73,7 @@ export const PAGE_SCHEMAS: PageSchema[] = [
       { key: 'stats_heading', label: 'Stats Section Heading', type: 'text' },
       { key: 'seo_meta_title', label: 'Meta Title', type: 'seo' },
       { key: 'seo_meta_description', label: 'Meta Description', type: 'seo' },
+      { key: 'seo_og_image', label: 'OG / Featured Image', type: 'image', description: 'Social sharing image (Open Graph)' },
     ],
   },
   {
@@ -91,6 +93,7 @@ export const PAGE_SCHEMAS: PageSchema[] = [
       { key: 'values', label: 'Company Values', type: 'feature_list', description: 'Values with icon, title, and description' },
       { key: 'seo_meta_title', label: 'Meta Title', type: 'seo' },
       { key: 'seo_meta_description', label: 'Meta Description', type: 'seo' },
+      { key: 'seo_og_image', label: 'OG / Featured Image', type: 'image', description: 'Social sharing image (Open Graph)' },
     ],
   },
   {
@@ -105,6 +108,7 @@ export const PAGE_SCHEMAS: PageSchema[] = [
       { key: 'form_subtext', label: 'Form Subtext', type: 'textarea' },
       { key: 'seo_meta_title', label: 'Meta Title', type: 'seo' },
       { key: 'seo_meta_description', label: 'Meta Description', type: 'seo' },
+      { key: 'seo_og_image', label: 'OG / Featured Image', type: 'image', description: 'Social sharing image (Open Graph)' },
     ],
   },
   {
@@ -117,6 +121,7 @@ export const PAGE_SCHEMAS: PageSchema[] = [
       { key: 'hero_image', label: 'Hero Background Image', type: 'image' },
       { key: 'seo_meta_title', label: 'Meta Title', type: 'seo' },
       { key: 'seo_meta_description', label: 'Meta Description', type: 'seo' },
+      { key: 'seo_og_image', label: 'OG / Featured Image', type: 'image', description: 'Social sharing image (Open Graph)' },
     ],
   },
   {
@@ -171,6 +176,7 @@ export const PAGE_SCHEMAS: PageSchema[] = [
       { key: 'faqs', label: 'Pricing FAQs', type: 'faq_list' },
       { key: 'seo_meta_title', label: 'Meta Title', type: 'seo' },
       { key: 'seo_meta_description', label: 'Meta Description', type: 'seo' },
+      { key: 'seo_og_image', label: 'OG / Featured Image', type: 'image', description: 'Social sharing image (Open Graph)' },
     ],
   },
 ]
