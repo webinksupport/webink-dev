@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import EditableImage from '@/components/editor/EditableImage'
+import EditableText from '@/components/editor/EditableText'
 
 const testimonials = [
   {
@@ -173,19 +174,33 @@ export default function TestimonialsI({ content }: { content?: Record<string, st
           <div>
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-[2px] bg-[#14EAEA]" />
-              <span className="font-urbanist text-xs font-black tracking-[0.5em] text-black/30 uppercase">Testimonials</span>
+              <EditableText
+                as="span"
+                pageSlug="home"
+                blockKey="testimonials_eyebrow"
+                value={content?.testimonials_eyebrow}
+                defaultValue="Testimonials"
+                className="font-urbanist text-xs font-black tracking-[0.5em] text-black/30 uppercase"
+              />
             </div>
-            <h2
+            <EditableText
+              as="h2"
+              pageSlug="home"
+              blockKey="testimonials_heading"
+              value={content?.testimonials_heading}
+              defaultValue="What Clients Actually Say."
               className="font-urbanist font-black text-[#0A0A0A] leading-[0.9]"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 6rem)', letterSpacing: '-0.04em' }}
-            >
-              What Clients<br />
-              <span className="text-[#14EAEA]">Actually Say.</span>
-            </h2>
+            />
           </div>
-          <p className="font-urbanist text-[#0A0A0A]/50 text-base leading-relaxed max-w-xs">
-            Hover each card to read the full review. Real clients, real results.
-          </p>
+          <EditableText
+            as="p"
+            pageSlug="home"
+            blockKey="testimonials_subtext"
+            value={content?.testimonials_subtext}
+            defaultValue="Hover each card to read the full review. Real clients, real results."
+            className="font-urbanist text-[#0A0A0A]/50 text-base leading-relaxed max-w-xs"
+          />
         </div>
 
         {/* 3D flip card grid */}
@@ -273,14 +288,34 @@ export default function TestimonialsI({ content }: { content?: Record<string, st
             ))}
           </div>
           <div>
-            <div className="font-urbanist font-bold text-sm text-[#0A0A0A]">5.0 on Google</div>
-            <div className="font-urbanist text-xs text-[#0A0A0A]/40">50+ five-star reviews</div>
+            <EditableText
+              as="div"
+              pageSlug="home"
+              blockKey="testimonials_rating_title"
+              value={content?.testimonials_rating_title}
+              defaultValue="5.0 on Google"
+              className="font-urbanist font-bold text-sm text-[#0A0A0A]"
+            />
+            <EditableText
+              as="div"
+              pageSlug="home"
+              blockKey="testimonials_rating_subtitle"
+              value={content?.testimonials_rating_subtitle}
+              defaultValue="50+ five-star reviews"
+              className="font-urbanist text-xs text-[#0A0A0A]/40"
+            />
           </div>
           <a
             href="https://webink.solutions/review"
             className="ml-4 font-urbanist font-bold text-sm text-[#0A0A0A] border-b-2 border-[#14EAEA] pb-0.5 hover:text-[#14EAEA] transition-colors"
           >
-            Leave a Review →
+            <EditableText
+              as="span"
+              pageSlug="home"
+              blockKey="testimonials_cta_text"
+              value={content?.testimonials_cta_text}
+              defaultValue="Leave a Review →"
+            />
           </a>
         </div>
       </div>

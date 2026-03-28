@@ -43,16 +43,25 @@ export default function FounderI({ content }: { content?: Record<string, string>
           >
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-[2px] bg-[#14EAEA]" />
-              <span className="font-urbanist text-xs font-black tracking-[0.5em] text-white/30 uppercase">Meet the Founder</span>
+              <EditableText
+                as="span"
+                pageSlug="home"
+                blockKey="founder_eyebrow"
+                value={content?.founder_eyebrow}
+                defaultValue="Meet the Founder"
+                className="font-urbanist text-xs font-black tracking-[0.5em] text-white/30 uppercase"
+              />
             </div>
 
-            <h2
+            <EditableText
+              as="h2"
+              pageSlug="home"
+              blockKey="founder_heading"
+              value={content?.founder_heading}
+              defaultValue="Sean Rowe."
               className="font-urbanist font-black text-white leading-[0.92] mb-8"
               style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', letterSpacing: '-0.04em' }}
-            >
-              Sean{' '}
-              <span className="text-[#14EAEA]">Rowe.</span>
-            </h2>
+            />
 
             <EditableText
               as="p"
@@ -74,7 +83,13 @@ export default function FounderI({ content }: { content?: Record<string, string>
               href="/about"
               className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-4 border border-[#14EAEA] text-[#14EAEA] rounded-full hover:bg-[#14EAEA] hover:text-[#0A0A0A] transition-all duration-300"
             >
-              Learn Our Story →
+              <EditableText
+                as="span"
+                pageSlug="home"
+                blockKey="founder_cta_text"
+                value={content?.founder_cta_text}
+                defaultValue="Learn Our Story →"
+              />
             </Link>
           </motion.div>
         </div>

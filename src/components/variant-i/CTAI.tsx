@@ -50,24 +50,30 @@ export default function CTAI({ content = {}, ctaBgData }: CTAIProps = {}) {
         >
           <div className="inline-flex items-center gap-3 mb-10">
             <span className="w-8 h-[2px] bg-[#14EAEA]" />
-            <span className="font-urbanist text-xs font-black tracking-[0.5em] text-[#14EAEA]/60 uppercase">Let&apos;s Work Together</span>
+            <EditableText
+              as="span"
+              pageSlug="home"
+              blockKey="cta_eyebrow"
+              value={content?.cta_eyebrow}
+              defaultValue="Let's Work Together"
+              className="font-urbanist text-xs font-black tracking-[0.5em] text-[#14EAEA]/60 uppercase"
+            />
             <span className="w-8 h-[2px] bg-[#14EAEA]" />
           </div>
 
-          <h2
+          <EditableText
+            as="h2"
+            pageSlug="home"
+            blockKey="cta_heading"
+            value={content?.cta_heading}
+            defaultValue="Ready to Grow Your Business?"
             className="font-urbanist font-black text-white leading-[0.85] mb-10 mx-auto"
             style={{
               fontSize: 'clamp(3rem, 9vw, 9.5rem)',
               letterSpacing: '-0.04em',
               maxWidth: '14ch',
             }}
-          >
-            Ready to
-            {' '}
-            <span className="text-[#B9FF33]">Grow</span>
-            {' '}
-            Your Business?
-          </h2>
+          />
 
           <EditableText
             as="p"
@@ -82,14 +88,26 @@ export default function CTAI({ content = {}, ctaBgData }: CTAIProps = {}) {
               href="/contact"
               className="group inline-flex items-center gap-3 font-urbanist font-bold text-base px-10 py-5 bg-[#14EAEA] text-[#0A0A0A] rounded-full hover:bg-white transition-all duration-300 shadow-lg shadow-[#14EAEA]/20"
             >
-              Get a Free Audit
+              <EditableText
+                as="span"
+                pageSlug="home"
+                blockKey="cta_button_text"
+                value={content?.cta_button_text}
+                defaultValue="Get a Free Audit"
+              />
               <span className="w-7 h-7 rounded-full bg-[#0A0A0A] text-[#14EAEA] group-hover:bg-[#14EAEA] group-hover:text-[#0A0A0A] flex items-center justify-center text-sm font-black transition-all duration-300">→</span>
             </a>
             <a
               href="/services"
               className="inline-flex items-center gap-3 font-urbanist font-bold text-base px-10 py-5 border-2 border-white/15 text-white rounded-full hover:border-[#14EAEA]/50 transition-all duration-300"
             >
-              View Our Work
+              <EditableText
+                as="span"
+                pageSlug="home"
+                blockKey="cta_button2_text"
+                value={content?.cta_button2_text}
+                defaultValue="View Our Work"
+              />
             </a>
           </div>
 

@@ -4,6 +4,12 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import EditableText from '@/components/editor/EditableText'
 import EditableImage from '@/components/editor/EditableImage'
 
+const aboutSteps = [
+  { step: '01', titleKey: 'about_step_1_title', titleDefault: 'Audit & Strategy', descKey: 'about_step_1_desc', descDefault: 'We start by understanding your business, your goals, and where you stand.' },
+  { step: '02', titleKey: 'about_step_2_title', titleDefault: 'Build & Launch', descKey: 'about_step_2_desc', descDefault: 'Design, development, and marketing campaigns built for your market.' },
+  { step: '03', titleKey: 'about_step_3_title', titleDefault: 'Measure & Grow', descKey: 'about_step_3_desc', descDefault: 'Monthly reporting, continuous optimization, and transparent communication.' },
+]
+
 export default function AboutI({ content }: { content?: Record<string, string> } = {}) {
   const sectionRef = useRef<HTMLElement>(null)
 
@@ -22,7 +28,14 @@ export default function AboutI({ content }: { content?: Record<string, string> }
         {/* Section label */}
         <div className="flex items-center gap-3 mb-16">
           <span className="w-8 h-[2px] bg-[#F813BE]" />
-          <span className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase">Our Story</span>
+          <EditableText
+            as="span"
+            pageSlug="home"
+            blockKey="about_eyebrow"
+            value={content?.about_eyebrow}
+            defaultValue="Our Story"
+            className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase"
+          />
         </div>
 
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
@@ -63,8 +76,22 @@ export default function AboutI({ content }: { content?: Record<string, string> }
               transition={{ duration: 0.6, delay: 0.4 }}
               className="absolute -bottom-8 -right-6 lg:-right-10 bg-white rounded-2xl shadow-xl px-7 py-5 border border-black/5"
             >
-              <div className="font-urbanist font-black text-4xl text-[#F813BE]">#1</div>
-              <div className="font-urbanist text-xs text-[#0F0F0F]/50 mt-1 leading-tight">Rated Agency<br/>in Florida</div>
+              <EditableText
+                as="div"
+                pageSlug="home"
+                blockKey="about_stat_value"
+                value={content?.about_stat_value}
+                defaultValue="#1"
+                className="font-urbanist font-black text-4xl text-[#F813BE]"
+              />
+              <EditableText
+                as="div"
+                pageSlug="home"
+                blockKey="about_stat_label"
+                value={content?.about_stat_label}
+                defaultValue="Rated Agency in Florida"
+                className="font-urbanist text-xs text-[#0F0F0F]/50 mt-1 leading-tight"
+              />
             </motion.div>
 
             {/* Pink accent line */}
@@ -82,17 +109,18 @@ export default function AboutI({ content }: { content?: Record<string, string> }
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <h2
+              <EditableText
+                as="h2"
+                pageSlug="home"
+                blockKey="about_heading"
+                value={content?.about_heading}
+                defaultValue="A Different Kind of Agency."
                 className="font-urbanist font-black text-[#0F0F0F] leading-[0.88] mb-8"
                 style={{
                   fontSize: 'clamp(2.8rem, 6vw, 6.5rem)',
                   letterSpacing: '-0.04em',
                 }}
-              >
-                A Different<br />
-                Kind of{' '}
-                <span className="text-[#F813BE]">Agency.</span>
-              </h2>
+              />
 
               <EditableText
                 as="p"
@@ -111,16 +139,26 @@ export default function AboutI({ content }: { content?: Record<string, string> }
 
               {/* 3-step process */}
               <div className="space-y-6 mb-12">
-                {[
-                  { step: '01', title: 'Audit & Strategy', desc: 'We start by understanding your business, your goals, and where you stand.' },
-                  { step: '02', title: 'Build & Launch', desc: 'Design, development, and marketing campaigns built for your market.' },
-                  { step: '03', title: 'Measure & Grow', desc: 'Monthly reporting, continuous optimization, and transparent communication.' },
-                ].map((item) => (
+                {aboutSteps.map((item) => (
                   <div key={item.step} className="flex gap-5">
                     <span className="font-urbanist font-black text-lg text-[#F813BE] w-10 shrink-0 pt-0.5">{item.step}</span>
                     <div>
-                      <div className="font-urbanist font-bold text-[#0F0F0F] text-base mb-1">{item.title}</div>
-                      <div className="font-urbanist text-[#333]/45 text-sm leading-relaxed">{item.desc}</div>
+                      <EditableText
+                        as="div"
+                        pageSlug="home"
+                        blockKey={item.titleKey}
+                        value={content?.[item.titleKey]}
+                        defaultValue={item.titleDefault}
+                        className="font-urbanist font-bold text-[#0F0F0F] text-base mb-1"
+                      />
+                      <EditableText
+                        as="div"
+                        pageSlug="home"
+                        blockKey={item.descKey}
+                        value={content?.[item.descKey]}
+                        defaultValue={item.descDefault}
+                        className="font-urbanist text-[#333]/45 text-sm leading-relaxed"
+                      />
                     </div>
                   </div>
                 ))}
@@ -130,7 +168,13 @@ export default function AboutI({ content }: { content?: Record<string, string> }
                 href="/about"
                 className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-4 bg-[#0F0F0F] text-white rounded-full hover:bg-[#F813BE] hover:text-white transition-all duration-300"
               >
-                Meet the Team →
+                <EditableText
+                  as="span"
+                  pageSlug="home"
+                  blockKey="about_cta_text"
+                  value={content?.about_cta_text}
+                  defaultValue="Meet the Team →"
+                />
               </a>
             </motion.div>
           </motion.div>

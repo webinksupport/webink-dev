@@ -167,7 +167,7 @@ function ServiceCard({
 }
 
 /* ── HORIZONTAL SCROLL PROCESS SECTION ──────────────────── */
-function HorizontalProcess() {
+function HorizontalProcess({ content }: { content?: Record<string, string> }) {
   const sectionRef = useRef<HTMLElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
 
@@ -231,7 +231,16 @@ function HorizontalProcess() {
       <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
         <div className="flex items-center gap-3">
           <span className="w-6 h-[2px] bg-[#14EAEA]" />
-          <span className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase">How We Work</span>
+          <span className="pointer-events-auto">
+            <EditableText
+              as="span"
+              pageSlug="home"
+              blockKey="process_eyebrow"
+              value={content?.process_eyebrow}
+              defaultValue="How We Work"
+              className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase"
+            />
+          </span>
           <span className="w-6 h-[2px] bg-[#14EAEA]" />
         </div>
       </div>
@@ -271,17 +280,25 @@ function HorizontalProcess() {
                   <div className="w-16 h-[1px] bg-[#E5E5E5] mb-8" />
 
                   {/* Process title */}
-                  <h3
+                  <EditableText
+                    as="h3"
+                    pageSlug="home"
+                    blockKey={`process_panel_${i}_title`}
+                    value={content?.[`process_panel_${i}_title`]}
+                    defaultValue={panel.title}
                     className="font-urbanist font-black text-[#0F0F0F] leading-tight mb-6"
                     style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
-                  >
-                    {panel.title}
-                  </h3>
+                  />
 
                   {/* Description */}
-                  <p className="font-urbanist text-[#333]/55 text-lg leading-relaxed max-w-md">
-                    {panel.desc}
-                  </p>
+                  <EditableText
+                    as="p"
+                    pageSlug="home"
+                    blockKey={`process_panel_${i}_desc`}
+                    value={content?.[`process_panel_${i}_desc`]}
+                    defaultValue={panel.desc}
+                    className="font-urbanist text-[#333]/55 text-lg leading-relaxed max-w-md"
+                  />
                 </div>
 
                 {/* Image side — no whileInView here; GSAP horizontal scroll prevents IntersectionObserver from firing */}
@@ -384,14 +401,20 @@ export default function ServicesI({ content }: { content?: Record<string, string
               href="/services"
               className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-4 bg-[#0F0F0F] text-white rounded-full hover:bg-[#14EAEA] hover:text-[#0F0F0F] transition-all duration-300"
             >
-              View All Services →
+              <EditableText
+                as="span"
+                pageSlug="home"
+                blockKey="services_cta_text"
+                value={content?.services_cta_text}
+                defaultValue="View All Services →"
+              />
             </a>
           </div>
         </div>
       </section>
 
       {/* ── HORIZONTAL SCROLL PROCESS ── */}
-      <HorizontalProcess />
+      <HorizontalProcess content={content} />
     </>
   )
 }

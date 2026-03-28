@@ -115,15 +115,24 @@ export default function StatsI({ content = {}, stats }: { content?: Record<strin
           <div>
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-[2px] bg-[#14EAEA]" />
-              <span className="font-urbanist text-xs font-black tracking-[0.5em] text-white/30 uppercase">Results</span>
+              <EditableText
+                as="span"
+                pageSlug="home"
+                blockKey="stats_eyebrow"
+                value={content?.stats_eyebrow}
+                defaultValue="Results"
+                className="font-urbanist text-xs font-black tracking-[0.5em] text-white/30 uppercase"
+              />
             </div>
-            <h2
+            <EditableText
+              as="h2"
+              pageSlug="home"
+              blockKey="stats_heading"
+              value={content?.stats_heading}
+              defaultValue="Numbers Don't Lie."
               className="font-urbanist font-black text-white leading-[0.9]"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 6rem)', letterSpacing: '-0.04em' }}
-            >
-              Numbers<br />
-              <span className="text-[#14EAEA]">Don&apos;t Lie.</span>
-            </h2>
+            />
           </div>
           <EditableText
             as="p"
@@ -150,15 +159,35 @@ export default function StatsI({ content = {}, stats }: { content?: Record<strin
               </svg>
             </div>
             <div>
-              <div className="font-urbanist font-bold text-sm text-white">Top Web Design Company in Florida</div>
-              <div className="font-urbanist text-xs text-white/35">Recognized by DesignRush</div>
+              <EditableText
+                as="div"
+                pageSlug="home"
+                blockKey="stats_badge_title"
+                value={content?.stats_badge_title}
+                defaultValue="Top Web Design Company in Florida"
+                className="font-urbanist font-bold text-sm text-white"
+              />
+              <EditableText
+                as="div"
+                pageSlug="home"
+                blockKey="stats_badge_subtitle"
+                value={content?.stats_badge_subtitle}
+                defaultValue="Recognized by DesignRush"
+                className="font-urbanist text-xs text-white/35"
+              />
             </div>
           </div>
           <a
             href="https://webink.solutions/portfolio"
             className="font-urbanist font-bold text-sm text-white/40 border-b border-[#14EAEA] pb-0.5 hover:text-[#14EAEA] transition-colors duration-200"
           >
-            See Our Work →
+            <EditableText
+              as="span"
+              pageSlug="home"
+              blockKey="stats_cta_text"
+              value={content?.stats_cta_text}
+              defaultValue="See Our Work →"
+            />
           </a>
         </div>
       </div>

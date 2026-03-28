@@ -323,3 +323,20 @@ body {
 .animate-product-pulse {
   animation: product-pulse 3s ease-in-out infinite;
 }
+
+/* Editor text effects — highlight underline */
+.editable-text-highlight {
+  position: relative;
+  display: inline;
+}
+.editable-text-highlight::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 0.15em;
+  background: #14EAEA;
+  opacity: 0.6;
+  border-radius: 2px;
+}

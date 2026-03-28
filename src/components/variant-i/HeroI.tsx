@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import EditableText from '@/components/editor/EditableText'
 import EditableImage from '@/components/editor/EditableImage'
 import EditableBackground, { type BackgroundData } from '@/components/editor/EditableBackground'
+import { useEditor } from '@/components/editor/EditorContext'
 
 interface HeroIProps {
   content?: Record<string, string>
@@ -12,6 +13,7 @@ interface HeroIProps {
 
 export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
   const sectionRef = useRef<HTMLElement>(null)
+  const { editMode } = useEditor()
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -137,7 +139,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
 
         {/* Card fan hero image — right side, vertically centered */}
         <div
-          className="absolute hidden lg:block pointer-events-none"
+          className={`absolute hidden lg:block ${editMode ? '' : 'pointer-events-none'}`}
           style={{ right: '4%', top: '50%', marginTop: '-290px', width: '460px', height: '580px', overflow: 'visible' }}
         >
           {/* Card 1 — Cyan background card (fans in then fully tucks BEHIND photo) */}

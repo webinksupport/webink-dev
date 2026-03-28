@@ -189,14 +189,25 @@ export default function PricingI({ content }: { content?: Record<string, string>
 
         {/* Bottom note */}
         <div className="text-center mt-12">
-          <p className="font-urbanist text-[#0A0A0A]/40 text-sm mb-4">
-            Need something custom? Web design projects start at a one-time investment.
-          </p>
+          <EditableText
+            as="p"
+            pageSlug="home"
+            blockKey="pricing_bottom_note"
+            value={content?.pricing_bottom_note}
+            defaultValue="Need something custom? Web design projects start at a one-time investment."
+            className="font-urbanist text-[#0A0A0A]/40 text-sm mb-4"
+          />
           <a
             href="/contact"
             className="font-urbanist font-bold text-sm text-[#0A0A0A] border-b-2 border-[#14EAEA] pb-0.5 hover:text-[#14EAEA] transition-colors"
           >
-            Get a Custom Quote →
+            <EditableText
+              as="span"
+              pageSlug="home"
+              blockKey="pricing_bottom_cta"
+              value={content?.pricing_bottom_cta}
+              defaultValue="Get a Custom Quote →"
+            />
           </a>
         </div>
       </div>

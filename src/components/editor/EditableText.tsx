@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useCallback, type ReactNode, type ElementType } from 'react'
+import { useRef, useCallback, useMemo, type ReactNode, type ElementType } from 'react'
 import { useEditor, type TextProps } from './EditorContext'
 
 interface EditableTextProps {
@@ -46,13 +46,69 @@ export default function EditableText({
   alignment,
   dangerouslySetInnerHTML,
 }: EditableTextProps) {
-  const { editMode, selectElement, pageSlug: contextPageSlug, getContent } = useEditor()
+  const { editMode, selectElement, pageSlug: contextPageSlug, getContent, getJsonContent } = useEditor()
   const ref = useRef<HTMLElement>(null)
 
   const pageSlug = explicitPageSlug || contextPageSlug
   // Resolve value: DB content > explicit prop > defaultValue (DB wins after saves)
   const dbValue = getContent(blockKey)
   const resolvedValue = dbValue !== undefined ? dbValue : (explicitValue !== undefined ? explicitValue : defaultValue)
+
+  // Resolve saved styles from JSON content
+  const dbJson = getJsonContent(blockKey) as {
+    fontSize?: string
+    fontWeight?: string
+    color?: string
+    alignment?: string
+    effects?: {
+      highlight?: boolean
+      gradient?: boolean
+      glow?: boolean
+      uppercase?: boolean
+      letterSpacing?: string
+    }
+  } | undefined
+
+  const resolvedFontSize = dbJson?.fontSize || fontSize
+  const resolvedFontWeight = dbJson?.fontWeight || fontWeight
+  const resolvedColor = dbJson?.color || color
+  const resolvedAlignment = dbJson?.alignment || alignment
+  const effects = dbJson?.effects
+
+  // Build applied styles from saved properties + effects
+  const appliedStyle = useMemo((): React.CSSProperties => {
+    const s: React.CSSProperties = { ...style }
+
+    if (resolvedFontSize) s.fontSize = resolvedFontSize
+    if (resolvedFontWeight) s.fontWeight = resolvedFontWeight
+    if (resolvedColor && !effects?.gradient) s.color = resolvedColor
+    if (resolvedAlignment) s.textAlign = resolvedAlignment as React.CSSProperties['textAlign']
+
+    if (effects) {
+      if (effects.uppercase) s.textTransform = 'uppercase'
+      if (effects.letterSpacing) s.letterSpacing = effects.letterSpacing
+      if (effects.gradient) {
+        s.background = 'linear-gradient(135deg, #14EAEA 0%, #F813BE 100%)'
+        s.WebkitBackgroundClip = 'text'
+        s.WebkitTextFillColor = 'transparent'
+        s.backgroundClip = 'text'
+      }
+      if (effects.glow) {
+        s.textShadow = '0 0 10px rgba(20, 234, 234, 0.6), 0 0 20px rgba(20, 234, 234, 0.4), 0 0 40px rgba(20, 234, 234, 0.2)'
+      }
+    }
+
+    return s
+  }, [style, resolvedFontSize, resolvedFontWeight, resolvedColor, resolvedAlignment, effects])
+
+  // Build className with highlight effect
+  const appliedClassName = useMemo(() => {
+    let cls = className
+    if (effects?.highlight) {
+      cls += ' editable-text-highlight'
+    }
+    return cls
+  }, [className, effects])
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!editMode) return
@@ -64,10 +120,11 @@ export default function EditableText({
     const rect = el.getBoundingClientRect()
     const textData: TextProps = {
       text: resolvedValue,
-      fontSize: fontSize || '',
-      fontWeight: fontWeight || '',
-      color: color || '',
-      alignment: alignment || '',
+      fontSize: resolvedFontSize || '',
+      fontWeight: resolvedFontWeight || '',
+      color: resolvedColor || '',
+      alignment: resolvedAlignment || '',
+      effects: effects || undefined,
     }
 
     selectElement({
@@ -78,12 +135,12 @@ export default function EditableText({
       element: el,
       data: textData,
     })
-  }, [editMode, selectElement, pageSlug, blockKey, resolvedValue, fontSize, fontWeight, color, alignment])
+  }, [editMode, selectElement, pageSlug, blockKey, resolvedValue, resolvedFontSize, resolvedFontWeight, resolvedColor, resolvedAlignment, effects])
 
   // Use inline styles for edit mode to avoid Tailwind JIT compilation issues with arbitrary values
   const editStyle: React.CSSProperties = editMode
-    ? { cursor: 'pointer', position: 'relative', ...style }
-    : { ...style }
+    ? { cursor: 'pointer', position: 'relative', ...appliedStyle }
+    : { ...appliedStyle }
 
   const editModeClass = editMode ? 'editable-text-active' : ''
 
@@ -91,7 +148,7 @@ export default function EditableText({
     return (
       <Tag
         ref={ref as React.Ref<HTMLElement>}
-        className={`${className} ${editModeClass}`}
+        className={`${appliedClassName} ${editModeClass}`}
         style={editStyle}
         onClick={handleClick}
         data-editable="text"
@@ -104,7 +161,7 @@ export default function EditableText({
   return (
     <Tag
       ref={ref as React.Ref<HTMLElement>}
-      className={`${className} ${editModeClass}`}
+      className={`${appliedClassName} ${editModeClass}`}
       style={editStyle}
       onClick={handleClick}
       data-editable="text"

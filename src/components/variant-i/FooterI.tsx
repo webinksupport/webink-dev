@@ -1,5 +1,6 @@
 'use client'
 import EditableImage from '@/components/editor/EditableImage'
+import EditableText from '@/components/editor/EditableText'
 import Link from 'next/link'
 
 const footerLinks = {
@@ -96,9 +97,13 @@ export default function FooterI() {
               height={50}
               className="h-14 w-auto mb-6"
             />
-            <p className="font-urbanist text-white/35 text-sm leading-relaxed mb-6">
-              Sarasota&apos;s premiere digital marketing agency. Web design, SEO, and marketing built for real results.
-            </p>
+            <EditableText
+              as="p"
+              pageSlug="global"
+              blockKey="footer_tagline"
+              defaultValue="Sarasota's premiere digital marketing agency. Web design, SEO, and marketing built for real results."
+              className="font-urbanist text-white/35 text-sm leading-relaxed mb-6"
+            />
             <div className="flex items-center gap-3">
               {socials.map((s) => (
                 <a
