@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import EditableImage from '@/components/editor/EditableImage'
 import { ShoppingBag, ArrowRight, Eye, EyeOff } from 'lucide-react'
 
 export default function CheckoutAuthClient() {
@@ -120,7 +120,9 @@ function CheckoutAuthForm() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-5">
-            <Image
+            <EditableImage
+              pageSlug="global"
+              blockKey="auth_logo"
               src="/images/logos/webink-white.png"
               alt="Webink Solutions"
               width={160}

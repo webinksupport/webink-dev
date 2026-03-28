@@ -1,6 +1,5 @@
 'use client'
 import { useRef } from 'react'
-import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import EditableText from '@/components/editor/EditableText'
 import EditableImage from '@/components/editor/EditableImage'
@@ -27,11 +26,6 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
     <section
       ref={sectionRef}
       className="relative min-h-screen overflow-hidden bg-[#0F0F0F]"
-      style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/images/photos/baja-beach.jpg'), radial-gradient(ellipse at 30% 50%, rgba(20,234,234,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(248,19,190,0.05) 0%, transparent 60%)`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
     >
       {/* Baja beach full-bleed background with parallax + editable background */}
       <EditableBackground

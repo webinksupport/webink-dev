@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import EditableImage from '@/components/editor/EditableImage'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
@@ -411,7 +410,9 @@ export default function NavI() {
             >
               {/* Panel header */}
               <div className="flex items-center justify-between px-8 py-6 border-b border-black/8">
-                <Image
+                <EditableImage
+                  pageSlug="global"
+                  blockKey="nav_logo_mobile"
                   src="/images/logos/webink-black-4x1.png"
                   alt="Webink Solutions"
                   width={140}

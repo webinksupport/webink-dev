@@ -1,6 +1,5 @@
 'use client'
 import Link from 'next/link'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 import {
   Globe, Search, TrendingUp, Share2, Brain, Code, Server,
@@ -82,9 +81,11 @@ export default function ServicesHubContent() {
       {/* ── Hero ── */}
       <section className="relative bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-32 lg:py-40 overflow-hidden">
         <div className="absolute inset-0">
-          <Image
+          <EditableImage
+            pageSlug="services"
+            blockKey="hero_bg_image"
             src="/images/photoshoot/_UTA4057.jpg"
-            alt=""
+            alt="Services hero background"
             fill
             className="object-cover opacity-15"
             style={{ objectPosition: 'center' }}
@@ -203,7 +204,9 @@ export default function ServicesHubContent() {
                   >
                     {/* Card image */}
                     <div className="relative w-full h-40 overflow-hidden">
-                      <Image
+                      <EditableImage
+                        pageSlug="services"
+                        blockKey={`${svc.key}_card_image`}
                         src={svc.image}
                         alt={`${svc.title} — Webink Solutions`}
                         fill
@@ -261,7 +264,9 @@ export default function ServicesHubContent() {
       {/* ── CTA Section ── */}
       <section className="relative px-6 md:px-16 lg:px-24 py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <Image
+          <EditableImage
+            pageSlug="services"
+            blockKey="cta_waterfront_image"
             src="/images/services/sarasota-waterfront.png"
             alt="Sarasota waterfront skyline"
             fill

@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import Image from 'next/image'
+import EditableImage from '@/components/editor/EditableImage'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
@@ -127,11 +127,7 @@ export default function ServicePageLayout({
       {/* ════════════════════════════════════════════════════════
           HERO SECTION
       ════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex items-center bg-[#0F0F0F] overflow-hidden" style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${heroImage}'), radial-gradient(ellipse at 30% 50%, rgba(20,234,234,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(248,19,190,0.05) 0%, transparent 60%)`,
-        backgroundSize: 'cover',
-        backgroundPosition: heroImagePosition,
-      }}>
+      <section className="relative min-h-screen flex items-center bg-[#0F0F0F] overflow-hidden">
         {pageSlug ? (
           <EditableBackground
             pageSlug={pageSlug}
@@ -146,9 +142,10 @@ export default function ServicePageLayout({
           </EditableBackground>
         ) : (
           <div className="absolute inset-0">
-            <Image
+            <EditableImage
+              blockKey="hero_bg_fallback"
               src={heroImage}
-              alt=""
+              alt="Hero background"
               fill
               className="object-cover"
               style={{ objectPosition: heroImagePosition }}
@@ -370,7 +367,9 @@ export default function ServicePageLayout({
                 className="lg:col-span-5 overflow-hidden rounded-2xl shadow-xl"
               >
                 <div className="relative h-[350px] lg:h-[480px]">
-                  <Image
+                  <EditableImage
+                    pageSlug={pageSlug || 'services'}
+                    blockKey="team_photo_main"
                     src={photos[2].src}
                     alt={photos[2].alt}
                     fill

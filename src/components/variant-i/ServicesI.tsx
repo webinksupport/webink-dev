@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef } from 'react'
-import Image from 'next/image'
+import EditableImage from '@/components/editor/EditableImage'
 import { motion } from 'framer-motion'
 import {
   Globe, Search, TrendingUp, Share2, Server, Brain,
@@ -288,7 +288,9 @@ function HorizontalProcess() {
                 <div className="relative hidden lg:block h-[420px]">
                   <div className="w-full h-full rounded-[24px] overflow-hidden shadow-xl">
                     <div className="relative w-full h-full">
-                      <Image
+                      <EditableImage
+                        pageSlug="home"
+                        blockKey={`services_panel_${i}_image`}
                         src={panel.image}
                         alt={panel.title + ' — Webink Solutions process'}
                         fill

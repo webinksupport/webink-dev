@@ -153,6 +153,8 @@ export function EditorToolbar() {
     if (success) {
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
+      // Auto-revalidate server cache so next page load reflects the save
+      fetch('/api/clear-cache', { method: 'POST' }).catch(() => {})
     }
   }, [selectedElement, saveBlock, textState, imageState])
 

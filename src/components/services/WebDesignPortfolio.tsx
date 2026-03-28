@@ -1,5 +1,5 @@
 'use client'
-import Image from 'next/image'
+import EditableImage from '@/components/editor/EditableImage'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 
@@ -47,7 +47,9 @@ export default function WebDesignPortfolio() {
                 viewport={{ once: true, margin: '-80px' }}
                 className="overflow-hidden rounded-2xl shadow-xl"
               >
-                <Image
+                <EditableImage
+                  pageSlug="services/web-design"
+                  blockKey={`portfolio_${i}_image`}
                   src={item.src}
                   alt={item.alt}
                   width={800}
@@ -72,7 +74,9 @@ export default function WebDesignPortfolio() {
               viewport={{ once: true, margin: '-80px' }}
               className="overflow-hidden rounded-2xl shadow-xl"
             >
-              <Image
+              <EditableImage
+                pageSlug="services/web-design"
+                blockKey="portfolio_team_image"
                 src="/images/photoshoot/DSC05067-Edit.jpg"
                 alt="Webink Solutions team working on client website — Sarasota web design"
                 width={800}

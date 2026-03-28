@@ -50,9 +50,9 @@ export default function EditableText({
   const ref = useRef<HTMLElement>(null)
 
   const pageSlug = explicitPageSlug || contextPageSlug
-  // Resolve value: explicit prop > DB content > defaultValue
+  // Resolve value: DB content > explicit prop > defaultValue (DB wins after saves)
   const dbValue = getContent(blockKey)
-  const resolvedValue = explicitValue !== undefined ? explicitValue : (dbValue !== undefined ? dbValue : defaultValue)
+  const resolvedValue = dbValue !== undefined ? dbValue : (explicitValue !== undefined ? explicitValue : defaultValue)
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!editMode) return

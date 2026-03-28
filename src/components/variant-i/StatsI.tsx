@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
+import EditableImage from '@/components/editor/EditableImage'
 import EditableText from '@/components/editor/EditableText'
 
 interface StatData {
@@ -92,9 +92,11 @@ export default function StatsI({ content = {}, stats }: { content?: Record<strin
     <section id="results" className="relative bg-[#0F0F0F] py-24 lg:py-36 overflow-hidden">
       {/* Background photo */}
       <div className="absolute inset-0">
-        <Image
+        <EditableImage
+          pageSlug="home"
+          blockKey="stats_bg_image"
           src="/images/photoshoot/_UTA4057.jpg"
-          alt=""
+          alt="Stats background"
           fill
           className="object-cover opacity-10"
           style={{ objectPosition: 'center' }}

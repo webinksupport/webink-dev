@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import EditableImage from '@/components/editor/EditableImage'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -22,7 +22,9 @@ export default function RegisterPage() {
 
       <div className="relative w-full max-w-md text-center">
         <Link href="/" className="inline-block mb-8">
-          <Image
+          <EditableImage
+            pageSlug="global"
+            blockKey="auth_logo"
             src="/images/logos/webink-white.png"
             alt="Webink Solutions"
             width={180}

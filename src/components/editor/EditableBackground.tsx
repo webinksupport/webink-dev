@@ -61,17 +61,18 @@ export default function EditableBackground({
   children,
   className = '',
 }: EditableBackgroundProps) {
-  const { editMode, saveBlock, saving } = useEditor()
+  const { editMode, saveBlock, saving, getJsonContent } = useEditor()
   const [showToolbar, setShowToolbar] = useState(false)
   const [showMediaPicker, setShowMediaPicker] = useState(false)
   const [saved, setSaved] = useState(false)
   const [imgError, setImgError] = useState(false)
 
-  // Resolve current values from CMS or defaults — fall back to defaultSrc on load error
-  const resolvedSrc = imgError ? defaultSrc : (cmsData?.src || defaultSrc)
-  const resolvedPosition = cmsData?.objectPosition || defaultPosition
-  const resolvedOverlay = cmsData?.overlayOpacity ?? defaultOverlayOpacity
-  const resolvedSize = cmsData?.backgroundSize || defaultSize
+  // Read from EditorContext DB values (updated after saves), then CMS SSR data, then defaults
+  const dbJson = getJsonContent(blockKey) as Partial<BackgroundData> | undefined
+  const resolvedSrc = imgError ? defaultSrc : (dbJson?.src || cmsData?.src || defaultSrc)
+  const resolvedPosition = dbJson?.objectPosition || cmsData?.objectPosition || defaultPosition
+  const resolvedOverlay = dbJson?.overlayOpacity ?? cmsData?.overlayOpacity ?? defaultOverlayOpacity
+  const resolvedSize = dbJson?.backgroundSize || cmsData?.backgroundSize || defaultSize
 
   // Local edit state
   const [bgState, setBgState] = useState<BackgroundData>({

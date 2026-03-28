@@ -1,5 +1,5 @@
 'use client'
-import Image from 'next/image'
+import EditableImage from '@/components/editor/EditableImage'
 import Link from 'next/link'
 
 const footerLinks = {
@@ -87,7 +87,9 @@ export default function FooterI() {
         {/* Top: Logo + tagline + socials */}
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10 mb-20 pb-16 border-b border-white/8">
           <div className="max-w-sm">
-            <Image
+            <EditableImage
+              pageSlug="global"
+              blockKey="footer_logo"
               src="/images/logos/webink-white.png"
               alt="Webink Solutions"
               width={180}

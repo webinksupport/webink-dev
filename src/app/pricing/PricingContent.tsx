@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import EditableImage from '@/components/editor/EditableImage'
 import { motion } from 'framer-motion'
 import { ChevronDown, Loader2 } from 'lucide-react'
 import EditableText from '@/components/editor/EditableText'
@@ -608,9 +608,11 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
       {/* ============================================================ */}
       <section className="relative bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-20 overflow-hidden">
         <div className="absolute inset-0">
-          <Image
+          <EditableImage
+            pageSlug="pricing"
+            blockKey="cta_bg_image"
             src="/images/photoshoot/DSC04566.jpg"
-            alt=""
+            alt="CTA background"
             fill
             className="object-cover opacity-10"
             style={{ objectPosition: 'center' }}
@@ -627,7 +629,9 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
             className="lg:col-span-4 hidden lg:block overflow-hidden rounded-2xl shadow-xl"
           >
             <div className="relative h-[320px]">
-              <Image
+              <EditableImage
+                pageSlug="pricing"
+                blockKey="cta_sean_image"
                 src="/images/photoshoot/SquareSean2.jpg"
                 alt="Sean Rowe — founder of Webink Solutions, ready to help grow your business"
                 fill
