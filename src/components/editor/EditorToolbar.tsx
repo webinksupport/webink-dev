@@ -96,11 +96,16 @@ export function EditorToolbar() {
     }
   }, [selectedElement])
 
+  const [cacheCleared, setCacheCleared] = useState(false)
+
   const handleClearCache = async () => {
     try {
       const res = await fetch('/api/clear-cache', { method: 'POST' })
       if (res.ok) {
-        alert('Cache cleared! Refresh the page to see changes.')
+        setCacheCleared(true)
+        setTimeout(() => setCacheCleared(false), 3000)
+        // Auto-refresh after a short delay so user sees the toast
+        setTimeout(() => window.location.reload(), 1500)
       } else {
         alert('Failed to clear cache')
       }
@@ -175,6 +180,13 @@ export function EditorToolbar() {
             <span className="font-urbanist text-[10px] text-white/30 tracking-wide">
               {selectedElement.blockKey}
             </span>
+            <button
+              onClick={handleClearCache}
+              className="w-6 h-6 rounded-full flex items-center justify-center text-[#F813BE]/60 hover:text-[#F813BE] hover:bg-[#F813BE]/10 transition-colors"
+              title="Clear cache"
+            >
+              <Database size={12} />
+            </button>
             <button
               onClick={() => selectElement(null)}
               className="w-6 h-6 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
@@ -410,11 +422,15 @@ export function EditorToolbar() {
             {/* Clear Cache button */}
             <button
               onClick={handleClearCache}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 mt-2 bg-[#F813BE]/20 border border-[#F813BE]/30 rounded-lg font-urbanist font-bold text-xs text-[#F813BE] hover:bg-[#F813BE]/30 hover:text-white transition-colors"
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2 mt-2 rounded-lg font-urbanist font-bold text-xs transition-colors ${
+                cacheCleared
+                  ? 'bg-green-500/20 border border-green-500/30 text-green-400'
+                  : 'bg-[#F813BE]/20 border border-[#F813BE]/30 text-[#F813BE] hover:bg-[#F813BE]/30 hover:text-white'
+              }`}
               title="Clear cache to force immediate content refresh"
             >
               <Database size={12} />
-              Clear Cache
+              {cacheCleared ? 'Cache Cleared! Refreshing...' : 'Clear Cache'}
             </button>
           </div>
         )}

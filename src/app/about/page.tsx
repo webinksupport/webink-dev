@@ -5,7 +5,7 @@ import { getPageContent } from '@/lib/content'
 import AboutContent from './AboutContent'
 import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 
-export const revalidate = 3600
+export const revalidate = 0
 
 export const metadata: Metadata = {
   title: 'About Webink Solutions | Sarasota Digital Marketing Agency',

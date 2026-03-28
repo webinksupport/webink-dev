@@ -5,7 +5,7 @@ import PricingContent from './PricingContent'
 import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageContent } from '@/lib/content'
 
-export const revalidate = 3600
+export const revalidate = 0
 
 export const metadata: Metadata = {
   title: 'Pricing — Digital Marketing Services | Webink Solutions',

@@ -5,7 +5,7 @@ import ServicesHubContent from './ServicesHubContent'
 import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageContent } from '@/lib/content'
 
-export const revalidate = 3600
+export const revalidate = 0
 
 export const metadata: Metadata = {
   title: 'Digital Marketing Services Sarasota & Tampa | Webink Solutions',

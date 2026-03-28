@@ -217,7 +217,9 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
             transition={{ duration: 0.6, delay: 1.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             {/* White logo PNG — mix-blend-mode screen on dark bg = transparent background, logo glows */}
-            <Image
+            <EditableImage
+              pageSlug="home"
+              blockKey="hero_logo_overlay"
               src="/images/logos/webink-white.png"
               alt="Webink Solutions logo"
               width={340}

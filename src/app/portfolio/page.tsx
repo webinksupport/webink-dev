@@ -5,7 +5,7 @@ import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageContent } from '@/lib/content'
 import PortfolioContent from './PortfolioContent'
 
-export const revalidate = 3600
+export const revalidate = 0
 
 export const metadata: Metadata = {
   title: 'Portfolio — Our Work | Webink Solutions',

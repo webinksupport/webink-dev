@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import EditableImage from '@/components/editor/EditableImage'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 import { ChevronDown } from 'lucide-react'
@@ -138,7 +139,9 @@ export default function NavI() {
           {/* Logo — white over hero, black when scrolled */}
           <Link href="/" className="relative z-10 flex-shrink-0">
             {scrolled ? (
-              <Image
+              <EditableImage
+                pageSlug="global"
+                blockKey="nav_logo_dark"
                 src="/images/logos/webink-black-4x1.png"
                 alt="Webink Solutions"
                 width={176}
@@ -147,7 +150,9 @@ export default function NavI() {
                 priority
               />
             ) : (
-              <Image
+              <EditableImage
+                pageSlug="global"
+                blockKey="nav_logo_light"
                 src="/images/logos/webink-white.png"
                 alt="Webink Solutions"
                 width={176}
