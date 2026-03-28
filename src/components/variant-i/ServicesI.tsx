@@ -242,7 +242,7 @@ function HorizontalProcess() {
         className="flex h-full"
         style={{ willChange: 'transform' }}
       >
-        {processPanels.map((panel) => (
+        {processPanels.map((panel, i) => (
           <div
             key={panel.num}
             className="process-panel flex-shrink-0 h-full bg-white flex items-center"
