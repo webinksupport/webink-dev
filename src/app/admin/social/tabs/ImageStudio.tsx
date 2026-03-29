@@ -56,6 +56,7 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
   const [suggestingPrompt, setSuggestingPrompt] = useState(false)
   const [aspectRatio, setAspectRatio] = useState('4:5')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [lightboxImage, setLightboxImage] = useState<GeneratedImage | null>(null)
 
   const { imageProviders, hasAnyImageKey, loading: modelsLoading } = useAvailableModels()
 
@@ -74,10 +75,33 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
     fetchBrandAssets()
   }, [])
 
+  const [ideaBanner, setIdeaBanner] = useState<{ topic: string; idea: string } | null>(null)
+
   // Update prompt if initialPrompt changes
   useEffect(() => {
     if (initialPrompt) setPrompt(initialPrompt)
   }, [initialPrompt])
+
+  // When arriving from Ideas tab with context, show banner and auto-suggest prompt
+  useEffect(() => {
+    if (initialTopic || initialIdea) {
+      setIdeaBanner({ topic: initialTopic || '', idea: initialIdea || '' })
+      // Auto-suggest a prompt based on the idea
+      if (!initialPrompt) {
+        setSuggestingPrompt(true)
+        fetch('/api/social/suggest-prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic: initialTopic, idea: initialIdea }),
+        })
+          .then((res) => res.json())
+          .then((data) => { if (data.prompt) setPrompt(data.prompt) })
+          .catch(() => {})
+          .finally(() => setSuggestingPrompt(false))
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTopic, initialIdea])
 
   async function fetchBrandAssets() {
     try {
@@ -98,7 +122,6 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
 
   const currentModelSupportsRef = currentModel?.supportsReference ?? false
   const maxRefs = currentModel?.maxReferenceImages ?? 0
-  const isGoogleImagen = selectedProvider === 'google'
 
   function selectBrandAsset(asset: BrandAsset) {
     const siteUrl = window.location.origin
@@ -230,7 +253,20 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
           </span>
         </div>
 
-        {/* Grouped Model Selector */}
+        {/* Selected model summary */}
+        {currentModel && (
+          <div className="mb-4 px-3 py-2 bg-[#F813BE]/5 border border-[#F813BE]/20 rounded-lg flex items-center gap-2">
+            <span className="text-[#888] text-xs">Selected:</span>
+            <span className="text-white text-sm font-semibold">{currentModel.label}</span>
+            {currentModel.supportsReference ? (
+              <span className="text-[9px] bg-[#14EAEA]/20 text-[#14EAEA] px-1.5 py-0.5 rounded-full">Ref ✓</span>
+            ) : (
+              <span className="text-[9px] bg-[#333] text-[#888] px-1.5 py-0.5 rounded-full">Text Only</span>
+            )}
+          </div>
+        )}
+
+        {/* Grouped Model Selector — one section per provider */}
         <div className="space-y-4 mb-5">
           {imageProviders.map((group) => (
             <div key={group.provider}>
@@ -251,19 +287,17 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
                     >
                       <div className="flex items-center gap-1.5">
                         <span className="text-white text-sm font-medium">{m.label}</span>
-                        {m.supportsReference && (
+                        {m.supportsReference ? (
                           <span className="text-[9px] bg-[#14EAEA]/20 text-[#14EAEA] px-1.5 py-0.5 rounded-full" title={`Supports up to ${m.maxReferenceImages || 1} reference images`}>
-                            REF{(m.maxReferenceImages || 1) > 1 ? ` ×${m.maxReferenceImages}` : ''}
+                            Ref ✓
                           </span>
-                        )}
-                        {m.supportsStructuredPrompts && (
-                          <span className="text-[9px] bg-[#B9FF33]/20 text-[#B9FF33] px-1.5 py-0.5 rounded-full" title="Supports structured JSON prompts">
-                            JSON
+                        ) : (
+                          <span className="text-[9px] bg-[#333] text-[#666] px-1.5 py-0.5 rounded-full">
+                            Text Only
                           </span>
                         )}
                       </div>
-                      <div className="text-[#666] text-xs mt-0.5">{m.desc}</div>
-                      <div className={`flex items-center gap-1 text-xs mt-1 ${isActive ? 'text-[#F813BE]' : 'text-[#555]'}`}>
+                      <div className={`flex items-center gap-1 text-xs mt-1.5 ${isActive ? 'text-[#F813BE]' : 'text-[#555]'}`}>
                         <CostIcon className="w-3 h-3" />
                         {m.cost}
                       </div>
@@ -274,6 +308,29 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
             </div>
           ))}
         </div>
+
+        {/* Idea Banner — when arriving from Ideas tab */}
+        {ideaBanner && (ideaBanner.topic || ideaBanner.idea) && (
+          <div className="mb-4 p-3 bg-[#14EAEA]/5 border border-[#14EAEA]/20 rounded-lg">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-[#14EAEA] text-xs font-semibold mb-1">Using idea from Ideas tab:</p>
+                {ideaBanner.topic && (
+                  <p className="text-white text-sm font-medium">{ideaBanner.topic}</p>
+                )}
+                {ideaBanner.idea && (
+                  <p className="text-[#888] text-xs mt-1 line-clamp-2">{ideaBanner.idea}</p>
+                )}
+              </div>
+              <button
+                onClick={() => setIdeaBanner(null)}
+                className="text-[#666] hover:text-white shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Aspect Ratio Selector */}
         <div className="mb-4">
@@ -296,8 +353,8 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
           </div>
         </div>
 
-        {/* Reference Image Section — Show/hide based on model support */}
-        {!isGoogleImagen && (
+        {/* Reference Image Section — Show only when model supports references */}
+        {currentModelSupportsRef && (
           <div className="mb-4 p-3 bg-[#1A1A1A] border border-[#333] rounded-lg">
             <label className="text-xs text-[#666] block mb-2">
               Reference Images {currentModelSupportsRef
@@ -376,18 +433,6 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
               onChange={handleReferenceUpload}
               className="hidden"
             />
-          </div>
-        )}
-
-        {/* Google Imagen tooltip */}
-        {isGoogleImagen && (
-          <div className="mb-4 p-3 bg-[#1A1A1A] border border-[#333] rounded-lg">
-            <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-[#666] mt-0.5 shrink-0" />
-              <p className="text-[#888] text-xs">
-                Google Imagen (Gemini API) does not support reference images. Use FLUX.2 Pro, Max, Dev, or Flex for multi-reference support.
-              </p>
-            </div>
           </div>
         )}
 
@@ -474,6 +519,51 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
         )}
       </div>
 
+      {/* Lightbox */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxImage(null)}
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            className="absolute top-4 right-4 text-white/70 hover:text-white z-10"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          <div
+            className="relative max-w-[90vw] max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxImage.url}
+              alt={lightboxImage.prompt}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-lg">
+              <p className="text-white/80 text-xs truncate mb-2">{lightboxImage.prompt}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { onUseImage(lightboxImage.url); setLightboxImage(null) }}
+                  className="flex items-center gap-1.5 bg-[#F813BE] hover:bg-[#d10fa0] text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+                >
+                  <ArrowRight className="w-3.5 h-3.5" />
+                  Use in Post Builder
+                </button>
+                <button
+                  onClick={() => downloadImage(lightboxImage.url, lightboxImage.filename)}
+                  className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-xs transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Generated Gallery */}
       {gallery.length > 0 && (
         <div>
@@ -481,7 +571,11 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {gallery.map((img) => (
               <div key={img.timestamp} className="group bg-[#141414] border border-[#222] rounded-xl overflow-hidden">
-                <div className="relative w-full" style={{ paddingBottom: '125%' }}>
+                <button
+                  onClick={() => setLightboxImage(img)}
+                  className="relative w-full block cursor-zoom-in"
+                  style={{ paddingBottom: '125%' }}
+                >
                   <Image
                     src={img.url}
                     alt={img.prompt}
@@ -489,7 +583,7 @@ export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, i
                     className="object-cover"
                     sizes="(max-width: 640px) 50vw, 25vw"
                   />
-                </div>
+                </button>
                 <div className="p-2 space-y-1.5">
                   <p className="text-[#555] text-xs truncate">{img.prompt}</p>
                   <p className="text-[#444] text-[10px]">{img.model}</p>

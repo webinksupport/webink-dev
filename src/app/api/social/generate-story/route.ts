@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateTextWithProviders } from '@/lib/ai/generate-text'
+import { parseJsonFromAI } from '@/lib/ai/parse-json-response'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -48,7 +49,7 @@ Return ONLY valid JSON:
 
   try {
     const text = await generateTextWithProviders(prompt, session.user.id)
-    const parsed = JSON.parse(text.trim())
+    const parsed = parseJsonFromAI(text)
     return NextResponse.json(parsed)
   } catch (error) {
     console.error('Story generation error:', error)

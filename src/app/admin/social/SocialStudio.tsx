@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import IdeaGenerator from './tabs/IdeaGenerator'
 import BrandAssistant from './tabs/BrandAssistant'
 import ImageStudio from './tabs/ImageStudio'
-import PostComposer from './tabs/PostComposer'
 import CarouselBuilder from './tabs/CarouselBuilder'
 import ReviewQueue from './tabs/ReviewQueue'
 import CalendarView from './tabs/CalendarView'
@@ -16,9 +14,7 @@ import ClientManager from './tabs/ClientManager'
 import StoriesPlanner from './tabs/StoriesPlanner'
 import PostBuilder from './tabs/PostBuilder'
 import {
-  Lightbulb,
   ImageIcon,
-  PenSquare,
   Calendar,
   BarChart2,
   Palette,
@@ -44,12 +40,10 @@ const tabGroups = [
   {
     label: 'CREATE',
     tabs: [
-      { id: 'ideas', label: 'Ideas', icon: Lightbulb },
+      { id: 'postbuilder', label: 'Builder', icon: Wand2 },
+      { id: 'images', label: 'Image Studio', icon: ImageIcon },
       { id: 'brand', label: 'Brand Assistant', icon: Palette },
       { id: 'carousel', label: 'Carousel/Reels', icon: Layers },
-      { id: 'images', label: 'Image Studio', icon: ImageIcon },
-      { id: 'composer', label: 'Composer', icon: PenSquare },
-      { id: 'postbuilder', label: 'Post Builder', icon: Wand2 },
     ],
   },
   {
@@ -78,7 +72,7 @@ const tabGroups = [
 ]
 
 export default function SocialStudio() {
-  const [activeTab, setActiveTab] = useState('ideas')
+  const [activeTab, setActiveTab] = useState('postbuilder')
   // Shared state: pass selected idea/image into composer
   const [composerDraft, setComposerDraft] = useState<{
     caption?: string
@@ -232,12 +226,6 @@ export default function SocialStudio() {
 
       {/* Tab Content */}
       <div>
-        {activeTab === 'ideas' && (
-          <IdeaGenerator
-            onUseIdea={goToComposer}
-            onSendToImageStudio={goToImageStudioWithContext}
-          />
-        )}
         {activeTab === 'brand' && (
           <BrandAssistant
             onUseContent={(content) => goToComposer({
@@ -267,7 +255,6 @@ export default function SocialStudio() {
             initialIdea={imageStudioIdea}
           />
         )}
-        {activeTab === 'composer' && <PostComposer initialDraft={composerDraft} />}
         {activeTab === 'review' && <ReviewQueue onEditPost={(post) => goToComposer({
           caption: post.caption || '',
           hashtags: post.hashtags || '',

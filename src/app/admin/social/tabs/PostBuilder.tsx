@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   ArrowRight,
   ArrowLeft,
@@ -17,6 +17,9 @@ import {
   Star,
   Crown,
   Dice5,
+  Upload,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react'
 import Image from 'next/image'
 import { useAvailableModels, type ImageModel } from '@/hooks/useAvailableModels'
@@ -108,6 +111,11 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
   const [improvingCaption, setImprovingCaption] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  // Manual mode — skip AI steps, go straight to compose
+  const [manualMode, setManualMode] = useState(false)
+  const [manualImage, setManualImage] = useState('')
+  const manualFileRef = useRef<HTMLInputElement>(null)
 
   // I'm Feeling Lucky
   const [luckyRunning, setLuckyRunning] = useState(false)
@@ -441,6 +449,21 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
     setLuckyStep('')
   }
 
+  async function handleManualImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const formData = new FormData()
+    formData.append('file', file)
+    try {
+      const res = await fetch('/api/media/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (data.results?.[0]?.path) {
+        setManualImage(data.results[0].path)
+        setGeneratedImage(data.results[0].path)
+      }
+    } catch { /* silent */ }
+  }
+
   function canGoNext(): boolean {
     switch (step) {
       case 1: return topic.trim().length > 0
@@ -461,8 +484,60 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
 
   return (
     <div className="max-w-3xl mx-auto">
+      {/* Manual Mode Toggle */}
+      {!luckyRunning && !saved && (
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => {
+              setManualMode(!manualMode)
+              if (!manualMode) setStep(5) // Jump to compose step
+              else setStep(1) // Back to step 1
+            }}
+            className="flex items-center gap-2 text-sm text-[#888] hover:text-white transition-colors"
+          >
+            {manualMode ? (
+              <ToggleRight className="w-5 h-5 text-[#14EAEA]" />
+            ) : (
+              <ToggleLeft className="w-5 h-5" />
+            )}
+            Manual Mode {manualMode ? '(ON)' : '(OFF)'}
+          </button>
+          {manualMode && (
+            <span className="text-[#555] text-xs">Skip AI steps — compose from scratch</span>
+          )}
+        </div>
+      )}
+
+      {/* Manual Mode — Image Upload */}
+      {manualMode && !saved && step === 5 && !generatedImage && (
+        <div className="mb-4 p-4 bg-[#141414] border border-[#282828] rounded-xl">
+          <label className="text-[#888] text-xs font-medium block mb-2">Upload Image (optional)</label>
+          {manualImage ? (
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 rounded-lg overflow-hidden border border-[#282828]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={manualImage} alt="Uploaded" className="w-full h-full object-cover" />
+              </div>
+              <button
+                onClick={() => { setManualImage(''); setGeneratedImage('') }}
+                className="text-xs text-red-400 hover:text-red-300"
+              >Remove</button>
+            </div>
+          ) : (
+            <button
+              onClick={() => manualFileRef.current?.click()}
+              className="flex items-center gap-2 text-sm text-[#14EAEA] hover:text-white bg-[#14EAEA]/10 px-4 py-2 rounded-lg transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              Upload Image
+            </button>
+          )}
+          <input ref={manualFileRef} type="file" accept="image/*" onChange={handleManualImageUpload} className="hidden" />
+        </div>
+      )}
+
       {/* I'm Feeling Lucky */}
-      {!luckyRunning && step === 1 && !saved && (
+      {!luckyRunning && step === 1 && !saved && !manualMode && (
         <button
           onClick={feelingLucky}
           className="w-full mb-6 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#F813BE] to-[#14EAEA] text-white hover:opacity-90 transition-opacity"
@@ -487,8 +562,8 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
         </div>
       )}
 
-      {/* Step Indicators */}
-      <div className="flex items-center justify-between mb-10">
+      {/* Step Indicators — hidden in manual mode */}
+      {!manualMode && <div className="flex items-center justify-between mb-10">
         {STEPS.map((s, i) => (
           <div key={s.num} className="flex items-center">
             <div className="flex flex-col items-center">
@@ -512,7 +587,7 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
             )}
           </div>
         ))}
-      </div>
+      </div>}
 
       {/* Step Content */}
       <div className="bg-[#1A1A1A] rounded-2xl border border-[#282828] p-6 sm:p-8 min-h-[360px]">
@@ -885,8 +960,8 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
         )}
       </div>
 
-      {/* Navigation Buttons */}
-      {!(step === 5 && saved) && (
+      {/* Navigation Buttons — hidden in manual mode */}
+      {!(step === 5 && saved) && !manualMode && (
         <div className="flex justify-between mt-6">
           <button
             onClick={goBack}

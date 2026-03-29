@@ -48,11 +48,18 @@ async function downloadImageFromUrl(url: string): Promise<Buffer> {
   return Buffer.from(await res.arrayBuffer())
 }
 
-// ─── Default steps helper ────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Snap a dimension to the nearest multiple of 16 (required by Together AI) */
+function snapToMultiple16(n: number): number {
+  return Math.round(n / 16) * 16
+}
 
 function getDefaultSteps(model: string): number {
   if (model.includes('schnell')) return 4
-  if (model.toLowerCase().includes('kontext') || model.includes('FLUX.2')) return 28
+  if (model.toLowerCase().includes('kontext')) return 28
+  // FLUX.2 does NOT support the steps parameter — return 0 to signal omission
+  if (isFlux2Model(model)) return 0
   return 20
 }
 
@@ -72,8 +79,6 @@ async function generateTogetherAI(
   // Resolve model ID — accept both short keys and full IDs
   let togetherModel = model
   const shortMap: Record<string, string> = {
-    schnell: 'black-forest-labs/FLUX.1-schnell',
-    schnell_paid: 'black-forest-labs/FLUX.1-schnell',
     kontext_pro: 'black-forest-labs/FLUX.1-Kontext-pro',
   }
   if (shortMap[model]) {
@@ -82,27 +87,34 @@ async function generateTogetherAI(
 
   const isKontext = isKontextModel(togetherModel)
   const isFlux2 = isFlux2Model(togetherModel)
-  const isGoogleTogether = togetherModel.startsWith('google/')
+
+  // Snap width/height to multiples of 16 (Together AI requirement)
+  const snappedWidth = snapToMultiple16(width)
+  const snappedHeight = snapToMultiple16(height)
 
   const body: Record<string, unknown> = {
     model: togetherModel,
     prompt,
-    width,
-    height,
+    width: snappedWidth,
+    height: snappedHeight,
     n: 1,
     response_format: 'base64',
-    steps: getDefaultSteps(togetherModel),
+  }
+
+  // FLUX.2 does NOT support the steps parameter
+  const steps = getDefaultSteps(togetherModel)
+  if (steps > 0) {
+    body.steps = steps
   }
 
   if (referenceImageUrls && referenceImageUrls.length > 0) {
     if (isKontext) {
       // FLUX.1 Kontext: single reference via image_url
       body.image_url = referenceImageUrls[0]
-    } else if (isFlux2 || isGoogleTogether) {
-      // FLUX.2 and Google models via Together: reference_images array
+    } else if (isFlux2) {
+      // FLUX.2: reference_images array
       body.reference_images = referenceImageUrls
     }
-    // wan-ai and qwen: no reference image support, just ignore
   }
 
   const response = await fetch('https://api.together.xyz/v1/images/generations', {
@@ -424,7 +436,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const {
     prompt,
-    model = 'black-forest-labs/FLUX.1-schnell',
+    model = 'black-forest-labs/FLUX.1-Kontext-pro',
     provider = 'together',
     referenceImageUrl,
     referenceImageUrls,
