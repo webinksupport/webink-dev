@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import EditableImage from '@/components/editor/EditableImage'
-import EditableText from '@/components/editor/EditableText'
+import Image from 'next/image'
 import { useEditor } from '@/components/editor/EditorContext'
 
 interface StatData {
@@ -94,10 +93,10 @@ export default function StatsI({ content = {}, stats }: { content?: Record<strin
     <section id="results" className="relative bg-[#0F0F0F] py-24 lg:py-36 overflow-hidden">
       {/* Background photo */}
       <div className="absolute inset-0">
-        <EditableImage
-          pageSlug="home"
-          blockKey="stats_bg_image"
-          src="/images/photoshoot/_UTA4057.jpg"
+        <Image
+          data-page="home"
+          data-block="stats_bg_image"
+          src={content?.stats_bg_image || '/images/photoshoot/_UTA4057.jpg'}
           alt="Stats background"
           fill
           className="object-cover opacity-10"
@@ -117,32 +116,30 @@ export default function StatsI({ content = {}, stats }: { content?: Record<strin
           <div>
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-[2px] bg-[#14EAEA]" />
-              <EditableText
-                as="span"
-                pageSlug="home"
-                blockKey="stats_eyebrow"
-                value={content?.stats_eyebrow}
-                defaultValue="Results"
+              <span
+                data-page="home"
+                data-block="stats_eyebrow"
                 className="font-urbanist text-xs font-black tracking-[0.5em] text-white/30 uppercase"
-              />
+              >
+                {content?.stats_eyebrow || 'Results'}
+              </span>
             </div>
-            <EditableText
-              as="h2"
-              pageSlug="home"
-              blockKey="stats_heading"
-              value={content?.stats_heading}
-              defaultValue="Numbers Don't Lie."
+            <h2
+              data-page="home"
+              data-block="stats_heading"
               className="font-urbanist font-black text-white leading-[0.9]"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 6rem)', letterSpacing: '-0.04em' }}
-            />
+            >
+              {content?.stats_heading || "Numbers Don't Lie."}
+            </h2>
           </div>
-          <EditableText
-            as="p"
-            pageSlug="home"
-            blockKey="stats_subtext"
-            defaultValue="Six years of building digital foundations for Southwest Florida businesses. Here's what that looks like."
+          <p
+            data-page="home"
+            data-block="stats_subtext"
             className="font-urbanist text-white/40 text-lg leading-relaxed max-w-sm lg:text-right"
-          />
+          >
+            {content?.stats_subtext || "Six years of building digital foundations for Southwest Florida businesses. Here's what that looks like."}
+          </p>
         </div>
 
         {/* Stats grid */}
@@ -161,22 +158,20 @@ export default function StatsI({ content = {}, stats }: { content?: Record<strin
               </svg>
             </div>
             <div>
-              <EditableText
-                as="div"
-                pageSlug="home"
-                blockKey="stats_badge_title"
-                value={content?.stats_badge_title}
-                defaultValue="Top Web Design Company in Florida"
+              <div
+                data-page="home"
+                data-block="stats_badge_title"
                 className="font-urbanist font-bold text-sm text-white"
-              />
-              <EditableText
-                as="div"
-                pageSlug="home"
-                blockKey="stats_badge_subtitle"
-                value={content?.stats_badge_subtitle}
-                defaultValue="Recognized by DesignRush"
+              >
+                {content?.stats_badge_title || 'Top Web Design Company in Florida'}
+              </div>
+              <div
+                data-page="home"
+                data-block="stats_badge_subtitle"
                 className="font-urbanist text-xs text-white/35"
-              />
+              >
+                {content?.stats_badge_subtitle || 'Recognized by DesignRush'}
+              </div>
             </div>
           </div>
           <a
@@ -184,13 +179,12 @@ export default function StatsI({ content = {}, stats }: { content?: Record<strin
             onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
             className="font-urbanist font-bold text-sm text-white/40 border-b border-[#14EAEA] pb-0.5 hover:text-[#14EAEA] transition-colors duration-200"
           >
-            <EditableText
-              as="span"
-              pageSlug="home"
-              blockKey="stats_cta_text"
-              value={content?.stats_cta_text}
-              defaultValue="See Our Work →"
-            />
+            <span
+              data-page="home"
+              data-block="stats_cta_text"
+            >
+              {content?.stats_cta_text || 'See Our Work →'}
+            </span>
           </a>
         </div>
       </div>

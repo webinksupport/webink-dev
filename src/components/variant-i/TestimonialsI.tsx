@@ -2,8 +2,6 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import EditableImage from '@/components/editor/EditableImage'
-import EditableText from '@/components/editor/EditableText'
 
 const testimonials = [
   {
@@ -174,33 +172,30 @@ export default function TestimonialsI({ content }: { content?: Record<string, st
           <div>
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-[2px] bg-[#14EAEA]" />
-              <EditableText
-                as="span"
-                pageSlug="home"
-                blockKey="testimonials_eyebrow"
-                value={content?.testimonials_eyebrow}
-                defaultValue="Testimonials"
+              <span
+                data-page="home"
+                data-block="testimonials_eyebrow"
                 className="font-urbanist text-xs font-black tracking-[0.5em] text-black/30 uppercase"
-              />
+              >
+                {content?.testimonials_eyebrow || 'Testimonials'}
+              </span>
             </div>
-            <EditableText
-              as="h2"
-              pageSlug="home"
-              blockKey="testimonials_heading"
-              value={content?.testimonials_heading}
-              defaultValue="What Clients Actually Say."
+            <h2
+              data-page="home"
+              data-block="testimonials_heading"
               className="font-urbanist font-black text-[#0A0A0A] leading-[0.9]"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 6rem)', letterSpacing: '-0.04em' }}
-            />
+            >
+              {content?.testimonials_heading || 'What Clients Actually Say.'}
+            </h2>
           </div>
-          <EditableText
-            as="p"
-            pageSlug="home"
-            blockKey="testimonials_subtext"
-            value={content?.testimonials_subtext}
-            defaultValue="Hover each card to read the full review. Real clients, real results."
+          <p
+            data-page="home"
+            data-block="testimonials_subtext"
             className="font-urbanist text-[#0A0A0A]/50 text-base leading-relaxed max-w-xs"
-          />
+          >
+            {content?.testimonials_subtext || 'Hover each card to read the full review. Real clients, real results.'}
+          </p>
         </div>
 
         {/* 3D flip card grid */}
@@ -220,10 +215,10 @@ export default function TestimonialsI({ content }: { content?: Record<string, st
             className="overflow-hidden rounded-2xl shadow-xl"
           >
             <div className="relative h-[200px]">
-              <EditableImage
-                pageSlug="home"
-                blockKey="testimonials_photo_1"
-                src="/images/photos/team-kelley.jpg"
+              <Image
+                data-page="home"
+                data-block="testimonials_photo_1"
+                src={content?.testimonials_photo_1 || '/images/photos/team-kelley.jpg'}
                 alt="Webink Solutions team member Kelley — Sarasota digital marketing"
                 fill
                 className="object-cover"
@@ -240,10 +235,10 @@ export default function TestimonialsI({ content }: { content?: Record<string, st
             className="overflow-hidden rounded-2xl shadow-xl"
           >
             <div className="relative h-[200px]">
-              <EditableImage
-                pageSlug="home"
-                blockKey="testimonials_photo_2"
-                src="/images/photoshoot/DSC04488.jpg"
+              <Image
+                data-page="home"
+                data-block="testimonials_photo_2"
+                src={content?.testimonials_photo_2 || '/images/photoshoot/DSC04488.jpg'}
                 alt="Webink Solutions professional team photo — client results"
                 fill
                 className="object-cover"
@@ -260,10 +255,10 @@ export default function TestimonialsI({ content }: { content?: Record<string, st
             className="overflow-hidden rounded-2xl shadow-xl"
           >
             <div className="relative h-[200px]">
-              <EditableImage
-                pageSlug="home"
-                blockKey="testimonials_photo_3"
-                src="/images/photos/team-family.jpg"
+              <Image
+                data-page="home"
+                data-block="testimonials_photo_3"
+                src={content?.testimonials_photo_3 || '/images/photos/team-family.jpg'}
                 alt="The Webink Solutions family — Sarasota based digital agency team"
                 fill
                 className="object-cover"
@@ -288,34 +283,31 @@ export default function TestimonialsI({ content }: { content?: Record<string, st
             ))}
           </div>
           <div>
-            <EditableText
-              as="div"
-              pageSlug="home"
-              blockKey="testimonials_rating_title"
-              value={content?.testimonials_rating_title}
-              defaultValue="5.0 on Google"
+            <div
+              data-page="home"
+              data-block="testimonials_rating_title"
               className="font-urbanist font-bold text-sm text-[#0A0A0A]"
-            />
-            <EditableText
-              as="div"
-              pageSlug="home"
-              blockKey="testimonials_rating_subtitle"
-              value={content?.testimonials_rating_subtitle}
-              defaultValue="50+ five-star reviews"
+            >
+              {content?.testimonials_rating_title || '5.0 on Google'}
+            </div>
+            <div
+              data-page="home"
+              data-block="testimonials_rating_subtitle"
               className="font-urbanist text-xs text-[#0A0A0A]/40"
-            />
+            >
+              {content?.testimonials_rating_subtitle || '50+ five-star reviews'}
+            </div>
           </div>
           <a
             href="https://webink.solutions/review"
             className="ml-4 font-urbanist font-bold text-sm text-[#0A0A0A] border-b-2 border-[#14EAEA] pb-0.5 hover:text-[#14EAEA] transition-colors"
           >
-            <EditableText
-              as="span"
-              pageSlug="home"
-              blockKey="testimonials_cta_text"
-              value={content?.testimonials_cta_text}
-              defaultValue="Leave a Review →"
-            />
+            <span
+              data-page="home"
+              data-block="testimonials_cta_text"
+            >
+              {content?.testimonials_cta_text || 'Leave a Review →'}
+            </span>
           </a>
         </div>
       </div>

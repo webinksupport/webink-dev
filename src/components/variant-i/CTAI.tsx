@@ -1,7 +1,13 @@
 'use client'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
-import EditableText from '@/components/editor/EditableText'
-import EditableBackground, { type BackgroundData } from '@/components/editor/EditableBackground'
+
+interface BackgroundData {
+  src?: string
+  objectPosition?: string
+  overlayOpacity?: number
+  backgroundSize?: string
+}
 
 interface CTAIProps {
   content?: Record<string, string>
@@ -14,20 +20,25 @@ export default function CTAI({ content = {}, ctaBgData }: CTAIProps = {}) {
       id="contact"
       className="bg-[#0A0A0A] py-32 lg:py-44 relative overflow-hidden"
     >
-      {/* Editable background photo */}
-      <EditableBackground
-        pageSlug="home"
-        blockKey="cta_bg"
-        defaultSrc="/images/photos/baja-beach.jpg"
-        defaultOverlayOpacity={0}
-        defaultPosition="center"
-        cmsData={ctaBgData}
-        imageClassName="object-cover opacity-[0.07]"
-        imageProps={{ quality: 75, sizes: '100vw' }}
-        className="absolute inset-0"
-      >
+      {/* Background photo */}
+      <div className="absolute inset-0" data-type="background" data-page="home" data-block="cta_bg">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={ctaBgData?.src || '/images/photos/baja-beach.jpg'}
+            alt=""
+            fill
+            className="object-cover opacity-[0.07]"
+            style={{ objectPosition: ctaBgData?.objectPosition || 'center' }}
+            quality={75}
+            sizes="100vw"
+          />
+          <div
+            className="absolute inset-0 transition-opacity duration-300"
+            style={{ backgroundColor: `rgba(0,0,0,${ctaBgData?.overlayOpacity ?? 0})` }}
+          />
+        </div>
         <span />
-      </EditableBackground>
+      </div>
 
       {/* Subtle radial gradient wash */}
       <div
@@ -50,64 +61,60 @@ export default function CTAI({ content = {}, ctaBgData }: CTAIProps = {}) {
         >
           <div className="inline-flex items-center gap-3 mb-10">
             <span className="w-8 h-[2px] bg-[#14EAEA]" />
-            <EditableText
-              as="span"
-              pageSlug="home"
-              blockKey="cta_eyebrow"
-              value={content?.cta_eyebrow}
-              defaultValue="Let's Work Together"
+            <span
+              data-page="home"
+              data-block="cta_eyebrow"
               className="font-urbanist text-xs font-black tracking-[0.5em] text-[#14EAEA]/60 uppercase"
-            />
+            >
+              {content?.cta_eyebrow || "Let's Work Together"}
+            </span>
             <span className="w-8 h-[2px] bg-[#14EAEA]" />
           </div>
 
-          <EditableText
-            as="h2"
-            pageSlug="home"
-            blockKey="cta_heading"
-            value={content?.cta_heading}
-            defaultValue="Ready to Grow Your Business?"
+          <h2
+            data-page="home"
+            data-block="cta_heading"
             className="font-urbanist font-black text-white leading-[0.85] mb-10 mx-auto"
             style={{
               fontSize: 'clamp(3rem, 9vw, 9.5rem)',
               letterSpacing: '-0.04em',
               maxWidth: '14ch',
             }}
-          />
+          >
+            {content?.cta_heading || 'Ready to Grow Your Business?'}
+          </h2>
 
-          <EditableText
-            as="p"
-            pageSlug="home"
-            blockKey="cta_subtext"
-            defaultValue="Free audit. No commitment. We'll review your website, SEO, and digital presence — and show you exactly what's holding you back."
+          <p
+            data-page="home"
+            data-block="cta_subtext"
             className="font-urbanist text-white/45 text-xl leading-relaxed mb-14 max-w-2xl mx-auto"
-          />
+          >
+            {content?.cta_subtext || "Free audit. No commitment. We'll review your website, SEO, and digital presence — and show you exactly what's holding you back."}
+          </p>
 
           <div className="flex flex-wrap gap-5 justify-center">
             <a
               href="/contact"
               className="group inline-flex items-center gap-3 font-urbanist font-bold text-base px-10 py-5 bg-[#14EAEA] text-[#0A0A0A] rounded-full hover:bg-white transition-all duration-300 shadow-lg shadow-[#14EAEA]/20"
             >
-              <EditableText
-                as="span"
-                pageSlug="home"
-                blockKey="cta_button_text"
-                value={content?.cta_button_text}
-                defaultValue="Get a Free Audit"
-              />
+              <span
+                data-page="home"
+                data-block="cta_button_text"
+              >
+                {content?.cta_button_text || 'Get a Free Audit'}
+              </span>
               <span className="w-7 h-7 rounded-full bg-[#0A0A0A] text-[#14EAEA] group-hover:bg-[#14EAEA] group-hover:text-[#0A0A0A] flex items-center justify-center text-sm font-black transition-all duration-300">→</span>
             </a>
             <a
               href="/services"
               className="inline-flex items-center gap-3 font-urbanist font-bold text-base px-10 py-5 border-2 border-white/15 text-white rounded-full hover:border-[#14EAEA]/50 transition-all duration-300"
             >
-              <EditableText
-                as="span"
-                pageSlug="home"
-                blockKey="cta_button2_text"
-                value={content?.cta_button2_text}
-                defaultValue="View Our Work"
-              />
+              <span
+                data-page="home"
+                data-block="cta_button2_text"
+              >
+                {content?.cta_button2_text || 'View Our Work'}
+              </span>
             </a>
           </div>
 

@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import EditableImage from '@/components/editor/EditableImage'
+import Image from 'next/image'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -22,9 +22,8 @@ export default function RegisterPage() {
 
       <div className="relative w-full max-w-md text-center">
         <Link href="/" className="inline-block mb-8">
-          <EditableImage
-            pageSlug="global"
-            blockKey="auth_logo"
+          <Image
+            data-page="global" data-block="auth_logo"
             src="/images/logos/webink-white.png"
             alt="Webink Solutions"
             width={180}
@@ -48,7 +47,7 @@ export default function RegisterPage() {
             href="/services"
             className="inline-flex items-center gap-2 bg-[#14EAEA] text-[#0A0A0A] font-bold text-sm px-8 py-3.5 rounded-full hover:bg-white transition-colors duration-200"
           >
-            Browse Services →
+            Browse Services &rarr;
           </Link>
         </div>
 

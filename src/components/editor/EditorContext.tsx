@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import { useSession } from 'next-auth/react'
 
-export type ElementType = 'text' | 'image'
+export type ElementType = 'text' | 'image' | 'background'
 
 export interface TextProps {
   text: string
@@ -25,13 +25,20 @@ export interface ImageProps {
   zoom?: number
 }
 
+export interface BackgroundProps {
+  src: string
+  objectPosition?: string
+  overlayOpacity?: number
+  backgroundSize?: string
+}
+
 export interface SelectedElement {
   type: ElementType
   pageSlug: string
   blockKey: string
   rect: DOMRect
   element: HTMLElement
-  data: TextProps | ImageProps
+  data: TextProps | ImageProps | BackgroundProps
 }
 
 interface EditorContextType {
@@ -64,12 +71,12 @@ export function useEditor() {
   return useContext(EditorContext)
 }
 
-export function EditorProvider({ 
-  children, 
+export function EditorProvider({
+  children,
   pageSlug,
   initialContent,
   initialJsonContent,
-}: { 
+}: {
   children: ReactNode
   pageSlug: string
   initialContent?: Record<string, string>
@@ -85,7 +92,6 @@ export function EditorProvider({
   const [jsonContent, setJsonContent] = useState<Record<string, unknown>>(initialJsonContent || {})
   const [fetched, setFetched] = useState(!!initialContent)
 
-  // Fetch content from API if not provided via SSR
   useEffect(() => {
     if (fetched) return
     setFetched(true)
@@ -141,7 +147,6 @@ export function EditorProvider({
         }),
       })
       if (res.ok) {
-        // Update local content cache so the page reflects changes immediately
         setContent(prev => ({ ...prev, [blockKey]: value }))
         if (jsonValue !== undefined) {
           setJsonContent(prev => ({ ...prev, [blockKey]: jsonValue }))

@@ -1,7 +1,6 @@
 'use client'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
-import EditableText from '@/components/editor/EditableText'
-import EditableImage from '@/components/editor/EditableImage'
 
 const ease = [0.25, 0.46, 0.45, 0.94]
 
@@ -19,35 +18,35 @@ export default function LocalI({ content }: { content?: Record<string, string> }
           >
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-[2px] bg-[#F813BE]" />
-              <EditableText
-                as="span"
-                blockKey="local_eyebrow"
-                defaultValue="Proudly Local"
+              <span
+                data-block="local_eyebrow"
                 className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase"
-              />
+              >
+                {content?.local_eyebrow || 'Proudly Local'}
+              </span>
             </div>
 
-            <EditableText
-              as="h2"
-              blockKey="local_heading"
-              defaultValue="Sarasota's Digital Agency."
+            <h2
+              data-block="local_heading"
               className="font-urbanist font-black text-[#0F0F0F] leading-[0.92] mb-8"
               style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', letterSpacing: '-0.04em' }}
-            />
+            >
+              {content?.local_heading || "Sarasota's Digital Agency."}
+            </h2>
 
-            <EditableText
-              as="p"
-              blockKey="local_body_1"
-              defaultValue="We live and work on the Gulf Coast. That means we understand Sarasota, Tampa, and Bradenton — the markets, the people, and what it takes to stand out locally."
+            <p
+              data-block="local_body_1"
               className="font-urbanist text-[#333]/55 text-xl leading-relaxed mb-6"
-            />
+            >
+              {content?.local_body_1 || 'We live and work on the Gulf Coast. That means we understand Sarasota, Tampa, and Bradenton — the markets, the people, and what it takes to stand out locally.'}
+            </p>
 
-            <EditableText
-              as="p"
-              blockKey="local_body_2"
-              defaultValue="When you work with Webink, you get a team that answers the phone, shows up to meetings, and genuinely cares about your success. No offshore outsourcing. No runaround. Just results."
+            <p
+              data-block="local_body_2"
               className="font-urbanist text-[#333]/35 text-lg leading-relaxed mb-8"
-            />
+            >
+              {content?.local_body_2 || 'When you work with Webink, you get a team that answers the phone, shows up to meetings, and genuinely cares about your success. No offshore outsourcing. No runaround. Just results.'}
+            </p>
 
             <div className="flex flex-wrap gap-3">
               {['Sarasota, FL', 'Tampa, FL', 'Bradenton, FL'].map((city) => (
@@ -69,9 +68,9 @@ export default function LocalI({ content }: { content?: Record<string, string> }
             viewport={{ once: true, margin: '-80px' }}
             className="overflow-hidden rounded-2xl shadow-xl"
           >
-            <EditableImage
-              blockKey="local_image"
-              src="/images/photoshoot/_UTA3992-Edit.jpg"
+            <Image
+              data-block="local_image"
+              src={content?.local_image || '/images/photoshoot/_UTA3992-Edit.jpg'}
               alt="Webink Solutions team in downtown Sarasota, FL — local digital marketing agency"
               width={800}
               height={600}

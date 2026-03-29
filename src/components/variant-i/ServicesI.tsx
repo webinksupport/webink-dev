@@ -1,11 +1,10 @@
 'use client'
 import { useEffect, useRef } from 'react'
-import EditableImage from '@/components/editor/EditableImage'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import {
   Globe, Search, TrendingUp, Share2, Server, Brain,
 } from 'lucide-react'
-import EditableText from '@/components/editor/EditableText'
 import { useEditor } from '@/components/editor/EditorContext'
 
 /* ── SERVICE CARDS (3x2 grid) ─────────────────────────────── */
@@ -132,24 +131,22 @@ function ServiceCard({
 
       {/* Title */}
       <h3 className="font-urbanist font-black text-[20px] text-[#0F0F0F] mb-3 leading-tight">
-        <EditableText
-          as="span"
-          pageSlug="home"
-          blockKey={`services_card_${cardNum}_title`}
-          value={titleValue}
-          defaultValue={title}
-        />
+        <span
+          data-page="home"
+          data-block={`services_card_${cardNum}_title`}
+        >
+          {titleValue || title}
+        </span>
       </h3>
 
       {/* Description */}
       <div className="font-urbanist text-[14px] text-[#333]/60 leading-relaxed flex-1 mb-6">
-        <EditableText
-          as="span"
-          pageSlug="home"
-          blockKey={`services_card_${cardNum}_desc`}
-          value={descValue}
-          defaultValue={desc}
-        />
+        <span
+          data-page="home"
+          data-block={`services_card_${cardNum}_desc`}
+        >
+          {descValue || desc}
+        </span>
       </div>
 
       {/* Learn More link */}
@@ -235,14 +232,13 @@ function HorizontalProcess({ content }: { content?: Record<string, string> }) {
         <div className="flex items-center gap-3">
           <span className="w-6 h-[2px] bg-[#14EAEA]" />
           <span className="pointer-events-auto">
-            <EditableText
-              as="span"
-              pageSlug="home"
-              blockKey="process_eyebrow"
-              value={content?.process_eyebrow}
-              defaultValue="How We Work"
+            <span
+              data-page="home"
+              data-block="process_eyebrow"
               className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase"
-            />
+            >
+              {content?.process_eyebrow || 'How We Work'}
+            </span>
           </span>
           <span className="w-6 h-[2px] bg-[#14EAEA]" />
         </div>
@@ -283,35 +279,33 @@ function HorizontalProcess({ content }: { content?: Record<string, string> }) {
                   <div className="w-16 h-[1px] bg-[#E5E5E5] mb-8" />
 
                   {/* Process title */}
-                  <EditableText
-                    as="h3"
-                    pageSlug="home"
-                    blockKey={`process_panel_${i}_title`}
-                    value={content?.[`process_panel_${i}_title`]}
-                    defaultValue={panel.title}
+                  <h3
+                    data-page="home"
+                    data-block={`process_panel_${i}_title`}
                     className="font-urbanist font-black text-[#0F0F0F] leading-tight mb-6"
                     style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
-                  />
+                  >
+                    {content?.[`process_panel_${i}_title`] || panel.title}
+                  </h3>
 
                   {/* Description */}
-                  <EditableText
-                    as="p"
-                    pageSlug="home"
-                    blockKey={`process_panel_${i}_desc`}
-                    value={content?.[`process_panel_${i}_desc`]}
-                    defaultValue={panel.desc}
+                  <p
+                    data-page="home"
+                    data-block={`process_panel_${i}_desc`}
                     className="font-urbanist text-[#333]/55 text-lg leading-relaxed max-w-md"
-                  />
+                  >
+                    {content?.[`process_panel_${i}_desc`] || panel.desc}
+                  </p>
                 </div>
 
                 {/* Image side — no whileInView here; GSAP horizontal scroll prevents IntersectionObserver from firing */}
                 <div className="relative hidden lg:block h-[420px]">
                   <div className="w-full h-full rounded-[24px] overflow-hidden shadow-xl">
                     <div className="relative w-full h-full">
-                      <EditableImage
-                        pageSlug="home"
-                        blockKey={`services_panel_${i}_image`}
-                        src={panel.image}
+                      <Image
+                        data-page="home"
+                        data-block={`services_panel_${i}_image`}
+                        src={content?.[`services_panel_${i}_image`] || panel.image}
                         alt={panel.title + ' — Webink Solutions process'}
                         fill
                         className="object-cover"
@@ -355,35 +349,32 @@ export default function ServicesI({ content }: { content?: Record<string, string
           {/* Section label */}
           <div className="flex items-center gap-3 mb-6">
             <span className="w-8 h-[2px] bg-[#F813BE]" />
-            <EditableText
-              as="span"
-              pageSlug="home"
-              blockKey="services_eyebrow"
-              value={content?.services_eyebrow}
-              defaultValue="Our Services"
+            <span
+              data-page="home"
+              data-block="services_eyebrow"
               className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase"
-            />
+            >
+              {content?.services_eyebrow || 'Our Services'}
+            </span>
           </div>
 
           {/* Heading */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16">
-            <EditableText
-              as="h2"
-              pageSlug="home"
-              blockKey="services_heading"
-              value={content?.services_heading}
-              defaultValue="Full-Service Digital Agency."
+            <h2
+              data-page="home"
+              data-block="services_heading"
               className="font-urbanist font-black text-[#0F0F0F] leading-[0.88]"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)', letterSpacing: '-0.04em' }}
-            />
-            <EditableText
-              as="p"
-              pageSlug="home"
-              blockKey="services_subtext"
-              value={content?.services_subtext}
-              defaultValue="Everything your business needs to dominate the digital landscape — under one roof."
+            >
+              {content?.services_heading || 'Full-Service Digital Agency.'}
+            </h2>
+            <p
+              data-page="home"
+              data-block="services_subtext"
               className="font-urbanist text-[#333]/50 text-lg leading-relaxed max-w-sm lg:text-right"
-            />
+            >
+              {content?.services_subtext || 'Everything your business needs to dominate the digital landscape — under one roof.'}
+            </p>
           </div>
 
           {/* 3×2 card grid */}
@@ -406,13 +397,12 @@ export default function ServicesI({ content }: { content?: Record<string, string
               onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
               className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-4 bg-[#0F0F0F] text-white rounded-full hover:bg-[#14EAEA] hover:text-[#0F0F0F] transition-all duration-300"
             >
-              <EditableText
-                as="span"
-                pageSlug="home"
-                blockKey="services_cta_text"
-                value={content?.services_cta_text}
-                defaultValue="View All Services →"
-              />
+              <span
+                data-page="home"
+                data-block="services_cta_text"
+              >
+                {content?.services_cta_text || 'View All Services →'}
+              </span>
             </a>
           </div>
         </div>

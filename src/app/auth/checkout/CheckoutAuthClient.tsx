@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import EditableImage from '@/components/editor/EditableImage'
+import Image from 'next/image'
 import { ShoppingBag, ArrowRight, Eye, EyeOff } from 'lucide-react'
 
 export default function CheckoutAuthClient() {
@@ -120,9 +120,8 @@ function CheckoutAuthForm() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-5">
-            <EditableImage
-              pageSlug="global"
-              blockKey="auth_logo"
+            <Image
+              data-page="global" data-block="auth_logo"
               src="/images/logos/webink-white.png"
               alt="Webink Solutions"
               width={160}
@@ -163,7 +162,7 @@ function CheckoutAuthForm() {
 
         {/* Two-column auth forms */}
         <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-          {/* ── LEFT: Returning Customer ─────────────────── */}
+          {/* LEFT: Returning Customer */}
           <div className="bg-[#0F0F0F] rounded-2xl p-7 border border-white/10 shadow-2xl">
             <div className="mb-6">
               <h2 className="font-urbanist font-bold text-white text-lg mb-1">
@@ -235,7 +234,7 @@ function CheckoutAuthForm() {
             </form>
           </div>
 
-          {/* ── RIGHT: New Customer ──────────────────────── */}
+          {/* RIGHT: New Customer */}
           <div className="bg-[#0F0F0F] rounded-2xl p-7 border border-white/10 shadow-2xl">
             <div className="mb-6">
               <h2 className="font-urbanist font-bold text-white text-lg mb-1">
@@ -336,7 +335,7 @@ function CheckoutAuthForm() {
         {/* Back link */}
         <p className="text-center text-white/20 text-xs mt-8">
           <Link href="/" className="hover:text-white/40 transition-colors">
-            ← Back to Webink Solutions
+            &larr; Back to Webink Solutions
           </Link>
         </p>
       </div>

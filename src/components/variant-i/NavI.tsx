@@ -1,8 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import EditableImage from '@/components/editor/EditableImage'
-import EditableText from '@/components/editor/EditableText'
+import Image from 'next/image'
 import { useEditor } from '@/components/editor/EditorContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
@@ -141,9 +140,9 @@ export default function NavI() {
           {/* Logo — white over hero, black when scrolled */}
           <Link href="/" className="relative z-10 flex-shrink-0">
             {scrolled ? (
-              <EditableImage
-                pageSlug="global"
-                blockKey="nav_logo_dark"
+              <Image
+                data-page="global"
+                data-block="nav_logo_dark"
                 src="/images/logos/webink-black-4x1.png"
                 alt="Webink Solutions"
                 width={176}
@@ -152,9 +151,9 @@ export default function NavI() {
                 priority
               />
             ) : (
-              <EditableImage
-                pageSlug="global"
-                blockKey="nav_logo_light"
+              <Image
+                data-page="global"
+                data-block="nav_logo_light"
                 src="/images/logos/webink-white.png"
                 alt="Webink Solutions"
                 width={176}
@@ -359,12 +358,12 @@ export default function NavI() {
                   : 'bg-white text-[#0A0A0A] hover:bg-[#14EAEA] hover:text-black'
               }`}
             >
-              <EditableText
-                as="span"
-                pageSlug="global"
-                blockKey="global_nav_cta"
-                defaultValue="Get Free Audit"
-              />
+              <span
+                data-page="global"
+                data-block="global_nav_cta"
+              >
+                Get Free Audit
+              </span>
             </a>
 
             {/* Hamburger — all screen sizes */}
@@ -419,9 +418,9 @@ export default function NavI() {
             >
               {/* Panel header */}
               <div className="flex items-center justify-between px-8 py-6 border-b border-black/8">
-                <EditableImage
-                  pageSlug="global"
-                  blockKey="nav_logo_mobile"
+                <Image
+                  data-page="global"
+                  data-block="nav_logo_mobile"
                   src="/images/logos/webink-black-4x1.png"
                   alt="Webink Solutions"
                   width={140}
@@ -610,20 +609,20 @@ export default function NavI() {
                   onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } else { handleLinkClick() } }}
                   className="block w-full text-center font-urbanist font-bold py-4 bg-[#0A0A0A] text-white rounded-2xl hover:bg-[#14EAEA] hover:text-black transition-all duration-300 text-sm tracking-wide"
                 >
-                  <EditableText
-                    as="span"
-                    pageSlug="global"
-                    blockKey="global_nav_mobile_cta"
-                    defaultValue="Get a Free Audit →"
-                  />
+                  <span
+                    data-page="global"
+                    data-block="global_nav_mobile_cta"
+                  >
+                    Get a Free Audit →
+                  </span>
                 </a>
-                <EditableText
-                  as="p"
-                  pageSlug="global"
-                  blockKey="global_nav_mobile_cta_sub"
-                  defaultValue="No commitment. Response in 24h."
+                <p
+                  data-page="global"
+                  data-block="global_nav_mobile_cta_sub"
                   className="text-center text-xs text-black/30 mt-3 font-urbanist"
-                />
+                >
+                  No commitment. Response in 24h.
+                </p>
               </div>
             </motion.nav>
           </>

@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import EditableImage from '@/components/editor/EditableImage'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ChevronDown, Loader2 } from 'lucide-react'
-import EditableText from '@/components/editor/EditableText'
 import { useEditor } from '@/components/editor/EditorContext'
 
 /* ------------------------------------------------------------------ */
@@ -404,9 +403,7 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
 
   return (
     <>
-      {/* ============================================================ */}
-      {/*  HERO                                                        */}
-      {/* ============================================================ */}
+      {/* HERO */}
       <section className="relative bg-[#0F0F0F] pt-40 pb-20 lg:pb-28 px-6 md:px-16 lg:px-24">
         <div className="max-w-7xl mx-auto text-center">
           <motion.div
@@ -414,44 +411,42 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <EditableText
-              as="p"
-              blockKey="hero_eyebrow"
-              defaultValue="Pricing"
+            <p
+              data-page="pricing" data-block="hero_eyebrow"
               className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
-            />
+            >
+              {content?.hero_eyebrow || 'Pricing'}
+            </p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <EditableText
-              as="h1"
-              blockKey="hero_headline"
-              defaultValue="Transparent Pricing"
+            <h1
+              data-page="pricing" data-block="hero_headline"
               className="text-white font-light text-5xl md:text-6xl lg:text-7xl mb-6"
               style={{ fontSize: 'clamp(3rem, 8vw, 5rem)' }}
-            />
+            >
+              {content?.hero_headline || 'Transparent Pricing'}
+            </h1>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <EditableText
-              as="p"
-              blockKey="hero_subtext"
-              defaultValue="No hidden fees. No long-term contracts. Just straightforward plans built to grow your business."
+            <p
+              data-page="pricing" data-block="hero_subtext"
               className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto"
-            />
+            >
+              {content?.hero_subtext || 'No hidden fees. No long-term contracts. Just straightforward plans built to grow your business.'}
+            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/*  BILLING TOGGLE + PRODUCT SECTIONS                           */}
-      {/* ============================================================ */}
+      {/* BILLING TOGGLE + PRODUCT SECTIONS */}
       <section className="px-6 md:px-16 lg:px-24 py-20 lg:py-32 bg-[#F8F8F8]">
         <div className="max-w-7xl mx-auto">
           {/* Toggle */}
@@ -588,39 +583,32 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
               )
             })}
 
-          {/* Empty state (shouldn't happen with fallback, but just in case) */}
+          {/* Empty state */}
           {!loading && products.length === 0 && (
             <div className="text-center py-20">
-              <EditableText
-                as="p"
-                blockKey="pricing_empty_state"
-                defaultValue="Pricing information is currently being updated."
+              <p
+                data-page="pricing" data-block="pricing_empty_state"
                 className="text-xl text-[#333]/60 mb-6"
-              />
+              >
+                Pricing information is currently being updated.
+              </p>
               <Link
                 href="/contact"
                 onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
                 className="inline-block bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors"
               >
-                <EditableText
-                  as="span"
-                  blockKey="pricing_empty_cta"
-                  defaultValue="Contact Us for Pricing"
-                />
+                <span data-page="pricing" data-block="pricing_empty_cta">Contact Us for Pricing</span>
               </Link>
             </div>
           )}
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/*  CTA BANNER                                                  */}
-      {/* ============================================================ */}
+      {/* CTA BANNER */}
       <section className="relative bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-20 overflow-hidden">
         <div className="absolute inset-0">
-          <EditableImage
-            pageSlug="pricing"
-            blockKey="cta_bg_image"
+          <Image
+            data-page="pricing" data-block="cta_bg_image"
             src="/images/photoshoot/DSC04566.jpg"
             alt="CTA background"
             fill
@@ -639,9 +627,8 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
             className="lg:col-span-4 hidden lg:block overflow-hidden rounded-2xl shadow-xl"
           >
             <div className="relative h-[320px]">
-              <EditableImage
-                pageSlug="pricing"
-                blockKey="cta_sean_image"
+              <Image
+                data-page="pricing" data-block="cta_sean_image"
                 src="/images/photoshoot/SquareSean2.jpg"
                 alt="Sean Rowe — founder of Webink Solutions, ready to help grow your business"
                 fill
@@ -655,70 +642,60 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
             {...fadeUp}
             className="lg:col-span-8 text-center lg:text-left"
           >
-            <EditableText
-              as="p"
-              blockKey="cta_eyebrow"
-              defaultValue="Ready to Grow?"
+            <p
+              data-page="pricing" data-block="cta_eyebrow"
               className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
-            />
-            <EditableText
-              as="h2"
-              blockKey="cta_heading"
-              defaultValue="Not sure which plan is right for you?"
+            >
+              {content?.cta_eyebrow || 'Ready to Grow?'}
+            </p>
+            <h2
+              data-page="pricing" data-block="cta_heading"
               className="text-3xl lg:text-4xl font-bold text-white mb-4"
-            />
-            <EditableText
-              as="p"
-              blockKey="cta_subtext"
-              defaultValue="Schedule a free consultation and we will build a custom strategy tailored to your business goals and budget."
+            >
+              {content?.cta_heading || 'Not sure which plan is right for you?'}
+            </h2>
+            <p
+              data-page="pricing" data-block="cta_subtext"
               className="text-white/60 text-lg mb-8 max-w-xl mx-auto lg:mx-0"
-            />
+            >
+              {content?.cta_subtext || 'Schedule a free consultation and we will build a custom strategy tailored to your business goals and budget.'}
+            </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <Link
                 href="/contact"
                 onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
                 className="bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors"
               >
-                <EditableText
-                  as="span"
-                  blockKey="pricing_cta_button_1"
-                  defaultValue="Get a Free Consultation"
-                />
+                <span data-page="pricing" data-block="pricing_cta_button_1">{content?.pricing_cta_button_1 || 'Get a Free Consultation'}</span>
               </Link>
               <a
                 href="tel:+19418401381"
                 onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
                 className="border border-white text-white font-semibold px-8 py-4 rounded-full hover:bg-white hover:text-[#0A0A0A] transition-colors"
               >
-                <EditableText
-                  as="span"
-                  blockKey="pricing_cta_button_2"
-                  defaultValue="Call (941) 840-1381"
-                />
+                <span data-page="pricing" data-block="pricing_cta_button_2">{content?.pricing_cta_button_2 || 'Call (941) 840-1381'}</span>
               </a>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/*  FAQ                                                         */}
-      {/* ============================================================ */}
+      {/* FAQ */}
       <section className="px-6 md:px-16 lg:px-24 py-20 lg:py-32 bg-white">
         <div className="max-w-3xl mx-auto">
           <motion.div {...fadeUp}>
-            <EditableText
-              as="p"
-              blockKey="pricing_faq_eyebrow"
-              defaultValue="FAQ"
+            <p
+              data-page="pricing" data-block="pricing_faq_eyebrow"
               className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
-            />
-            <EditableText
-              as="h2"
-              blockKey="pricing_faq_heading"
-              defaultValue="Frequently Asked Questions"
+            >
+              {content?.pricing_faq_eyebrow || 'FAQ'}
+            </p>
+            <h2
+              data-page="pricing" data-block="pricing_faq_heading"
               className="text-3xl lg:text-4xl font-bold text-[#1A1A1A] mb-10"
-            />
+            >
+              {content?.pricing_faq_heading || 'Frequently Asked Questions'}
+            </h2>
           </motion.div>
 
           <motion.div {...fadeUp}>

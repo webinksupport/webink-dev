@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import EditableText from '@/components/editor/EditableText'
 
 const categoryLabels: Record<string, string> = {
   hosting: 'Web Hosting',
@@ -77,24 +76,24 @@ export default function ProductsContent({ products }: { products: Product[] }) {
       {/* Hero Header */}
       <section className="bg-[#0F0F0F] pt-36 pb-20 lg:pb-28 px-6 md:px-16 lg:px-24">
         <div className="max-w-7xl mx-auto">
-          <EditableText
-            as="p"
-            blockKey="hero_eyebrow"
-            defaultValue="Our Products"
+          <p
+            data-page="products" data-block="hero_eyebrow"
             className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
-          />
-          <EditableText
-            as="h1"
-            blockKey="hero_headline"
-            defaultValue="Solutions for Every Business"
+          >
+            Our Products
+          </p>
+          <h1
+            data-page="products" data-block="hero_headline"
             className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6"
-          />
-          <EditableText
-            as="p"
-            blockKey="hero_subtext"
-            defaultValue="From managed web hosting to full-service SEO and social media marketing, we have the tools and expertise to grow your business online."
+          >
+            Solutions for Every Business
+          </h1>
+          <p
+            data-page="products" data-block="hero_subtext"
             className="text-white/70 text-lg max-w-2xl leading-relaxed"
-          />
+          >
+            From managed web hosting to full-service SEO and social media marketing, we have the tools and expertise to grow your business online.
+          </p>
         </div>
       </section>
 
@@ -219,29 +218,29 @@ export default function ProductsContent({ products }: { products: Product[] }) {
       {/* CTA Section */}
       <section className="bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-20 lg:py-32">
         <div className="max-w-4xl mx-auto text-center">
-          <EditableText
-            as="p"
-            blockKey="cta_eyebrow"
-            defaultValue="Get Started"
+          <p
+            data-page="products" data-block="cta_eyebrow"
             className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
-          />
-          <EditableText
-            as="h2"
-            blockKey="cta_heading"
-            defaultValue="Not Sure Which Plan Is Right for You?"
+          >
+            Get Started
+          </p>
+          <h2
+            data-page="products" data-block="cta_heading"
             className="text-3xl lg:text-4xl font-bold text-white mb-6"
-          />
-          <EditableText
-            as="p"
-            blockKey="cta_subtext"
-            defaultValue="Let us help you find the perfect solution for your business. Schedule a free consultation and we will build a custom plan tailored to your goals."
+          >
+            Not Sure Which Plan Is Right for You?
+          </h2>
+          <p
+            data-page="products" data-block="cta_subtext"
             className="text-white/70 text-lg mb-10 max-w-2xl mx-auto leading-relaxed"
-          />
+          >
+            Let us help you find the perfect solution for your business. Schedule a free consultation and we will build a custom plan tailored to your goals.
+          </p>
           <Link
             href="/contact"
             className="inline-block bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200"
           >
-            <EditableText as="span" blockKey="cta_button" defaultValue="Schedule a Free Consultation" />
+            <span data-page="products" data-block="cta_button">Schedule a Free Consultation</span>
           </Link>
         </div>
       </section>

@@ -1,11 +1,10 @@
 'use client'
+import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   Globe, Search, TrendingUp, Share2, Brain, Code, Server,
 } from 'lucide-react'
-import EditableText from '@/components/editor/EditableText'
-import EditableImage from '@/components/editor/EditableImage'
 import { useEditor } from '@/components/editor/EditorContext'
 
 const services = [
@@ -80,12 +79,11 @@ export default function ServicesHubContent() {
   const { editMode } = useEditor()
   return (
     <>
-      {/* ── Hero ── */}
+      {/* Hero */}
       <section className="relative bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-32 lg:py-40 overflow-hidden">
         <div className="absolute inset-0">
-          <EditableImage
-            pageSlug="services"
-            blockKey="hero_bg_image"
+          <Image
+            data-page="services" data-block="hero_bg_image"
             src="/images/photoshoot/_UTA4057.jpg"
             alt="Services hero background"
             fill
@@ -103,37 +101,37 @@ export default function ServicesHubContent() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease }}
             >
-              <EditableText
-                as="p"
-                blockKey="hero_eyebrow"
-                defaultValue="Our Services"
+              <p
+                data-page="services" data-block="hero_eyebrow"
                 className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
-              />
+              >
+                Our Services
+              </p>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.0, ease }}
             >
-              <EditableText
-                as="h1"
-                blockKey="hero_headline"
-                defaultValue="Full-Service Digital Agency."
+              <h1
+                data-page="services" data-block="hero_headline"
                 className="font-urbanist font-black text-white leading-[0.92] mb-6"
                 style={{ fontSize: 'clamp(2.75rem, 7vw, 5.5rem)', letterSpacing: '-0.04em' }}
-              />
+              >
+                Full-Service Digital Agency.
+              </h1>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease }}
             >
-              <EditableText
-                as="p"
-                blockKey="hero_subtext"
-                defaultValue="Everything your Sarasota business needs to dominate the digital landscape — web design, SEO, social media, paid ads, AI marketing, and custom software — all under one roof."
+              <p
+                data-page="services" data-block="hero_subtext"
                 className="font-urbanist text-white/60 text-lg md:text-xl leading-relaxed max-w-2xl"
-              />
+              >
+                Everything your Sarasota business needs to dominate the digital landscape — web design, SEO, social media, paid ads, AI marketing, and custom software — all under one roof.
+              </p>
             </motion.div>
           </div>
           <motion.div
@@ -143,8 +141,8 @@ export default function ServicesHubContent() {
             className="hidden lg:block overflow-hidden rounded-2xl shadow-2xl"
           >
             <div className="relative h-[400px]">
-              <EditableImage
-                blockKey="hero_image"
+              <Image
+                data-page="services" data-block="hero_image"
                 src="/images/photoshoot/DSC04500-2.jpg"
                 alt="Sean Rowe and the Webink Solutions team — full-service digital agency in Sarasota"
                 fill
@@ -158,7 +156,7 @@ export default function ServicesHubContent() {
         </div>
       </section>
 
-      {/* ── Services Grid ── */}
+      {/* Services Grid */}
       <section className="bg-white px-6 md:px-16 lg:px-24 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -167,12 +165,12 @@ export default function ServicesHubContent() {
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
           >
-            <EditableText
-              as="p"
-              blockKey="grid_eyebrow"
-              defaultValue="What We Do"
+            <p
+              data-page="services" data-block="grid_eyebrow"
               className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
-            />
+            >
+              What We Do
+            </p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -180,13 +178,13 @@ export default function ServicesHubContent() {
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
           >
-            <EditableText
-              as="h2"
-              blockKey="grid_heading"
-              defaultValue="Services Built for Growth"
+            <h2
+              data-page="services" data-block="grid_heading"
               className="font-urbanist font-black text-[#1A1A1A] mb-16 leading-tight"
               style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
-            />
+            >
+              Services Built for Growth
+            </h2>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -207,9 +205,8 @@ export default function ServicesHubContent() {
                   >
                     {/* Card image */}
                     <div className="relative w-full h-40 overflow-hidden">
-                      <EditableImage
-                        pageSlug="services"
-                        blockKey={`${svc.key}_card_image`}
+                      <Image
+                        data-page="services" data-block={`${svc.key}_card_image`}
                         src={svc.image}
                         alt={`${svc.title} — Webink Solutions`}
                         fill
@@ -229,19 +226,19 @@ export default function ServicesHubContent() {
                         <Icon size={18} style={{ color: svc.color }} strokeWidth={2} />
                       </div>
 
-                      <EditableText
-                        as="h3"
-                        blockKey={`${svc.key}_title`}
-                        defaultValue={svc.title}
+                      <h3
+                        data-page="services" data-block={`${svc.key}_title`}
                         className="font-urbanist font-black text-[20px] text-[#0F0F0F] mb-3 leading-tight"
-                      />
+                      >
+                        {svc.title}
+                      </h3>
 
-                      <EditableText
-                        as="p"
-                        blockKey={`${svc.key}_desc`}
-                        defaultValue={svc.desc}
+                      <p
+                        data-page="services" data-block={`${svc.key}_desc`}
                         className="font-urbanist text-[14px] text-[#333]/60 leading-relaxed flex-1 mb-6"
-                      />
+                      >
+                        {svc.desc}
+                      </p>
 
                       <span
                         className="font-urbanist font-bold text-sm transition-colors duration-200"
@@ -264,12 +261,11 @@ export default function ServicesHubContent() {
         </div>
       </section>
 
-      {/* ── CTA Section ── */}
+      {/* CTA Section */}
       <section className="relative px-6 md:px-16 lg:px-24 py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <EditableImage
-            pageSlug="services"
-            blockKey="cta_waterfront_image"
+          <Image
+            data-page="services" data-block="cta_waterfront_image"
             src="/images/services/sarasota-waterfront.png"
             alt="Sarasota waterfront skyline"
             fill
@@ -286,12 +282,12 @@ export default function ServicesHubContent() {
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
           >
-            <EditableText
-              as="p"
-              blockKey="cta_eyebrow"
-              defaultValue="Get Started"
+            <p
+              data-page="services" data-block="cta_eyebrow"
               className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
-            />
+            >
+              Get Started
+            </p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -299,13 +295,13 @@ export default function ServicesHubContent() {
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
           >
-            <EditableText
-              as="h2"
-              blockKey="cta_heading"
-              defaultValue="Not Sure Where to Start?"
+            <h2
+              data-page="services" data-block="cta_heading"
               className="font-urbanist font-black text-white mb-6 leading-tight"
               style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
-            />
+            >
+              Not Sure Where to Start?
+            </h2>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -313,12 +309,12 @@ export default function ServicesHubContent() {
             transition={{ duration: 0.6, delay: 0.1, ease }}
             viewport={{ once: true, margin: '-60px' }}
           >
-            <EditableText
-              as="p"
-              blockKey="cta_subtext"
-              defaultValue="Book a free consultation and we will audit your digital presence, identify quick wins, and build a custom strategy for your business."
+            <p
+              data-page="services" data-block="cta_subtext"
               className="font-urbanist text-white/60 text-lg leading-relaxed max-w-xl mx-auto mb-10"
-            />
+            >
+              Book a free consultation and we will audit your digital presence, identify quick wins, and build a custom strategy for your business.
+            </p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -332,14 +328,14 @@ export default function ServicesHubContent() {
               onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
               className="bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200"
             >
-              <EditableText as="span" blockKey="cta_button_1" defaultValue="Get a Free Quote" />
+              <span data-page="services" data-block="cta_button_1">Get a Free Quote</span>
             </Link>
             <a
               href="tel:9418401381"
               onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
               className="border border-[#14EAEA] text-[#14EAEA] font-semibold px-8 py-4 rounded-full hover:bg-[#14EAEA] hover:text-[#0A0A0A] transition-colors duration-200"
             >
-              <EditableText as="span" blockKey="cta_button_2" defaultValue="Call (941) 840-1381" />
+              <span data-page="services" data-block="cta_button_2">Call (941) 840-1381</span>
             </a>
           </motion.div>
         </div>

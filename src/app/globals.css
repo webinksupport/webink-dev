@@ -269,27 +269,43 @@ body {
 ::-webkit-scrollbar-thumb { background: #14EAEA; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #F813BE; }
 
-/* Visual editor — editable element hover state (CSS-based to avoid Tailwind JIT issues) */
-.editable-text-active {
-  cursor: pointer;
-  outline: 1px dashed rgba(20, 234, 234, 0.3);
+/* Inline editor — global edit mode styles */
+body.inline-edit-mode [data-block]:not(img):not([data-type="image"]):not([data-type="background"]) {
+  transition: outline 0.15s ease;
+  outline: 2px solid transparent;
   outline-offset: 2px;
-  transition: outline 0.2s ease, outline-offset 0.2s ease;
+  cursor: text;
 }
-.editable-text-active:hover {
-  outline: 2px dashed rgba(20, 234, 234, 0.7);
+body.inline-edit-mode [data-block]:not(img):not([data-type="image"]):not([data-type="background"]):hover {
+  outline: 2px solid rgba(20, 234, 234, 0.4);
+  border-radius: 4px;
+}
+body.inline-edit-mode [data-block]:not(img):not([data-type="image"]):not([data-type="background"]):focus {
+  outline: 2px solid #14EAEA;
+  border-radius: 4px;
   outline-offset: 4px;
-  background: rgba(20, 234, 234, 0.04);
 }
-.editable-image-active {
-  cursor: pointer;
-  outline: 1px dashed rgba(248, 19, 190, 0.3);
+body.inline-edit-mode [contenteditable="true"]:not([data-block]) {
+  transition: outline 0.15s ease;
+  outline: 2px solid transparent;
   outline-offset: 2px;
-  transition: outline 0.2s ease, outline-offset 0.2s ease;
 }
-.editable-image-active:hover {
-  outline: 2px dashed rgba(248, 19, 190, 0.7);
-  outline-offset: 4px;
+body.inline-edit-mode [contenteditable="true"]:not([data-block]):hover {
+  outline: 2px dashed rgba(20, 234, 234, 0.2);
+  border-radius: 4px;
+}
+body.inline-edit-mode [contenteditable="true"]:not([data-block]):focus {
+  outline: 2px dashed rgba(20, 234, 234, 0.4);
+  border-radius: 4px;
+}
+
+/* Save toast fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
 }
 
 /* Highlighter wipe-in */

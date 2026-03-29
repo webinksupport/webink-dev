@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Phone, Mail, MapPin, Clock, Send, Loader2, Check, AlertCircle } from 'lucide-react'
-import EditableText from '@/components/editor/EditableText'
-import EditableImage from '@/components/editor/EditableImage'
 import { useEditor } from '@/components/editor/EditorContext'
 
 const ease = [0.25, 0.46, 0.45, 0.94]
@@ -64,12 +63,12 @@ export default function ContactContent({ content }: { content: Record<string, st
 
   return (
     <>
-      {/* ═══ HERO ═══ */}
+      {/* HERO */}
       <section className="relative min-h-screen flex items-center bg-[#0F0F0F] overflow-hidden">
         <div className="absolute inset-0">
-          <EditableImage
-            blockKey="hero_image"
-            src="/images/photos/workspace-laptop.jpg"
+          <Image
+            data-page="contact" data-block="hero_image"
+            src={content?.hero_image || '/images/photos/workspace-laptop.jpg'}
             alt="Contact Webink Solutions"
             fill
             className="object-cover"
@@ -84,42 +83,42 @@ export default function ContactContent({ content }: { content: Record<string, st
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
           >
-            <EditableText
-              as="p"
-              blockKey="hero_eyebrow"
-              defaultValue="Contact Us"
+            <p
+              data-page="contact" data-block="hero_eyebrow"
               className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
-            />
+            >
+              {content?.hero_eyebrow || 'Contact Us'}
+            </p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.0, ease }}
           >
-            <EditableText
-              as="h1"
-              blockKey="hero_headline"
-              defaultValue="Let's Talk."
+            <h1
+              data-page="contact" data-block="hero_headline"
               className="font-urbanist font-black text-white leading-[0.92] mb-6"
               style={{ fontSize: 'clamp(2.75rem, 7vw, 5.5rem)', letterSpacing: '-0.04em' }}
-            />
+            >
+              {content?.hero_headline || "Let's Talk."}
+            </h1>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease }}
           >
-            <EditableText
-              as="p"
-              blockKey="hero_subtext"
-              defaultValue="Ready to grow your business? Send us a message or give us a call — we'd love to hear about your project."
+            <p
+              data-page="contact" data-block="hero_subtext"
               className="font-urbanist text-white/70 text-lg md:text-xl leading-relaxed max-w-2xl"
-            />
+            >
+              {content?.hero_subtext || "Ready to grow your business? Send us a message or give us a call — we'd love to hear about your project."}
+            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* ═══ FORM + INFO ═══ */}
+      {/* FORM + INFO */}
       <section className="bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-5 gap-12 lg:gap-20">
@@ -131,12 +130,12 @@ export default function ContactContent({ content }: { content: Record<string, st
               viewport={{ once: true }}
               className="lg:col-span-3"
             >
-              <EditableText
-                as="h2"
-                blockKey="form_heading"
-                defaultValue="Send Us a Message"
+              <h2
+                data-page="contact" data-block="form_heading"
                 className="font-urbanist font-black text-white text-2xl mb-8"
-              />
+              >
+                {content?.form_heading || 'Send Us a Message'}
+              </h2>
 
               {status === 'sent' ? (
                 <div className="bg-[#14EAEA]/10 border border-[#14EAEA]/30 rounded-2xl p-8 text-center">
@@ -207,12 +206,12 @@ export default function ContactContent({ content }: { content: Record<string, st
               viewport={{ once: true }}
               className="lg:col-span-2"
             >
-              <EditableText
-                as="h3"
-                blockKey="info_heading"
-                defaultValue="Get in Touch"
+              <h3
+                data-page="contact" data-block="info_heading"
                 className="font-urbanist font-bold text-white text-xl mb-8"
-              />
+              >
+                {content?.info_heading || 'Get in Touch'}
+              </h3>
 
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
@@ -222,7 +221,7 @@ export default function ContactContent({ content }: { content: Record<string, st
                   <div>
                     <h4 className="font-urbanist font-bold text-white text-sm mb-1">Phone</h4>
                     <a href="tel:9418401381" onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }} className="font-urbanist text-white/60 hover:text-[#14EAEA] transition-colors">
-                      <EditableText as="span" blockKey="info_phone" defaultValue="(941) 840-1381" />
+                      <span data-page="contact" data-block="info_phone">{content?.info_phone || '(941) 840-1381'}</span>
                     </a>
                   </div>
                 </div>
@@ -234,7 +233,7 @@ export default function ContactContent({ content }: { content: Record<string, st
                   <div>
                     <h4 className="font-urbanist font-bold text-white text-sm mb-1">Email</h4>
                     <a href="mailto:hello@webink.solutions" onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }} className="font-urbanist text-white/60 hover:text-[#F813BE] transition-colors">
-                      <EditableText as="span" blockKey="info_email" defaultValue="hello@webink.solutions" />
+                      <span data-page="contact" data-block="info_email">{content?.info_email || 'hello@webink.solutions'}</span>
                     </a>
                   </div>
                 </div>
@@ -245,12 +244,12 @@ export default function ContactContent({ content }: { content: Record<string, st
                   </div>
                   <div>
                     <h4 className="font-urbanist font-bold text-white text-sm mb-1">Address</h4>
-                    <EditableText
-                      as="p"
-                      blockKey="info_address"
-                      defaultValue="Webink Solutions\n1609 Georgetowne Blvd\nSarasota, FL 34232"
+                    <p
+                      data-page="contact" data-block="info_address"
                       className="font-urbanist text-white/60"
-                    />
+                    >
+                      {content?.info_address || 'Webink Solutions\n1609 Georgetowne Blvd\nSarasota, FL 34232'}
+                    </p>
                   </div>
                 </div>
 
@@ -260,12 +259,12 @@ export default function ContactContent({ content }: { content: Record<string, st
                   </div>
                   <div>
                     <h4 className="font-urbanist font-bold text-white text-sm mb-1">Hours</h4>
-                    <EditableText
-                      as="p"
-                      blockKey="info_hours"
-                      defaultValue="Mon - Fri: 9:00 AM - 5:00 PM\nSat - Sun: By appointment"
+                    <p
+                      data-page="contact" data-block="info_hours"
                       className="font-urbanist text-white/60"
-                    />
+                    >
+                      {content?.info_hours || 'Mon - Fri: 9:00 AM - 5:00 PM\nSat - Sun: By appointment'}
+                    </p>
                   </div>
                 </div>
               </div>

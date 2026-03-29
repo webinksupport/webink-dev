@@ -1,8 +1,7 @@
 'use client'
 import { useRef } from 'react'
+import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import EditableText from '@/components/editor/EditableText'
-import EditableImage from '@/components/editor/EditableImage'
 import { useEditor } from '@/components/editor/EditorContext'
 
 const aboutSteps = [
@@ -30,14 +29,13 @@ export default function AboutI({ content }: { content?: Record<string, string> }
         {/* Section label */}
         <div className="flex items-center gap-3 mb-16">
           <span className="w-8 h-[2px] bg-[#F813BE]" />
-          <EditableText
-            as="span"
-            pageSlug="home"
-            blockKey="about_eyebrow"
-            value={content?.about_eyebrow}
-            defaultValue="Our Story"
+          <span
+            data-page="home"
+            data-block="about_eyebrow"
             className="font-urbanist text-xs font-black tracking-[0.5em] text-[#0F0F0F]/30 uppercase"
-          />
+          >
+            {content?.about_eyebrow || 'Our Story'}
+          </span>
         </div>
 
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
@@ -55,10 +53,10 @@ export default function AboutI({ content }: { content?: Record<string, string> }
               className="overflow-hidden rounded-[24px] shadow-2xl"
             >
               <div className="relative h-[500px] lg:h-[680px]">
-                <EditableImage
-                  pageSlug="home"
-                  blockKey="about_image"
-                  src="/images/photoshoot/DSC05056-Edit-Edit.jpg"
+                <Image
+                  data-page="home"
+                  data-block="about_image"
+                  src={content?.about_image || '/images/photoshoot/DSC05056-Edit-Edit.jpg'}
                   alt="Webink Solutions workspace — Sarasota digital marketing agency"
                   fill
                   className="object-cover"
@@ -78,22 +76,20 @@ export default function AboutI({ content }: { content?: Record<string, string> }
               transition={{ duration: 0.6, delay: 0.4 }}
               className="absolute -bottom-8 -right-6 lg:-right-10 bg-white rounded-2xl shadow-xl px-7 py-5 border border-black/5"
             >
-              <EditableText
-                as="div"
-                pageSlug="home"
-                blockKey="about_stat_value"
-                value={content?.about_stat_value}
-                defaultValue="#1"
+              <div
+                data-page="home"
+                data-block="about_stat_value"
                 className="font-urbanist font-black text-4xl text-[#F813BE]"
-              />
-              <EditableText
-                as="div"
-                pageSlug="home"
-                blockKey="about_stat_label"
-                value={content?.about_stat_label}
-                defaultValue="Rated Agency in Florida"
+              >
+                {content?.about_stat_value || '#1'}
+              </div>
+              <div
+                data-page="home"
+                data-block="about_stat_label"
                 className="font-urbanist text-xs text-[#0F0F0F]/50 mt-1 leading-tight"
-              />
+              >
+                {content?.about_stat_label || 'Rated Agency in Florida'}
+              </div>
             </motion.div>
 
             {/* Pink accent line */}
@@ -111,33 +107,32 @@ export default function AboutI({ content }: { content?: Record<string, string> }
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <EditableText
-                as="h2"
-                pageSlug="home"
-                blockKey="about_heading"
-                value={content?.about_heading}
-                defaultValue="A Different Kind of Agency."
+              <h2
+                data-page="home"
+                data-block="about_heading"
                 className="font-urbanist font-black text-[#0F0F0F] leading-[0.88] mb-8"
                 style={{
                   fontSize: 'clamp(2.8rem, 6vw, 6.5rem)',
                   letterSpacing: '-0.04em',
                 }}
-              />
+              >
+                {content?.about_heading || 'A Different Kind of Agency.'}
+              </h2>
 
-              <EditableText
-                as="p"
-                pageSlug="home"
-                blockKey="about_body"
-                defaultValue="Sean Rowe founded Webink Solutions in Sarasota with a simple conviction: local businesses deserve world-class digital marketing — and the results to prove it."
+              <p
+                data-page="home"
+                data-block="about_body"
                 className="font-urbanist text-[#333]/60 text-xl leading-relaxed mb-6"
-              />
-              <EditableText
-                as="p"
-                pageSlug="home"
-                blockKey="about_body_2"
-                defaultValue="We're a full-service digital agency serving Sarasota, Tampa, and Bradenton. No outsourcing. No cookie-cutter strategies. Just real work, real relationships, and real growth."
+              >
+                {content?.about_body || 'Sean Rowe founded Webink Solutions in Sarasota with a simple conviction: local businesses deserve world-class digital marketing — and the results to prove it.'}
+              </p>
+              <p
+                data-page="home"
+                data-block="about_body_2"
                 className="font-urbanist text-[#333]/40 text-lg leading-relaxed mb-10"
-              />
+              >
+                {content?.about_body_2 || 'We\'re a full-service digital agency serving Sarasota, Tampa, and Bradenton. No outsourcing. No cookie-cutter strategies. Just real work, real relationships, and real growth.'}
+              </p>
 
               {/* 3-step process */}
               <div className="space-y-6 mb-12">
@@ -145,22 +140,20 @@ export default function AboutI({ content }: { content?: Record<string, string> }
                   <div key={item.step} className="flex gap-5">
                     <span className="font-urbanist font-black text-lg text-[#F813BE] w-10 shrink-0 pt-0.5">{item.step}</span>
                     <div>
-                      <EditableText
-                        as="div"
-                        pageSlug="home"
-                        blockKey={item.titleKey}
-                        value={content?.[item.titleKey]}
-                        defaultValue={item.titleDefault}
+                      <div
+                        data-page="home"
+                        data-block={item.titleKey}
                         className="font-urbanist font-bold text-[#0F0F0F] text-base mb-1"
-                      />
-                      <EditableText
-                        as="div"
-                        pageSlug="home"
-                        blockKey={item.descKey}
-                        value={content?.[item.descKey]}
-                        defaultValue={item.descDefault}
+                      >
+                        {content?.[item.titleKey] || item.titleDefault}
+                      </div>
+                      <div
+                        data-page="home"
+                        data-block={item.descKey}
                         className="font-urbanist text-[#333]/45 text-sm leading-relaxed"
-                      />
+                      >
+                        {content?.[item.descKey] || item.descDefault}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -171,13 +164,12 @@ export default function AboutI({ content }: { content?: Record<string, string> }
                 onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
                 className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-4 bg-[#0F0F0F] text-white rounded-full hover:bg-[#F813BE] hover:text-white transition-all duration-300"
               >
-                <EditableText
-                  as="span"
-                  pageSlug="home"
-                  blockKey="about_cta_text"
-                  value={content?.about_cta_text}
-                  defaultValue="Meet the Team →"
-                />
+                <span
+                  data-page="home"
+                  data-block="about_cta_text"
+                >
+                  {content?.about_cta_text || 'Meet the Team →'}
+                </span>
               </a>
             </motion.div>
           </motion.div>

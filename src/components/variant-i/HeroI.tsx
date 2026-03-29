@@ -1,10 +1,15 @@
 'use client'
 import { useRef } from 'react'
+import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import EditableText from '@/components/editor/EditableText'
-import EditableImage from '@/components/editor/EditableImage'
-import EditableBackground, { type BackgroundData } from '@/components/editor/EditableBackground'
 import { useEditor } from '@/components/editor/EditorContext'
+
+interface BackgroundData {
+  src?: string
+  objectPosition?: string
+  overlayOpacity?: number
+  backgroundSize?: string
+}
 
 interface HeroIProps {
   content?: Record<string, string>
@@ -29,20 +34,27 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
       ref={sectionRef}
       className="relative min-h-screen overflow-hidden bg-[#0F0F0F]"
     >
-      {/* Baja beach full-bleed background with parallax + editable background */}
-      <EditableBackground
-        pageSlug="home"
-        blockKey="hero_bg"
-        defaultSrc="/images/photos/baja-beach.jpg"
-        defaultOverlayOpacity={0.55}
-        defaultPosition="center"
-        cmsData={heroBgData}
-        imageProps={{ priority: true, quality: 75, sizes: '100vw' }}
-        className="absolute inset-0 overflow-hidden"
-      >
+      {/* Baja beach full-bleed background with parallax */}
+      <div className="absolute inset-0 overflow-hidden" data-type="background" data-page="home" data-block="hero_bg">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={heroBgData?.src || '/images/photos/baja-beach.jpg'}
+            alt=""
+            fill
+            className="object-cover"
+            style={{ objectPosition: heroBgData?.objectPosition || 'center' }}
+            priority
+            quality={75}
+            sizes="100vw"
+          />
+          <div
+            className="absolute inset-0 transition-opacity duration-300"
+            style={{ backgroundColor: `rgba(0,0,0,${heroBgData?.overlayOpacity ?? 0.55})` }}
+          />
+        </div>
         {/* Subtle gradient — darker bottom for strip transition */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/70 z-[1]" />
-      </EditableBackground>
+      </div>
 
       {/* Hero text content */}
       <motion.div
@@ -57,14 +69,13 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
           transition={{ duration: 0.7, delay: 0.2 }}
         >
           <span className="w-8 h-[2px] bg-[#14EAEA]" />
-          <EditableText
-            as="span"
-            pageSlug="home"
-            blockKey="hero_eyebrow"
-            value={content?.hero_eyebrow}
-            defaultValue="Sarasota Digital Marketing Agency"
+          <span
+            data-page="home"
+            data-block="hero_eyebrow"
             className="font-urbanist text-xs font-black tracking-[0.5em] text-white/60 uppercase"
-          />
+          >
+            {content?.hero_eyebrow || 'Sarasota Digital Marketing Agency'}
+          </span>
         </motion.div>
 
         {/* Main headline */}
@@ -78,14 +89,13 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <EditableText
-            as="span"
-            pageSlug="home"
-            blockKey="hero_headline"
-            value={content?.hero_headline}
-            defaultValue="Websites That Work. Marketing That Converts."
+          <span
+            data-page="home"
+            data-block="hero_headline"
             className="font-urbanist font-black text-white"
-          />
+          >
+            {content?.hero_headline || 'Websites That Work. Marketing That Converts.'}
+          </span>
         </motion.h1>
 
         {/* Sub-headline */}
@@ -94,14 +104,13 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.55 }}
         >
-          <EditableText
-            as="p"
-            pageSlug="home"
-            blockKey="hero_subtext"
-            value={content?.hero_subtext}
-            defaultValue="Web design, SEO, and digital marketing for local businesses in Sarasota, Tampa & Bradenton. Real results, real relationships."
+          <p
+            data-page="home"
+            data-block="hero_subtext"
             className="font-urbanist text-white/55 text-xl leading-relaxed mb-12 max-w-lg"
-          />
+          >
+            {content?.hero_subtext || 'Web design, SEO, and digital marketing for local businesses in Sarasota, Tampa & Bradenton. Real results, real relationships.'}
+          </p>
         </motion.div>
 
         {/* CTAs */}
@@ -116,26 +125,24 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
             onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
             className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-5 bg-[#14EAEA] text-[#0F0F0F] rounded-full hover:bg-white transition-all duration-300 shadow-lg"
           >
-            <EditableText
-              as="span"
-              pageSlug="home"
-              blockKey="hero_cta_text"
-              value={content?.hero_cta_text}
-              defaultValue="Get Started"
-            /> →
+            <span
+              data-page="home"
+              data-block="hero_cta_text"
+            >
+              {content?.hero_cta_text || 'Get Started'}
+            </span> →
           </a>
           <a
             href="#services"
             onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
             className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-5 border-2 border-white/25 text-white rounded-full hover:border-white/60 transition-all duration-300"
           >
-            <EditableText
-              as="span"
-              pageSlug="home"
-              blockKey="hero_cta2_text"
-              value={content?.hero_cta2_text}
-              defaultValue="View Our Work"
-            />
+            <span
+              data-page="home"
+              data-block="hero_cta2_text"
+            >
+              {content?.hero_cta2_text || 'View Our Work'}
+            </span>
           </a>
         </motion.div>
 
@@ -190,10 +197,10 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
             animate={{ opacity: 1, x: 0, rotate: 0 }}
             transition={{ duration: 1, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <EditableImage
-              pageSlug="home"
-              blockKey="hero_card_image"
-              src="/images/photos/baja-6.jpg"
+            <Image
+              data-page="home"
+              data-block="hero_card_image"
+              src={content?.hero_card_image || '/images/photos/baja-6.jpg'}
               alt="Baja California beach — Webink Solutions Sarasota digital marketing"
               fill
               priority
@@ -215,10 +222,10 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
             transition={{ duration: 0.6, delay: 1.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             {/* White logo PNG — mix-blend-mode screen on dark bg = transparent background, logo glows */}
-            <EditableImage
-              pageSlug="home"
-              blockKey="hero_logo_overlay"
-              src="/images/logos/webink-white.png"
+            <Image
+              data-page="home"
+              data-block="hero_logo_overlay"
+              src={content?.hero_logo_overlay || '/images/logos/webink-white.png'}
               alt="Webink Solutions logo"
               width={340}
               height={85}
@@ -246,15 +253,14 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
               { key: 'hero_strip_2', def: 'AI-Powered Results', cyan: false },
               { key: 'hero_strip_3', def: 'Free Consultation →', cyan: true },
             ].map(({ key, def, cyan }, i) => (
-              <EditableText
+              <span
                 key={i}
-                as="span"
-                pageSlug="home"
-                blockKey={key}
-                value={content?.[key]}
-                defaultValue={def}
+                data-page="home"
+                data-block={key}
                 className={`font-urbanist text-xs font-semibold tracking-wide px-6 first:pl-0 ${cyan ? 'text-[#14EAEA] cursor-pointer hover:text-white transition-colors' : 'text-white/50'}`}
-              />
+              >
+                {content?.[key] || def}
+              </span>
             ))}
           </div>
         </div>

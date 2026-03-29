@@ -1,5 +1,3 @@
 export { default as VisualEditor } from './VisualEditor'
-export { default as EditableText } from './EditableText'
-export { default as EditableImage } from './EditableImage'
 export { default as PageEditorWrapper } from './PageEditorWrapper'
 export { useEditor, EditorProvider } from './EditorContext'

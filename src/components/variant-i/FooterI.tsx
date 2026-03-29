@@ -1,6 +1,5 @@
 'use client'
-import EditableImage from '@/components/editor/EditableImage'
-import EditableText from '@/components/editor/EditableText'
+import Image from 'next/image'
 import { useEditor } from '@/components/editor/EditorContext'
 import Link from 'next/link'
 
@@ -90,22 +89,22 @@ export default function FooterI() {
         {/* Top: Logo + tagline + socials */}
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10 mb-20 pb-16 border-b border-white/8">
           <div className="max-w-sm">
-            <EditableImage
-              pageSlug="global"
-              blockKey="footer_logo"
+            <Image
+              data-page="global"
+              data-block="footer_logo"
               src="/images/logos/webink-white.png"
               alt="Webink Solutions"
               width={180}
               height={50}
               className="h-14 w-auto mb-6"
             />
-            <EditableText
-              as="p"
-              pageSlug="global"
-              blockKey="footer_tagline"
-              defaultValue="Sarasota's premiere digital marketing agency. Web design, SEO, and marketing built for real results."
+            <p
+              data-page="global"
+              data-block="footer_tagline"
               className="font-urbanist text-white/35 text-sm leading-relaxed mb-6"
-            />
+            >
+              Sarasota&apos;s premiere digital marketing agency. Web design, SEO, and marketing built for real results.
+            </p>
             <div className="flex items-center gap-3">
               {socials.map((s) => (
                 <a
@@ -148,22 +147,22 @@ export default function FooterI() {
 
         {/* Bottom bar */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-          <EditableText
-            as="p"
-            pageSlug="global"
-            blockKey="global_footer_copyright"
-            defaultValue={`© ${year} Webink Solutions · Sean Rowe · 1609 Georgetowne Blvd, Sarasota, FL 34232`}
+          <p
+            data-page="global"
+            data-block="global_footer_copyright"
             className="font-urbanist text-xs text-white/20"
-          />
+          >
+            {`\u00A9 ${year} Webink Solutions \u00B7 Sean Rowe \u00B7 1609 Georgetowne Blvd, Sarasota, FL 34232`}
+          </p>
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-[#14EAEA] animate-pulse" />
-            <EditableText
-              as="span"
-              pageSlug="global"
-              blockKey="global_footer_location"
-              defaultValue="Sarasota, Florida"
+            <span
+              data-page="global"
+              data-block="global_footer_location"
               className="font-urbanist text-xs text-white/20"
-            />
+            >
+              Sarasota, Florida
+            </span>
           </div>
         </div>
       </div>

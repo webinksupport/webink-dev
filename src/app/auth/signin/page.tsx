@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import EditableImage from '@/components/editor/EditableImage'
+import Image from 'next/image'
 
 export default function SignInPage() {
   return (
@@ -67,9 +67,8 @@ function SignInForm() {
         {/* Logo & Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <EditableImage
-              pageSlug="global"
-              blockKey="auth_logo"
+            <Image
+              data-page="global" data-block="auth_logo"
               src="/images/logos/webink-white.png"
               alt="Webink Solutions"
               width={180}
@@ -138,7 +137,7 @@ function SignInForm() {
         </form>
 
         <p className="text-center text-white/20 text-xs mt-6">
-          <Link href="/" className="hover:text-white/40 transition-colors">← Back to Webink Solutions</Link>
+          <Link href="/" className="hover:text-white/40 transition-colors">&larr; Back to Webink Solutions</Link>
         </p>
       </div>
     </div>

@@ -1,6 +1,12 @@
 import type { Metadata } from 'next'
-import type { BackgroundData } from '@/components/editor/EditableBackground'
 import NavI from '@/components/variant-i/NavI'
+
+interface BackgroundData {
+  src?: string
+  objectPosition?: string
+  overlayOpacity?: number
+  backgroundSize?: string
+}
 import HeroI from '@/components/variant-i/HeroI'
 import MarqueeI from '@/components/variant-i/MarqueeI'
 import ServicesI from '@/components/variant-i/ServicesI'

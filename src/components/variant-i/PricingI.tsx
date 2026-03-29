@@ -1,7 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
-import EditableText from '@/components/editor/EditableText'
 
 const plans = [
   {
@@ -72,19 +71,19 @@ export default function PricingI({ content }: { content?: Record<string, string>
             <span className="font-urbanist text-xs font-black tracking-[0.5em] text-black/30 uppercase">Pricing</span>
             <span className="w-8 h-[2px] bg-[#F813BE]" />
           </div>
-          <EditableText
-            as="h2"
-            blockKey="pricing_heading"
-            defaultValue="Transparent Pricing. Real Results."
+          <h2
+            data-block="pricing_heading"
             className="font-urbanist font-black text-[#0A0A0A] leading-[0.9] mb-6"
             style={{ fontSize: 'clamp(2.5rem, 6vw, 6rem)', letterSpacing: '-0.04em' }}
-          />
-          <EditableText
-            as="p"
-            blockKey="pricing_subtext"
-            defaultValue="No hidden fees. No lock-in contracts. Month-to-month flexibility with agency-grade results."
+          >
+            {content?.pricing_heading || 'Transparent Pricing. Real Results.'}
+          </h2>
+          <p
+            data-block="pricing_subtext"
             className="font-urbanist text-[#0A0A0A]/50 text-lg max-w-xl mx-auto leading-relaxed"
-          />
+          >
+            {content?.pricing_subtext || 'No hidden fees. No lock-in contracts. Month-to-month flexibility with agency-grade results.'}
+          </p>
         </div>
 
         {/* Pricing cards */}
@@ -189,25 +188,23 @@ export default function PricingI({ content }: { content?: Record<string, string>
 
         {/* Bottom note */}
         <div className="text-center mt-12">
-          <EditableText
-            as="p"
-            pageSlug="home"
-            blockKey="pricing_bottom_note"
-            value={content?.pricing_bottom_note}
-            defaultValue="Need something custom? Web design projects start at a one-time investment."
+          <p
+            data-page="home"
+            data-block="pricing_bottom_note"
             className="font-urbanist text-[#0A0A0A]/40 text-sm mb-4"
-          />
+          >
+            {content?.pricing_bottom_note || 'Need something custom? Web design projects start at a one-time investment.'}
+          </p>
           <a
             href="/contact"
             className="font-urbanist font-bold text-sm text-[#0A0A0A] border-b-2 border-[#14EAEA] pb-0.5 hover:text-[#14EAEA] transition-colors"
           >
-            <EditableText
-              as="span"
-              pageSlug="home"
-              blockKey="pricing_bottom_cta"
-              value={content?.pricing_bottom_cta}
-              defaultValue="Get a Custom Quote →"
-            />
+            <span
+              data-page="home"
+              data-block="pricing_bottom_cta"
+            >
+              {content?.pricing_bottom_cta || 'Get a Custom Quote →'}
+            </span>
           </a>
         </div>
       </div>
