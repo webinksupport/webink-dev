@@ -110,20 +110,25 @@ async function generateGeminiImagen(prompt: string, model?: string, adminUserId?
   const apiKey = await getProviderApiKey('google', adminUserId)
   if (!apiKey) throw new Error('Google AI API key not configured. Add it in Admin → Integrations or set GEMINI_API_KEY env var.')
 
-  const imagenModel = model === 'imagen4' ? 'imagen-3.0-generate-002' : 'imagen-3.0-generate-001'
+  // Imagen 3 models are shut down — use Imagen 4
+  const imagenModel = model === 'imagen4_fast'
+    ? 'imagen-4.0-fast-generate-001'
+    : 'imagen-4.0-generate-001'
 
-  // Use :generateImages endpoint (not :predict which is Vertex AI only)
+  // Imagen 4 uses the :predict endpoint with x-goog-api-key header
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${imagenModel}:generateImages?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${imagenModel}:predict`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
       body: JSON.stringify({
-        prompt,
-        config: {
-          numberOfImages: 1,
-          aspectRatio: '4:5',
-          outputOptions: { mimeType: 'image/png' },
+        instances: [{ prompt }],
+        parameters: {
+          sampleCount: 1,
+          aspectRatio: '3:4',
         },
       }),
     }
@@ -136,8 +141,7 @@ async function generateGeminiImagen(prompt: string, model?: string, adminUserId?
   }
 
   const data = await response.json()
-  const b64 = data.generatedImages?.[0]?.image?.imageBytes
-    || data.predictions?.[0]?.bytesBase64Encoded
+  const b64 = data.predictions?.[0]?.bytesBase64Encoded
   if (!b64) throw new Error('No image data returned from Google Imagen')
 
   return Buffer.from(b64, 'base64')
@@ -200,7 +204,8 @@ async function generateGrokAurora(prompt: string, model?: string, adminUserId?: 
   const apiKey = await getProviderApiKey('xai', adminUserId)
   if (!apiKey) throw new Error('xAI API key not configured. Add it in Admin → Integrations or set XAI_API_KEY env var.')
 
-  const grokModel = model === 'grok-imagine-pro' ? 'grok-2-image-generation' : 'grok-2-image-generation'
+  // grok-2-image-generation is deprecated — use grok-imagine-image (Jan 2026+)
+  const grokModel = 'grok-imagine-image'
 
   const response = await fetch('https://api.x.ai/v1/images/generations', {
     method: 'POST',
