@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   ChevronLeft, ChevronRight, Calendar, Plus, Pencil, Trash2,
-  Clock, CheckCircle, AlertCircle
+  Clock, CheckCircle, AlertCircle, FileSpreadsheet
 } from 'lucide-react'
+import BulkImport from '../components/BulkImport'
 
 const Facebook = ({ className = '' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -57,6 +58,7 @@ export default function CalendarView({ onEditPost }: Props) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
   const [view, setView] = useState<'calendar' | 'list'>('calendar')
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [showImport, setShowImport] = useState(false)
 
   const month = currentDate.getMonth()
   const year = currentDate.getFullYear()
@@ -136,6 +138,13 @@ export default function CalendarView({ onEditPost }: Props) {
           </button>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowImport(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-[#14EAEA]/10 hover:bg-[#14EAEA]/20 border border-[#14EAEA]/30 text-[#14EAEA] transition-colors"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            Import CSV
+          </button>
           <button
             onClick={() => setView('calendar')}
             className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${view === 'calendar' ? 'bg-[#F813BE] text-white' : 'bg-[#1A1A1A] text-[#666] hover:text-white'}`}
@@ -256,6 +265,14 @@ export default function CalendarView({ onEditPost }: Props) {
             </div>
           ))}
         </div>
+      )}
+
+      {/* CSV Import Modal */}
+      {showImport && (
+        <BulkImport
+          onClose={() => setShowImport(false)}
+          onImported={() => fetchPosts()}
+        />
       )}
 
       {/* Post Detail Panel */}

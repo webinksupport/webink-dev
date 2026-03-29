@@ -369,9 +369,12 @@ model SocialPost {
   igLikes      Int?
   igComments   Int?
   igReach      Int?
-  notes        String?          @db.Text
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  postType       String           @default("FEED") // FEED | CAROUSEL | REEL
+  carouselSlides Json?            // JSON array of slide objects for carousel posts
+  originalPostId String?          // self-reference for recycled posts
+  notes          String?          @db.Text
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   @@index([status])
   @@index([scheduledAt])

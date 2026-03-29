@@ -17,6 +17,24 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
   const month = searchParams.get('month') // YYYY-MM format for calendar view
+  const recycler = searchParams.get('recycler')
+
+  // Recycler mode: return published posts sorted by engagement
+  if (recycler === 'true') {
+    const posts = await prisma.socialPost.findMany({
+      where: { status: 'PUBLISHED' },
+      orderBy: { publishedAt: 'desc' },
+    })
+
+    // Sort by total engagement (igLikes + fbLikes + igComments + fbComments)
+    posts.sort((a, b) => {
+      const engA = (a.igLikes || 0) + (a.fbLikes || 0) + (a.igComments || 0) + (a.fbComments || 0)
+      const engB = (b.igLikes || 0) + (b.fbLikes || 0) + (b.igComments || 0) + (b.fbComments || 0)
+      return engB - engA
+    })
+
+    return NextResponse.json(posts)
+  }
 
   const where: Record<string, unknown> = {}
 
@@ -62,6 +80,9 @@ export async function POST(req: NextRequest) {
       status: body.status || 'DRAFT',
       scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
       notes: body.notes || null,
+      postType: body.postType || 'FEED',
+      carouselSlides: body.carouselSlides || undefined,
+      originalPostId: body.originalPostId || null,
     },
   })
 

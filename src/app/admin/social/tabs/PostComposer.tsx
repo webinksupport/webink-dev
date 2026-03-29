@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   PenSquare, Sparkles, Calendar,
   Save, Send, Hash, X, Plus, Upload, Loader2, CheckCircle, AlertCircle,
-  Eye, EyeOff
+  Eye, EyeOff, TrendingUp, Zap
 } from 'lucide-react'
 
 import Image from 'next/image'
@@ -75,6 +75,15 @@ export default function PostComposer({ initialDraft }: Props) {
   const [status, setStatus] = useState<'idle' | 'saved' | 'error'>('idle')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Post Performance Scoring
+  const [scoreData, setScoreData] = useState<{
+    overall: number
+    scores: Record<string, { score: number; label: string }>
+    suggestions: string[]
+  } | null>(null)
+  const [scoring, setScoring] = useState(false)
+  const scoreTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Update when draft changes from parent
   useEffect(() => {
     if (initialDraft?.caption) setCaption(initialDraft.caption)
@@ -85,6 +94,36 @@ export default function PostComposer({ initialDraft }: Props) {
   useEffect(() => {
     fetchHashtagSets()
   }, [])
+
+  // Debounced post scoring — 1.5s after typing stops
+  const scorePost = useCallback(async (captionText: string) => {
+    if (!captionText.trim() || captionText.length < 20) {
+      setScoreData(null)
+      return
+    }
+    setScoring(true)
+    try {
+      const res = await fetch('/api/social/score-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          caption: captionText,
+          hashtags,
+          platform: platforms[0] || 'instagram',
+          scheduledAt: scheduledAt || null,
+        }),
+      })
+      const data = await res.json()
+      if (data.overall !== undefined) setScoreData(data)
+    } catch { /* ignore */ }
+    setScoring(false)
+  }, [hashtags, platforms, scheduledAt])
+
+  useEffect(() => {
+    if (scoreTimerRef.current) clearTimeout(scoreTimerRef.current)
+    scoreTimerRef.current = setTimeout(() => scorePost(caption), 1500)
+    return () => { if (scoreTimerRef.current) clearTimeout(scoreTimerRef.current) }
+  }, [caption, scorePost])
 
   async function fetchHashtagSets() {
     const res = await fetch('/api/social/hashtag-sets')
@@ -555,6 +594,78 @@ export default function PostComposer({ initialDraft }: Props) {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Post Performance Score */}
+        {(scoreData || scoring) && (
+          <div className="bg-[#141414] border border-[#222] rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-4 h-4 text-[#14EAEA]" />
+              <h3 className="text-white text-sm font-medium">Post Score</h3>
+              {scoring && <Loader2 className="w-3 h-3 animate-spin text-[#666] ml-auto" />}
+            </div>
+
+            {scoreData && (
+              <>
+                {/* Overall score */}
+                <div className="text-center mb-4">
+                  <div
+                    className="text-4xl font-bold"
+                    style={{
+                      color: scoreData.overall >= 75 ? '#22c55e' : scoreData.overall >= 50 ? '#eab308' : '#ef4444',
+                    }}
+                  >
+                    {scoreData.overall}
+                  </div>
+                  <p className="text-[#666] text-xs mt-0.5">out of 100</p>
+                </div>
+
+                {/* Sub-scores */}
+                <div className="space-y-2.5 mb-4">
+                  {Object.entries(scoreData.scores).map(([key, { score, label }]) => (
+                    <div key={key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[#999] text-xs">{label}</span>
+                        <span className="text-white text-xs font-medium">{score}</span>
+                      </div>
+                      <div className="h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${score}%`,
+                            backgroundColor: score >= 75 ? '#22c55e' : score >= 50 ? '#eab308' : '#ef4444',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Suggestions */}
+                {scoreData.suggestions.length > 0 && (
+                  <div className="space-y-1.5 mb-3">
+                    <p className="text-[#666] text-xs font-medium">Suggestions:</p>
+                    {scoreData.suggestions.map((s, i) => (
+                      <p key={i} className="text-[#888] text-xs leading-relaxed flex gap-1.5">
+                        <span className="text-[#14EAEA] shrink-0">•</span>
+                        {s}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {/* Auto-improve button */}
+                <button
+                  onClick={improveCaption}
+                  disabled={improvingCaption || !caption.trim()}
+                  className="w-full flex items-center justify-center gap-2 bg-[#14EAEA]/10 hover:bg-[#14EAEA]/20 border border-[#14EAEA]/30 text-[#14EAEA] py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+                >
+                  {improvingCaption ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
+                  Auto-Improve Caption
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
