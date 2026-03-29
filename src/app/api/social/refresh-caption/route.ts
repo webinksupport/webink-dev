@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getSetting } from '@/lib/settings'
-import Anthropic from '@anthropic-ai/sdk'
+import { generateTextWithProviders } from '@/lib/ai/generate-text'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -20,11 +19,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'caption is required' }, { status: 400 })
   }
 
-  const apiKey = await getSetting('ANTHROPIC_API_KEY') || process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Anthropic API key not configured.' }, { status: 500 })
-  }
-
   const prompt = `You are a social media copywriter. Rewrite this caption to feel fresh and current while keeping the core message and value intact. Make it feel like a new post, not a repeat.
 
 Original caption:
@@ -33,18 +27,11 @@ Original caption:
 Return ONLY the rewritten caption text. No explanations, no quotes around it.`
 
   try {
-    const client = new Anthropic({ apiKey })
-    const message = await client.messages.create({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const refreshed = message.content[0].type === 'text' ? message.content[0].text.trim() : caption
-
-    return NextResponse.json({ caption: refreshed })
+    const refreshed = await generateTextWithProviders(prompt, session.user.id)
+    return NextResponse.json({ caption: refreshed.trim() })
   } catch (error) {
     console.error('Caption refresh error:', error)
-    return NextResponse.json({ error: 'Failed to refresh caption' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to refresh caption'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

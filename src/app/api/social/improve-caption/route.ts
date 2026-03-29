@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getSetting } from '@/lib/settings'
-import Anthropic from '@anthropic-ai/sdk'
+import { generateTextWithProviders } from '@/lib/ai/generate-text'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -18,11 +17,6 @@ export async function POST(req: NextRequest) {
 
   if (!caption) {
     return NextResponse.json({ error: 'caption is required' }, { status: 400 })
-  }
-
-  const apiKey = await getSetting('ANTHROPIC_API_KEY') || process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Anthropic API key not configured. Add it in Admin → Integrations or set ANTHROPIC_API_KEY env var.' }, { status: 500 })
   }
 
   const platformTips: Record<string, string> = {
@@ -50,18 +44,11 @@ Improve this caption to be more engaging, on-brand, and effective:
 Return ONLY the improved caption text. No explanations. No quotes around it. Just the caption.`
 
   try {
-    const client = new Anthropic({ apiKey })
-    const message = await client.messages.create({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const improved = message.content[0].type === 'text' ? message.content[0].text.trim() : caption
-
-    return NextResponse.json({ caption: improved })
+    const improved = await generateTextWithProviders(prompt, session.user.id)
+    return NextResponse.json({ caption: improved.trim() })
   } catch (error) {
     console.error('Caption improvement error:', error)
-    return NextResponse.json({ error: 'Failed to improve caption' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to improve caption'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

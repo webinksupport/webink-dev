@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getSetting } from '@/lib/settings'
-import Anthropic from '@anthropic-ai/sdk'
+import { generateTextWithProviders } from '@/lib/ai/generate-text'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -18,11 +17,6 @@ export async function POST(req: NextRequest) {
 
   if (!caption) {
     return NextResponse.json({ error: 'caption is required' }, { status: 400 })
-  }
-
-  const apiKey = await getSetting('ANTHROPIC_API_KEY') || process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Anthropic API key not configured.' }, { status: 500 })
   }
 
   const dayOfWeek = scheduledAt ? new Date(scheduledAt).toLocaleDateString('en-US', { weekday: 'long' }) : 'not scheduled'
@@ -53,19 +47,12 @@ Return ONLY valid JSON (no markdown, no code fences):
 }`
 
   try {
-    const client = new Anthropic({ apiKey })
-    const message = await client.messages.create({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 800,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const text = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
-    const result = JSON.parse(text)
-
+    const text = await generateTextWithProviders(prompt, session.user.id)
+    const result = JSON.parse(text.trim())
     return NextResponse.json(result)
   } catch (error) {
     console.error('Post scoring error:', error)
-    return NextResponse.json({ error: 'Failed to score post' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to score post'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getSetting } from '@/lib/settings'
-import Anthropic from '@anthropic-ai/sdk'
+import { generateTextWithProviders } from '@/lib/ai/generate-text'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -18,11 +17,6 @@ export async function POST(req: NextRequest) {
   const { topic } = await req.json()
   if (!topic) {
     return NextResponse.json({ error: 'topic is required' }, { status: 400 })
-  }
-
-  const apiKey = await getSetting('ANTHROPIC_API_KEY') || process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Anthropic API key not configured' }, { status: 500 })
   }
 
   const profile = await prisma.socialBrandProfile.findFirst()
@@ -53,18 +47,12 @@ Return ONLY valid JSON:
 }`
 
   try {
-    const client = new Anthropic({ apiKey })
-    const message = await client.messages.create({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 2000,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const text = message.content[0].type === 'text' ? message.content[0].text : ''
-    const parsed = JSON.parse(text)
+    const text = await generateTextWithProviders(prompt, session.user.id)
+    const parsed = JSON.parse(text.trim())
     return NextResponse.json(parsed)
   } catch (error) {
     console.error('Story generation error:', error)
-    return NextResponse.json({ error: 'Failed to generate story sequence' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to generate story sequence'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

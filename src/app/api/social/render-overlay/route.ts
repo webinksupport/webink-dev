@@ -42,7 +42,16 @@ export async function POST(req: NextRequest) {
 
     if (backgroundImagePath) {
       // Load background image from disk
-      const bgFullPath = path.join(process.cwd(), 'public', backgroundImagePath)
+      // Images served via /api/uploads/ live in /app/uploads/ (persistent Docker volume)
+      // Images in /uploads/ are in the public dir
+      let bgFullPath: string
+      if (backgroundImagePath.startsWith('/api/uploads/')) {
+        bgFullPath = path.join('/app', 'uploads', backgroundImagePath.replace('/api/uploads/', ''))
+      } else if (backgroundImagePath.startsWith('/uploads/')) {
+        bgFullPath = path.join('/app', 'uploads', backgroundImagePath.replace('/uploads/', ''))
+      } else {
+        bgFullPath = path.join(process.cwd(), 'public', backgroundImagePath)
+      }
       const bgBuffer = await readFile(bgFullPath)
       baseImage = await sharp(bgBuffer)
         .resize(width, height, { fit: 'cover' })
@@ -131,7 +140,14 @@ export async function POST(req: NextRequest) {
     // Optionally add logo in bottom-right corner
     if (logoPath) {
       try {
-        const logoFullPath = path.join(process.cwd(), 'public', logoPath)
+        let logoFullPath: string
+        if (logoPath.startsWith('/api/uploads/')) {
+          logoFullPath = path.join('/app', 'uploads', logoPath.replace('/api/uploads/', ''))
+        } else if (logoPath.startsWith('/uploads/')) {
+          logoFullPath = path.join('/app', 'uploads', logoPath.replace('/uploads/', ''))
+        } else {
+          logoFullPath = path.join(process.cwd(), 'public', logoPath)
+        }
         const logoBuffer = await readFile(logoFullPath)
         const resizedLogo = await sharp(logoBuffer)
           .resize(120, 120, { fit: 'inside' })
@@ -147,14 +163,14 @@ export async function POST(req: NextRequest) {
       .png()
       .toBuffer()
 
-    // Save to disk
-    const outputDir = path.join(process.cwd(), 'public', 'uploads', 'social')
+    // Save to persistent Docker volume (not public/ which is ephemeral in standalone builds)
+    const outputDir = path.join('/app', 'uploads', 'social')
     await mkdir(outputDir, { recursive: true })
     const filename = `overlay-${Date.now()}.png`
     const outputPath = path.join(outputDir, filename)
     await writeFile(outputPath, finalImage)
 
-    const publicPath = `/uploads/social/${filename}`
+    const publicPath = `/api/uploads/social/${filename}`
 
     return NextResponse.json({ url: publicPath, filename })
   } catch (error) {

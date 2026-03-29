@@ -40,6 +40,7 @@ interface TextProviderGroup {
 const IMAGE_MODELS: Record<string, { key: string; altKeys?: string[]; label: string; models: ImageModel[] }> = {
   together: {
     key: 'TOGETHER_AI_API_KEY',
+    altKeys: ['TOGETHER_API_KEY'],
     label: 'Together AI (FLUX)',
     models: [
       { id: 'schnell', provider: 'together', label: 'FLUX.1 Schnell Free', desc: 'Fast drafts', cost: 'Free' },
@@ -49,7 +50,7 @@ const IMAGE_MODELS: Record<string, { key: string; altKeys?: string[]; label: str
   },
   google: {
     key: 'GOOGLE_AI_API_KEY',
-    altKeys: ['GOOGLE_GEMINI_API_KEY'],
+    altKeys: ['GOOGLE_GEMINI_API_KEY', 'GEMINI_API_KEY'],
     label: 'Google (Imagen)',
     models: [
       { id: 'imagen4_fast', provider: 'google', label: 'Imagen 4 Fast', desc: 'Best value', cost: '$0.02/img' },
@@ -85,7 +86,7 @@ const TEXT_MODELS: Record<string, { key: string; altKeys?: string[]; label: stri
   },
   google: {
     key: 'GOOGLE_AI_API_KEY',
-    altKeys: ['GOOGLE_GEMINI_API_KEY'],
+    altKeys: ['GOOGLE_GEMINI_API_KEY', 'GEMINI_API_KEY'],
     label: 'Google',
     models: [
       { id: 'gemini-pro', provider: 'google', label: 'Gemini Pro', desc: 'Creative' },
