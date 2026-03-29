@@ -18,6 +18,16 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get('status')
   const month = searchParams.get('month') // YYYY-MM format for calendar view
   const recycler = searchParams.get('recycler')
+  const abGroup = searchParams.get('abGroup')
+
+  // AB Group mode: return posts with abGroupId, grouped into pairs
+  if (abGroup === 'true') {
+    const posts = await prisma.socialPost.findMany({
+      where: { abGroupId: { not: null } },
+      orderBy: { createdAt: 'desc' },
+    })
+    return NextResponse.json(posts)
+  }
 
   // Recycler mode: return published posts sorted by engagement
   if (recycler === 'true') {
@@ -83,6 +93,8 @@ export async function POST(req: NextRequest) {
       postType: body.postType || 'FEED',
       carouselSlides: body.carouselSlides || undefined,
       originalPostId: body.originalPostId || null,
+      abVariant: body.abVariant || null,
+      abGroupId: body.abGroupId || null,
     },
   })
 

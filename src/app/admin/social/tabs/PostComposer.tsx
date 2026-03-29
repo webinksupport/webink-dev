@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   PenSquare, Sparkles, Calendar,
   Save, Send, Hash, X, Plus, Upload, Loader2, CheckCircle, AlertCircle,
-  Eye, EyeOff, TrendingUp, Zap
+  Eye, EyeOff, TrendingUp, Zap, FlaskConical,
 } from 'lucide-react'
 
 import Image from 'next/image'
@@ -74,6 +74,13 @@ export default function PostComposer({ initialDraft }: Props) {
   const [publishResults, setPublishResults] = useState<Record<string, { success: boolean; error?: string }> | null>(null)
   const [status, setStatus] = useState<'idle' | 'saved' | 'error'>('idle')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // AB Test Mode
+  const [abTestMode, setAbTestMode] = useState(false)
+  const [captionB, setCaptionB] = useState('')
+  const [scheduledAtB, setScheduledAtB] = useState('')
+  const [savingAB, setSavingAB] = useState(false)
+  const [abSaved, setAbSaved] = useState(false)
 
   // Post Performance Scoring
   const [scoreData, setScoreData] = useState<{
@@ -249,6 +256,51 @@ export default function PostComposer({ initialDraft }: Props) {
     fetchHashtagSets()
   }
 
+  async function saveABTest() {
+    if (!caption.trim() || !captionB.trim()) return
+    setSavingAB(true)
+    setAbSaved(false)
+    try {
+      // Generate a shared group ID
+      const groupId = crypto.randomUUID().replace(/-/g, '').slice(0, 25)
+
+      // Create Version A
+      await fetch('/api/social/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          caption,
+          hashtags,
+          mediaPath: mediaPath || null,
+          platforms,
+          scheduledAt: scheduledAt || null,
+          status: 'DRAFT',
+          abVariant: 'A',
+          abGroupId: groupId,
+        }),
+      })
+
+      // Create Version B
+      await fetch('/api/social/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          caption: captionB,
+          hashtags,
+          mediaPath: mediaPath || null,
+          platforms,
+          scheduledAt: scheduledAtB || null,
+          status: 'DRAFT',
+          abVariant: 'B',
+          abGroupId: groupId,
+        }),
+      })
+
+      setAbSaved(true)
+    } catch {}
+    setSavingAB(false)
+  }
+
   const charCount = caption.length + (hashtags ? hashtags.length + 2 : 0)
 
   return (
@@ -256,9 +308,22 @@ export default function PostComposer({ initialDraft }: Props) {
       {/* Left: Composer */}
       <div className="space-y-5">
         <div className="bg-[#141414] border border-[#222] rounded-xl p-6">
-          <div className="flex items-center gap-2 mb-5">
-            <PenSquare className="w-5 h-5 text-[#F813BE]" />
-            <h2 className="text-white font-semibold">Post Composer</h2>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <PenSquare className="w-5 h-5 text-[#F813BE]" />
+              <h2 className="text-white font-semibold">Post Composer</h2>
+            </div>
+            <button
+              onClick={() => { setAbTestMode(!abTestMode); setAbSaved(false) }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                abTestMode
+                  ? 'bg-[#F813BE]/20 text-[#F813BE] border border-[#F813BE]/40'
+                  : 'bg-[#1A1A1A] text-[#666] border border-[#333] hover:text-white hover:border-[#444]'
+              }`}
+            >
+              <FlaskConical className="w-3.5 h-3.5" />
+              A/B Test Mode
+            </button>
           </div>
 
           {/* Media Section */}
@@ -439,6 +504,61 @@ export default function PostComposer({ initialDraft }: Props) {
               className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#F813BE]"
             />
           </div>
+
+          {/* AB Test Mode UI */}
+          {abTestMode && (
+            <div className="mb-5 p-4 bg-[#0A0A0A] border border-[#F813BE]/20 rounded-xl">
+              <p className="text-[#F813BE] text-xs font-bold tracking-[2px] uppercase mb-3">
+                A/B Test — Version B
+              </p>
+              <div className="mb-3">
+                <label className="text-xs text-[#666] block mb-1">Caption B</label>
+                <textarea
+                  value={captionB}
+                  onChange={(e) => setCaptionB(e.target.value)}
+                  rows={4}
+                  placeholder="Write alternate caption for Version B..."
+                  className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#555] focus:outline-none focus:border-[#F813BE] resize-none"
+                />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label className="text-xs text-[#666] block mb-1">Version A Schedule</label>
+                  <input
+                    type="datetime-local"
+                    value={scheduledAt}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                    className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#F813BE]"
+                  />
+                  <p className="text-[#555] text-xs mt-1">Suggested: 9:00 AM</p>
+                </div>
+                <div>
+                  <label className="text-xs text-[#666] block mb-1">Version B Schedule</label>
+                  <input
+                    type="datetime-local"
+                    value={scheduledAtB}
+                    onChange={(e) => setScheduledAtB(e.target.value)}
+                    className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#F813BE]"
+                  />
+                  <p className="text-[#555] text-xs mt-1">Suggested: 2:00 PM</p>
+                </div>
+              </div>
+              <button
+                onClick={saveABTest}
+                disabled={savingAB || !caption.trim() || !captionB.trim()}
+                className="flex items-center gap-2 bg-[#F813BE] hover:bg-[#d10fa0] text-white px-4 py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50"
+              >
+                {savingAB ? <Loader2 className="w-4 h-4 animate-spin" /> : <FlaskConical className="w-4 h-4" />}
+                Save as A/B Test
+              </button>
+              {abSaved && (
+                <div className="flex items-center gap-2 text-green-400 text-sm mt-2">
+                  <CheckCircle className="w-4 h-4" />
+                  A/B test saved! Both variants created as drafts.
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex gap-3 flex-wrap">

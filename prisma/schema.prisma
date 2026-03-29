@@ -372,6 +372,8 @@ model SocialPost {
   postType       String           @default("FEED") // FEED | CAROUSEL | REEL
   carouselSlides Json?            // JSON array of slide objects for carousel posts
   originalPostId String?          // self-reference for recycled posts
+  abVariant      String?          // "A" or "B" for AB tests
+  abGroupId      String?          // shared cuid linking AB variants
   notes          String?          @db.Text
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -429,4 +431,35 @@ model SocialContentPillar {
   icon        String?
   color       String?
   createdAt   DateTime @default(now())
+}
+
+model SocialCompetitor {
+  id          String   @id @default(cuid())
+  handle      String
+  displayName String?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+}
+
+model SocialClient {
+  id              String   @id @default(cuid())
+  name            String
+  instagramHandle String?
+  facebookPageId  String?
+  accessToken     String?  @db.Text
+  brandProfileId  String?
+  userId          String?
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+}
+
+model SocialStory {
+  id          String    @id @default(cuid())
+  title       String
+  slides      Json
+  scheduledAt DateTime?
+  publishedAt DateTime?
+  status      String    @default("DRAFT")
+  igStoryId   String?
+  createdAt   DateTime  @default(now())
 }

@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { contentType, platform, tone, sourceText } = body
 
   const apiKey = await getSetting('ANTHROPIC_API_KEY') || process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
@@ -27,6 +26,88 @@ export async function POST(req: NextRequest) {
   const brandProfile = await prisma.socialBrandProfile.findFirst({
     orderBy: { updatedAt: 'desc' },
   })
+
+  // --- Content Gap Analysis ---
+  if (body.action === 'content_gap') {
+    const pillars = await prisma.socialContentPillar.findMany()
+    const recentPosts = await prisma.socialPost.findMany({
+      where: { status: 'PUBLISHED' },
+      orderBy: { publishedAt: 'desc' },
+      take: 20,
+      select: { caption: true, hashtags: true },
+    })
+
+    const competitorList = (body.competitors || []).join(', ')
+    const pillarList = pillars.map((p) => p.title).join(', ') || 'web design, SEO, social media'
+    const recentTopics = recentPosts.map((p) => p.caption?.slice(0, 80)).filter(Boolean).join('\n')
+
+    const prompt = `Analyze content gaps for a social media brand.
+
+Competitor Instagram handles: ${competitorList}
+Our content pillars: ${pillarList}
+Our recent post topics:
+${recentTopics || 'No recent posts'}
+
+Identify 5-7 content topics or angles that competitors likely cover but we haven't addressed. For each, explain why it matters and suggest a specific post idea.
+
+Return plain text analysis, formatted with bullet points.`
+
+    try {
+      const client = new Anthropic({ apiKey })
+      const message = await client.messages.create({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }],
+      })
+      const text = message.content[0].type === 'text' ? message.content[0].text : ''
+      return NextResponse.json({ analysis: text })
+    } catch (error) {
+      console.error('Content gap analysis error:', error)
+      return NextResponse.json({ error: 'Failed to analyze content gaps' }, { status: 500 })
+    }
+  }
+
+  // --- Trending Hashtags ---
+  if (body.action === 'trending_hashtags') {
+    const keywords = brandProfile?.brandKeywords || 'web design, SEO, digital marketing'
+    const today = new Date().toISOString().split('T')[0]
+
+    const prompt = `Generate trending hashtag suggestions for a ${brandProfile?.keyServices || 'web design and digital marketing'} brand.
+
+Brand keywords: ${keywords}
+Date: ${today}
+
+Group hashtags into 4-5 categories (e.g., Industry, Local, Trending, Niche, Engagement).
+Each category should have 5-8 hashtags.
+
+Return ONLY valid JSON:
+{
+  "groups": [
+    {
+      "category": "Category Name",
+      "tags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
+    }
+  ]
+}`
+
+    try {
+      const client = new Anthropic({ apiKey })
+      const message = await client.messages.create({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }],
+      })
+      const text = message.content[0].type === 'text' ? message.content[0].text : ''
+      const parsed = JSON.parse(text)
+      return NextResponse.json(parsed)
+    } catch (error) {
+      console.error('Trending hashtags error:', error)
+      return NextResponse.json({ error: 'Failed to generate hashtags' }, { status: 500 })
+    }
+  }
+
+  // --- Default: Brand Content Generation ---
+  const { contentType, platform, tone, sourceText } = body
 
   const brandContext = brandProfile
     ? `

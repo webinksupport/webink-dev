@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BarChart2, RefreshCw, CheckCircle, XCircle, TrendingUp } from 'lucide-react'
+import { BarChart2, RefreshCw, CheckCircle, XCircle, TrendingUp, FlaskConical, Trophy } from 'lucide-react'
 
 // Social brand icons (not in lucide-react v1)
 function FacebookIcon({ className = '', color }: { className?: string; color?: string }) {
@@ -40,6 +40,20 @@ interface Post {
   igReach: number | null
 }
 
+interface ABPost {
+  id: string
+  caption: string | null
+  abVariant: string | null
+  abGroupId: string | null
+  publishedAt: string | null
+  igLikes: number | null
+  igComments: number | null
+  igReach: number | null
+  fbLikes: number | null
+  fbComments: number | null
+  fbReach: number | null
+}
+
 interface AnalyticsData {
   posts: Post[]
   connected: {
@@ -59,9 +73,11 @@ export default function Analytics() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [abPosts, setAbPosts] = useState<ABPost[]>([])
 
   useEffect(() => {
     fetchData()
+    fetchABPosts()
   }, [])
 
   async function fetchData(forceRefresh = false) {
@@ -73,6 +89,13 @@ export default function Analytics() {
     } catch {}
     setLoading(false)
     setRefreshing(false)
+  }
+
+  async function fetchABPosts() {
+    try {
+      const res = await fetch('/api/social/posts?abGroup=true')
+      if (res.ok) setAbPosts(await res.json())
+    } catch {}
   }
 
   if (loading) {
@@ -225,6 +248,108 @@ export default function Analytics() {
           </div>
         )}
       </div>
+
+      {/* AB Test Results */}
+      {abPosts.length > 0 && (() => {
+        // Group by abGroupId
+        const groups: Record<string, ABPost[]> = {}
+        abPosts.forEach((p) => {
+          if (p.abGroupId) {
+            if (!groups[p.abGroupId]) groups[p.abGroupId] = []
+            groups[p.abGroupId].push(p)
+          }
+        })
+
+        const groupEntries = Object.entries(groups).filter(([, posts]) => posts.length === 2)
+        if (groupEntries.length === 0) return null
+
+        return (
+          <div className="bg-[#141414] border border-[#222] rounded-xl p-5">
+            <h3 className="text-white font-semibold flex items-center gap-2 mb-4">
+              <FlaskConical className="w-5 h-5 text-[#F813BE]" />
+              A/B Test Results
+            </h3>
+            <div className="space-y-4">
+              {groupEntries.map(([groupId, posts]) => {
+                const a = posts.find((p) => p.abVariant === 'A')
+                const b = posts.find((p) => p.abVariant === 'B')
+                if (!a || !b) return null
+
+                const engA = (a.igLikes || 0) + (a.fbLikes || 0) + (a.igComments || 0) + (a.fbComments || 0)
+                const engB = (b.igLikes || 0) + (b.fbLikes || 0) + (b.igComments || 0) + (b.fbComments || 0)
+                const reachA = (a.igReach || 0) + (a.fbReach || 0)
+                const reachB = (b.igReach || 0) + (b.fbReach || 0)
+
+                const bothPublished = a.publishedAt && b.publishedAt
+                const oldestPublish = bothPublished
+                  ? Math.min(new Date(a.publishedAt!).getTime(), new Date(b.publishedAt!).getTime())
+                  : 0
+                const elapsed = bothPublished ? Date.now() - oldestPublish : 0
+                const hoursElapsed = elapsed / (1000 * 60 * 60)
+                const canDeclareWinner = bothPublished && hoursElapsed >= 48
+
+                let winner: 'A' | 'B' | null = null
+                if (canDeclareWinner && engA !== engB) {
+                  winner = engA > engB ? 'A' : 'B'
+                }
+
+                return (
+                  <div key={groupId} className="bg-[#1A1A1A] border border-[#333] rounded-xl p-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      {[{ post: a, variant: 'A', eng: engA, reach: reachA }, { post: b, variant: 'B', eng: engB, reach: reachB }].map(({ post, variant, eng, reach }) => (
+                        <div
+                          key={variant}
+                          className={`p-3 rounded-lg border ${
+                            winner === variant ? 'border-yellow-500/40 bg-yellow-500/5' : 'border-[#222] bg-[#0A0A0A]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-[#F813BE]">Version {variant}</span>
+                            {winner === variant && (
+                              <span className="flex items-center gap-1 text-yellow-400 text-xs">
+                                <Trophy className="w-3 h-3" />
+                                Winner
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-white text-xs mb-2 line-clamp-3">
+                            {post.caption?.slice(0, 120) || 'No caption'}
+                          </p>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <span className="text-[#555]">Engagement</span>
+                              <p className="text-[#14EAEA] font-bold">{eng}</p>
+                            </div>
+                            <div>
+                              <span className="text-[#555]">Reach</span>
+                              <p className="text-[#14EAEA] font-bold">{reach.toLocaleString()}</p>
+                            </div>
+                          </div>
+                          {post.publishedAt && (
+                            <p className="text-[#444] text-[10px] mt-2">
+                              Published: {new Date(post.publishedAt).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {!bothPublished && (
+                      <p className="text-[#555] text-xs mt-3 text-center">
+                        Publish both variants to compare results
+                      </p>
+                    )}
+                    {bothPublished && !canDeclareWinner && (
+                      <p className="text-[#555] text-xs mt-3 text-center">
+                        Winner declared after 48 hours ({Math.round(48 - hoursElapsed)}h remaining)
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
