@@ -25,7 +25,8 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
   }
 
-  const filePath = path.join(process.cwd(), 'uploads', relativePath)
+  // Use absolute path — Next.js standalone sets cwd to /app/.next/standalone/
+  const filePath = path.join('/app', 'uploads', relativePath)
 
   if (!existsSync(filePath)) {
     return NextResponse.json({ error: 'File not found' }, { status: 404 })

@@ -50,8 +50,9 @@ export async function POST(req: NextRequest) {
     const maxSize = 10 * 1024 * 1024
 
     const subfolder = ASSET_TYPE_FOLDERS[assetType] || 'other'
-    // Save to /app/uploads/ (persistent volume) instead of /app/public/ (baked into build)
-    const uploadDir = path.join(process.cwd(), 'uploads', 'brand-assets', subfolder)
+    // Save to /app/uploads/ (persistent volume) — must use absolute path because
+    // Next.js standalone mode sets process.cwd() to /app/.next/standalone/
+    const uploadDir = path.join('/app', 'uploads', 'brand-assets', subfolder)
     await mkdir(uploadDir, { recursive: true })
 
     const results = []
@@ -110,7 +111,7 @@ export async function DELETE(req: NextRequest) {
   // Delete file from disk — filepath stored as /api/uploads/..., map to /app/uploads/...
   try {
     const diskPath = asset.filepath.replace(/^\/api\/uploads\//, '')
-    const filePath = path.join(process.cwd(), 'uploads', diskPath)
+    const filePath = path.join('/app', 'uploads', diskPath)
     await unlink(filePath)
   } catch {
     // File may already be gone
