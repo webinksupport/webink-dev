@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { generateTextWithProviders } from '@/lib/ai/generate-text'
+import { parseJsonFromAI } from '@/lib/ai/parse-json-response'
 import { prisma } from '@/lib/prisma'
 
 async function requireAdmin() {
@@ -48,8 +49,7 @@ Return ONLY the JSON array, no markdown fences, no explanation.`
     const result = await generateTextWithProviders(prompt, session.user.id, model)
 
     // Parse the JSON response
-    const cleaned = result.trim().replace(/^```json?\s*/i, '').replace(/```\s*$/, '')
-    const topics = JSON.parse(cleaned)
+    const topics = parseJsonFromAI(result)
 
     return NextResponse.json({ topics })
   } catch (error) {

@@ -16,6 +16,7 @@ import {
   Zap,
   Star,
   Crown,
+  Dice5,
 } from 'lucide-react'
 import Image from 'next/image'
 import { useAvailableModels, type ImageModel } from '@/hooks/useAvailableModels'
@@ -107,6 +108,10 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
   const [improvingCaption, setImprovingCaption] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  // I'm Feeling Lucky
+  const [luckyRunning, setLuckyRunning] = useState(false)
+  const [luckyStep, setLuckyStep] = useState('')
 
   const { imageProviders } = useAvailableModels()
 
@@ -346,6 +351,96 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
     })
   }
 
+  async function feelingLucky() {
+    setLuckyRunning(true)
+    try {
+      // Step 1: Fetch trending topics
+      setLuckyStep('Finding trending topics...')
+      const trendRes = await fetch('/api/social/trending-topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      let luckyTopic = 'Digital marketing tips for small businesses'
+      if (trendRes.ok) {
+        const trendData = await trendRes.json()
+        const topics = trendData.topics || []
+        if (topics.length > 0) {
+          const pick = topics[Math.floor(Math.random() * topics.length)]
+          luckyTopic = pick.topic
+        }
+      }
+      setTopic(luckyTopic)
+
+      // Step 2: Generate content idea
+      setLuckyStep('Generating content idea...')
+      const ideaRes = await fetch('/api/social/ideas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: luckyTopic }),
+      })
+      let luckyIdea: ContentIdea | null = null
+      if (ideaRes.ok) {
+        const ideaData = await ideaRes.json()
+        const allIdeas = (ideaData.ideas || []) as ContentIdea[]
+        if (allIdeas.length > 0) {
+          luckyIdea = allIdeas[Math.floor(Math.random() * Math.min(allIdeas.length, 3))]
+          setIdeas(allIdeas.slice(0, 3))
+          setSelectedIdeaIdx(0)
+        }
+      }
+
+      // Step 3: Build image prompt
+      setLuckyStep('Building image prompt...')
+      const ideaText = luckyIdea ? `${luckyIdea.hook}. ${luckyIdea.caption}` : luckyTopic
+      const promptRes = await fetch('/api/social/suggest-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: luckyTopic, idea: ideaText }),
+      })
+      let luckyPrompt = ideaText
+      if (promptRes.ok) {
+        const promptData = await promptRes.json()
+        if (promptData.prompt) luckyPrompt = promptData.prompt
+      }
+      setImagePrompt(luckyPrompt)
+
+      // Step 4: Generate image with FLUX.1 Kontext Pro (default)
+      setLuckyStep('Generating image...')
+      const imgModel = 'black-forest-labs/FLUX.1-Kontext-pro'
+      const imgProvider = 'together'
+      setSelectedProvider(imgProvider)
+      setSelectedModelId(imgModel)
+
+      const imgRes = await fetch('/api/social/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: luckyPrompt,
+          provider: imgProvider,
+          model: imgModel,
+          aspectRatio,
+        }),
+      })
+      if (imgRes.ok) {
+        const imgData = await imgRes.json()
+        setGeneratedImage(imgData.imagePath || imgData.url || '')
+      }
+
+      // Step 5: Pre-fill caption and jump to Build & Schedule
+      setLuckyStep('Compiling post...')
+      if (luckyIdea) {
+        setCaption(luckyIdea.caption)
+        setHashtags(luckyIdea.hashtags)
+      }
+      setStep(5)
+    } catch (err) {
+      console.error('Feeling Lucky error:', err)
+    }
+    setLuckyRunning(false)
+    setLuckyStep('')
+  }
+
   function canGoNext(): boolean {
     switch (step) {
       case 1: return topic.trim().length > 0
@@ -366,6 +461,32 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
 
   return (
     <div className="max-w-3xl mx-auto">
+      {/* I'm Feeling Lucky */}
+      {!luckyRunning && step === 1 && !saved && (
+        <button
+          onClick={feelingLucky}
+          className="w-full mb-6 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#F813BE] to-[#14EAEA] text-white hover:opacity-90 transition-opacity"
+        >
+          <Dice5 className="w-5 h-5" />
+          I&apos;m Feeling Lucky — Auto-Build a Post
+        </button>
+      )}
+
+      {luckyRunning && (
+        <div className="mb-6 p-5 rounded-xl border border-[#282828] bg-[#1A1A1A]">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Loader2 className="w-6 h-6 animate-spin text-[#F813BE]" />
+              <Sparkles className="w-3 h-3 text-[#14EAEA] absolute -top-1 -right-1" />
+            </div>
+            <div>
+              <p className="text-white text-sm font-semibold">Building your post...</p>
+              <p className="text-[#14EAEA] text-xs mt-0.5">{luckyStep}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Step Indicators */}
       <div className="flex items-center justify-between mb-10">
         {STEPS.map((s, i) => (

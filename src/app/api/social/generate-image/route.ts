@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getProviderApiKey } from '@/lib/ai/get-api-keys'
-import { getModelById, isFlux2Model, isKontextModel } from '@/lib/ai/social-model-registry'
+import { isFlux2Model, isKontextModel, isGeminiNativeImageModel } from '@/lib/ai/social-model-registry'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 
@@ -48,6 +48,14 @@ async function downloadImageFromUrl(url: string): Promise<Buffer> {
   return Buffer.from(await res.arrayBuffer())
 }
 
+// ─── Default steps helper ────────────────────────────────────────────────────
+
+function getDefaultSteps(model: string): number {
+  if (model.includes('schnell')) return 4
+  if (model.toLowerCase().includes('kontext') || model.includes('FLUX.2')) return 28
+  return 20
+}
+
 // ─── Together AI FLUX ─────────────────────────────────────────────────────────
 
 async function generateTogetherAI(
@@ -74,6 +82,7 @@ async function generateTogetherAI(
 
   const isKontext = isKontextModel(togetherModel)
   const isFlux2 = isFlux2Model(togetherModel)
+  const isGoogleTogether = togetherModel.startsWith('google/')
 
   const body: Record<string, unknown> = {
     model: togetherModel,
@@ -82,23 +91,18 @@ async function generateTogetherAI(
     height,
     n: 1,
     response_format: 'base64',
+    steps: getDefaultSteps(togetherModel),
   }
 
-  if (isFlux2) {
-    // FLUX.2: multi-reference via reference_images array, no negative prompts
-    body.steps = 28
-    if (referenceImageUrls && referenceImageUrls.length > 0) {
+  if (referenceImageUrls && referenceImageUrls.length > 0) {
+    if (isKontext) {
+      // FLUX.1 Kontext: single reference via image_url
+      body.image_url = referenceImageUrls[0]
+    } else if (isFlux2 || isGoogleTogether) {
+      // FLUX.2 and Google models via Together: reference_images array
       body.reference_images = referenceImageUrls
     }
-  } else if (isKontext) {
-    // FLUX.1 Kontext: single reference via image_url
-    body.steps = 28
-    if (referenceImageUrls && referenceImageUrls.length > 0) {
-      body.image_url = referenceImageUrls[0]
-    }
-  } else {
-    // FLUX.1 Schnell
-    body.steps = 4
+    // wan-ai and qwen: no reference image support, just ignore
   }
 
   const response = await fetch('https://api.together.xyz/v1/images/generations', {
@@ -123,13 +127,12 @@ async function generateTogetherAI(
   return Buffer.from(b64, 'base64')
 }
 
-// ─── Google Gemini Imagen ─────────────────────────────────────────────────────
+// ─── Google Gemini Imagen (predict endpoint) ────────────────────────────────
 
 async function generateGeminiImagen(prompt: string, model?: string, referenceImageUrl?: string, adminUserId?: string) {
   const apiKey = await getProviderApiKey('google', adminUserId)
   if (!apiKey) throw new Error('Google AI API key not configured. Add it in Admin → Integrations or set GEMINI_API_KEY env var.')
 
-  // Resolve model ID
   let imagenModel = model || 'imagen-4.0-generate-001'
   const shortMap: Record<string, string> = {
     imagen4_fast: 'imagen-4.0-fast-generate-001',
@@ -139,7 +142,6 @@ async function generateGeminiImagen(prompt: string, model?: string, referenceIma
     imagenModel = shortMap[imagenModel]
   }
 
-  // PART 3 FIX: Gemini API does NOT support reference images — that's Vertex AI only
   if (referenceImageUrl) {
     console.warn('Google Imagen (Gemini API) does not support reference images. Ignoring referenceImageUrl.')
   }
@@ -175,6 +177,88 @@ async function generateGeminiImagen(prompt: string, model?: string, referenceIma
   if (!b64) throw new Error('No image data returned from Google Imagen')
 
   return Buffer.from(b64, 'base64')
+}
+
+// ─── Google Gemini Native Image (generateContent endpoint) ──────────────────
+
+async function generateGeminiNativeImage(
+  prompt: string,
+  model: string,
+  referenceImageUrls?: string[],
+  adminUserId?: string,
+  aspectRatio?: string,
+) {
+  const apiKey = await getProviderApiKey('google', adminUserId)
+  if (!apiKey) throw new Error('Google AI API key not configured.')
+
+  const geminiModel = model || 'gemini-2.5-flash-image'
+
+  // Build parts array
+  const parts: Array<Record<string, unknown>> = [{ text: prompt }]
+
+  // Add reference images as inline_data (base64)
+  if (referenceImageUrls && referenceImageUrls.length > 0) {
+    for (const url of referenceImageUrls) {
+      const imageBuffer = await downloadImageFromUrl(url)
+      const base64 = imageBuffer.toString('base64')
+      const mimeType = url.includes('.png') ? 'image/png' : 'image/jpeg'
+      parts.push({
+        inline_data: {
+          mime_type: mimeType,
+          data: base64,
+        }
+      })
+    }
+  }
+
+  const generationConfig: Record<string, unknown> = {
+    responseModalities: ['TEXT', 'IMAGE'],
+  }
+
+  if (aspectRatio) {
+    generationConfig.imageConfig = {
+      aspectRatio: aspectRatio,
+      imageSize: '1K',
+    }
+  }
+
+  const body = {
+    contents: [{ parts }],
+    generationConfig,
+  }
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify(body),
+    }
+  )
+
+  if (!response.ok) {
+    const err = await response.text()
+    console.error('Gemini native image error:', err)
+    throw new Error(`Gemini (${geminiModel}): ${response.statusText} — ${err}`)
+  }
+
+  const data = await response.json()
+
+  const candidates = data.candidates
+  if (!candidates || candidates.length === 0) {
+    throw new Error('No candidates in Gemini response')
+  }
+
+  for (const part of candidates[0].content.parts) {
+    if (part.inlineData && part.inlineData.mimeType?.startsWith('image/')) {
+      return Buffer.from(part.inlineData.data, 'base64')
+    }
+  }
+
+  throw new Error('No image data in Gemini response')
 }
 
 // ─── OpenAI Image Generation ─────────────────────────────────────────────────
@@ -259,18 +343,44 @@ async function generateOpenAI(prompt: string, model?: string, referenceImageUrl?
 
 // ─── xAI Grok Aurora ──────────────────────────────────────────────────────────
 
-async function generateGrokAurora(prompt: string, model?: string, adminUserId?: string) {
+async function generateGrokAurora(prompt: string, model?: string, referenceImageUrl?: string, adminUserId?: string) {
   const apiKey = await getProviderApiKey('xai', adminUserId)
   if (!apiKey) throw new Error('xAI API key not configured. Add it in Admin → Integrations or set XAI_API_KEY env var.')
 
-  // Accept both short keys and full model IDs
-  let grokModel = model || 'grok-imagine-image'
-  const shortMap: Record<string, string> = {
-    'grok-imagine': 'grok-imagine-image',
-    'grok-imagine-pro': 'grok-imagine-image-pro',
-  }
-  if (shortMap[grokModel]) {
-    grokModel = shortMap[grokModel]
+  const grokModel = model || 'grok-imagine-image'
+
+  // If reference image provided, use the edits endpoint
+  if (referenceImageUrl) {
+    try {
+      const editResponse = await fetch('https://api.x.ai/v1/images/edits', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: grokModel,
+          prompt,
+          n: 1,
+          response_format: 'b64_json',
+          image: {
+            url: referenceImageUrl,
+            type: 'image_url',
+          },
+        }),
+      })
+
+      if (editResponse.ok) {
+        const data = await editResponse.json()
+        const b64 = data.data?.[0]?.b64_json
+        if (b64) return Buffer.from(b64, 'base64')
+        const url = data.data?.[0]?.url
+        if (url) return downloadImageFromUrl(url)
+      }
+      console.warn('Grok edits failed, falling back to generation')
+    } catch (err) {
+      console.warn('Grok edits failed, falling back to generation:', err)
+    }
   }
 
   const response = await fetch('https://api.x.ai/v1/images/generations', {
@@ -283,6 +393,7 @@ async function generateGrokAurora(prompt: string, model?: string, adminUserId?: 
       model: grokModel,
       prompt,
       n: 1,
+      response_format: 'b64_json',
     }),
   })
 
@@ -355,13 +466,17 @@ export async function POST(req: NextRequest) {
         break
       case 'gemini':
       case 'google':
-        imageBuffer = await generateGeminiImagen(prompt, model, refUrls[0], adminUserId)
+        if (isGeminiNativeImageModel(model)) {
+          imageBuffer = await generateGeminiNativeImage(prompt, model, refUrls.length > 0 ? refUrls : undefined, adminUserId, aspectRatio)
+        } else {
+          imageBuffer = await generateGeminiImagen(prompt, model, refUrls[0], adminUserId)
+        }
         break
       case 'openai':
         imageBuffer = await generateOpenAI(prompt, model, refUrls[0], adminUserId)
         break
       case 'xai':
-        imageBuffer = await generateGrokAurora(prompt, model, adminUserId)
+        imageBuffer = await generateGrokAurora(prompt, model, refUrls[0], adminUserId)
         break
       default:
         imageBuffer = await generateTogetherAI(prompt, model, undefined, adminUserId, width, height)

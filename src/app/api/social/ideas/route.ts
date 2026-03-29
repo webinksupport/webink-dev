@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateTextWithProviders } from '@/lib/ai/generate-text'
+import { parseJsonFromAI } from '@/lib/ai/parse-json-response'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -115,11 +116,12 @@ Do not include any text outside the JSON.`
   try {
     const userId = (session.user as { id: string }).id
     const text = await generateTextWithProviders(prompt, userId, selectedModel)
-    const parsed = JSON.parse(text)
+    const parsed = parseJsonFromAI(text) as { ideas: unknown[] }
     return NextResponse.json({ ideas: parsed.ideas, topic, brandVoice, category })
   } catch (error) {
     console.error('Idea generation error:', error)
-    return NextResponse.json({ error: 'Failed to generate ideas' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: `Failed to generate ideas: ${message}` }, { status: 500 })
   }
 }
 

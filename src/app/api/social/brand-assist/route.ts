@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateTextWithProviders } from '@/lib/ai/generate-text'
+import { parseJsonFromAI } from '@/lib/ai/parse-json-response'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -81,11 +82,12 @@ Return ONLY valid JSON:
 
     try {
       const text = await generateTextWithProviders(prompt, (session.user as { id: string }).id, selectedModel)
-      const parsed = JSON.parse(text)
+      const parsed = parseJsonFromAI(text)
       return NextResponse.json(parsed)
     } catch (error) {
       console.error('Trending hashtags error:', error)
-      return NextResponse.json({ error: 'Failed to generate hashtags' }, { status: 500 })
+      const message = error instanceof Error ? error.message : 'Failed to generate hashtags'
+      return NextResponse.json({ error: message }, { status: 500 })
     }
   }
 
@@ -155,10 +157,11 @@ Rules:
 
   try {
     const text = await generateTextWithProviders(systemPrompt, (session.user as { id: string }).id, selectedModel)
-    const parsed = JSON.parse(text)
+    const parsed = parseJsonFromAI(text)
     return NextResponse.json(parsed)
   } catch (error) {
     console.error('Brand assist generation error:', error)
-    return NextResponse.json({ error: 'Failed to generate branded content' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to generate branded content'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { generateTextWithProviders } from '@/lib/ai/generate-text'
+import { parseJsonFromAI } from '@/lib/ai/parse-json-response'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -48,7 +49,7 @@ Return ONLY valid JSON (no markdown, no code fences):
 
   try {
     const text = await generateTextWithProviders(prompt, session.user.id)
-    const result = JSON.parse(text.trim())
+    const result = parseJsonFromAI(text)
     return NextResponse.json(result)
   } catch (error) {
     console.error('Post scoring error:', error)
