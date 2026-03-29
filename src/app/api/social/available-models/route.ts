@@ -53,15 +53,15 @@ const IMAGE_MODELS: Record<string, { key: string; altKeys?: string[]; label: str
     altKeys: ['GOOGLE_GEMINI_API_KEY', 'GEMINI_API_KEY'],
     label: 'Google (Imagen)',
     models: [
-      { id: 'imagen4_fast', provider: 'google', label: 'Imagen 4 Fast', desc: 'Best value', cost: '$0.02/img' },
-      { id: 'imagen4', provider: 'google', label: 'Imagen 4 Standard', desc: 'High quality', cost: '$0.04/img' },
+      { id: 'imagen4_fast', provider: 'google', label: 'Imagen 4 Fast', desc: 'Best value', cost: '$0.02/img', supportsReference: true },
+      { id: 'imagen4', provider: 'google', label: 'Imagen 4 Standard', desc: 'High quality', cost: '$0.04/img', supportsReference: true },
     ],
   },
   openai: {
     key: 'OPENAI_API_KEY',
     label: 'OpenAI',
     models: [
-      { id: 'gpt-image-mini', provider: 'openai', label: 'GPT Image 1 Mini', desc: 'Cheapest', cost: '$0.005/img' },
+      { id: 'gpt-image-mini', provider: 'openai', label: 'GPT Image 1 Mini', desc: 'Cheapest', cost: '$0.005/img', supportsReference: true },
       { id: 'dall-e-3', provider: 'openai', label: 'DALL-E 3', desc: 'Creative', cost: '$0.04/img' },
     ],
   },

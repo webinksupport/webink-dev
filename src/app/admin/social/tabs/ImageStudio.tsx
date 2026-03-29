@@ -200,7 +200,12 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
                           : 'border-[#333] bg-[#1A1A1A] hover:border-[#444]'
                       }`}
                     >
-                      <div className="text-white text-sm font-medium">{m.label}</div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-white text-sm font-medium">{m.label}</span>
+                        {m.supportsReference && (
+                          <span className="text-[9px] bg-[#14EAEA]/20 text-[#14EAEA] px-1.5 py-0.5 rounded-full" title="Supports reference images">REF</span>
+                        )}
+                      </div>
                       <div className="text-[#666] text-xs mt-0.5">{m.desc}</div>
                       <div className={`text-xs mt-1 ${isActive ? 'text-[#F813BE]' : 'text-[#555]'}`}>{m.cost}</div>
                     </button>
@@ -277,6 +282,17 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Reference image warning for unsupported models */}
+        {referenceImage && !currentModelSupportsRef && (
+          <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />
+            <p className="text-yellow-400 text-xs">
+              The selected model does not support reference images. The reference will be ignored.
+              Switch to a model with the <span className="text-[#14EAEA] font-medium">REF</span> badge for reference image support.
+            </p>
           </div>
         )}
 

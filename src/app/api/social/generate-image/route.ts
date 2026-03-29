@@ -74,12 +74,13 @@ async function generateTogetherAI(prompt: string, model: string, referenceImageU
     response_format: 'base64',
   }
 
-  if (!isKontext) {
+  if (isKontext) {
+    body.steps = 28
+    if (referenceImageUrl) {
+      body.image_url = referenceImageUrl
+    }
+  } else {
     body.steps = model === 'schnell' || model === 'schnell_paid' ? 4 : 20
-  }
-
-  if (isKontext && referenceImageUrl) {
-    body.image_url = referenceImageUrl
   }
 
   const response = await fetch('https://api.together.xyz/v1/images/generations', {
@@ -106,7 +107,7 @@ async function generateTogetherAI(prompt: string, model: string, referenceImageU
 
 // ─── Google Gemini Imagen ─────────────────────────────────────────────────────
 
-async function generateGeminiImagen(prompt: string, model?: string, adminUserId?: string) {
+async function generateGeminiImagen(prompt: string, model?: string, referenceImageUrl?: string, adminUserId?: string) {
   const apiKey = await getProviderApiKey('google', adminUserId)
   if (!apiKey) throw new Error('Google AI API key not configured. Add it in Admin → Integrations or set GEMINI_API_KEY env var.')
 
@@ -114,6 +115,23 @@ async function generateGeminiImagen(prompt: string, model?: string, adminUserId?
   const imagenModel = model === 'imagen4_fast'
     ? 'imagen-4.0-fast-generate-001'
     : 'imagen-4.0-generate-001'
+
+  // Build instances array with optional reference image
+  const instance: Record<string, unknown> = { prompt }
+
+  if (referenceImageUrl) {
+    try {
+      const refBuffer = await downloadImageFromUrl(referenceImageUrl)
+      const refBase64 = refBuffer.toString('base64')
+      instance.referenceImages = [{
+        referenceType: 'STYLE',
+        referenceId: 1,
+        referenceImage: { bytesBase64Encoded: refBase64 },
+      }]
+    } catch (err) {
+      console.warn('Failed to fetch reference image for Imagen, proceeding without:', err)
+    }
+  }
 
   // Imagen 4 uses the :predict endpoint with x-goog-api-key header
   const response = await fetch(
@@ -125,7 +143,7 @@ async function generateGeminiImagen(prompt: string, model?: string, adminUserId?
         'x-goog-api-key': apiKey,
       },
       body: JSON.stringify({
-        instances: [{ prompt }],
+        instances: [instance],
         parameters: {
           sampleCount: 1,
           aspectRatio: '3:4',
@@ -149,13 +167,44 @@ async function generateGeminiImagen(prompt: string, model?: string, adminUserId?
 
 // ─── OpenAI Image Generation ─────────────────────────────────────────────────
 
-async function generateOpenAI(prompt: string, model?: string, adminUserId?: string) {
+async function generateOpenAI(prompt: string, model?: string, referenceImageUrl?: string, adminUserId?: string) {
   const apiKey = await getProviderApiKey('openai', adminUserId)
   if (!apiKey) throw new Error('OpenAI API key not configured. Add OPENAI_API_KEY in Admin → Integrations.')
 
   // gpt-image-mini uses gpt-image-1 with low quality; dall-e-3 uses its own model
   const useGptImage = model === 'gpt-image-mini'
   const apiModel = useGptImage ? 'gpt-image-1' : 'dall-e-3'
+
+  // gpt-image-1 with reference image → use /images/edits endpoint
+  if (useGptImage && referenceImageUrl) {
+    try {
+      const refBuffer = await downloadImageFromUrl(referenceImageUrl)
+      const formData = new FormData()
+      formData.append('model', 'gpt-image-1')
+      formData.append('prompt', prompt)
+      formData.append('n', '1')
+      formData.append('size', '1024x1536')
+      formData.append('image', new Blob([new Uint8Array(refBuffer)], { type: 'image/png' }), 'reference.png')
+
+      const editResponse = await fetch('https://api.openai.com/v1/images/edits', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}` },
+        body: formData,
+      })
+
+      if (editResponse.ok) {
+        const editData = await editResponse.json()
+        const editB64 = editData.data?.[0]?.b64_json
+        if (editB64) return Buffer.from(editB64, 'base64')
+        const editUrl = editData.data?.[0]?.url
+        if (editUrl) return downloadImageFromUrl(editUrl)
+      } else {
+        console.warn('OpenAI edits failed, falling back to generations:', await editResponse.text())
+      }
+    } catch (err) {
+      console.warn('OpenAI edits failed, falling back to generations:', err)
+    }
+  }
 
   const body: Record<string, unknown> = {
     model: apiModel,
@@ -262,10 +311,10 @@ export async function POST(req: NextRequest) {
         break
       case 'gemini':
       case 'google':
-        imageBuffer = await generateGeminiImagen(prompt, model, adminUserId)
+        imageBuffer = await generateGeminiImagen(prompt, model, referenceImageUrl, adminUserId)
         break
       case 'openai':
-        imageBuffer = await generateOpenAI(prompt, model, adminUserId)
+        imageBuffer = await generateOpenAI(prompt, model, referenceImageUrl, adminUserId)
         break
       case 'xai':
         imageBuffer = await generateGrokAurora(prompt, model, adminUserId)
