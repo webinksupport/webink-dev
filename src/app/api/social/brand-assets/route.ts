@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
     const maxSize = 10 * 1024 * 1024
 
     const subfolder = ASSET_TYPE_FOLDERS[assetType] || 'other'
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'brand-assets', subfolder)
+    // Save to /app/uploads/ (persistent volume) instead of /app/public/ (baked into build)
+    const uploadDir = path.join(process.cwd(), 'uploads', 'brand-assets', subfolder)
     await mkdir(uploadDir, { recursive: true })
 
     const results = []
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase()
       const filename = `${Date.now()}-${safeName}`
       const filepath = path.join(uploadDir, filename)
-      const urlPath = `/uploads/brand-assets/${subfolder}/${filename}`
+      const urlPath = `/api/uploads/brand-assets/${subfolder}/${filename}`
 
       await writeFile(filepath, buffer)
 
@@ -106,9 +107,10 @@ export async function DELETE(req: NextRequest) {
   const asset = await prisma.socialBrandAsset.findUnique({ where: { id } })
   if (!asset) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  // Delete file from disk
+  // Delete file from disk — filepath stored as /api/uploads/..., map to /app/uploads/...
   try {
-    const filePath = path.join(process.cwd(), 'public', asset.filepath)
+    const diskPath = asset.filepath.replace(/^\/api\/uploads\//, '')
+    const filePath = path.join(process.cwd(), 'uploads', diskPath)
     await unlink(filePath)
   } catch {
     // File may already be gone

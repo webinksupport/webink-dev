@@ -20,6 +20,8 @@ RUN cp -r .next/static .next/standalone/.next/static && \
     rm -f .next/standalone/.env .next/standalone/.env.local .next/standalone/.env.production
 # Remove .env files so runtime uses only docker-compose env vars
 RUN rm -f .env .env.local .env.production
+# Create uploads directory for persistent volume mount
+RUN mkdir -p /app/uploads
 EXPOSE 3001
 ENV PORT=3001
 CMD ["node", ".next/standalone/server.js"]

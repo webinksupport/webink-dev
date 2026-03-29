@@ -44,7 +44,8 @@ export async function POST(
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+    // Save to /app/uploads/ (persistent volume) instead of /app/public/ (baked at build)
+    const uploadDir = path.join(process.cwd(), 'uploads')
     await mkdir(uploadDir, { recursive: true })
 
     const sanitizedSlug = pageSlug.replace(/[^a-zA-Z0-9-]/g, '-')
@@ -53,7 +54,7 @@ export async function POST(
     const filepath = path.join(uploadDir, filename)
     await writeFile(filepath, buffer)
 
-    const url = `/uploads/${filename}`
+    const url = `/api/uploads/${filename}`
 
     await prisma.pageContent.upsert({
       where: {

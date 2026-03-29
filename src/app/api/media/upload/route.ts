@@ -34,9 +34,9 @@ export async function POST(request: Request) {
     const year = now.getFullYear().toString()
     const month = (now.getMonth() + 1).toString().padStart(2, '0')
 
+    // Save to /app/uploads/ (persistent volume) instead of /app/public/ (baked at build)
     const uploadDir = path.join(
       process.cwd(),
-      'public',
       'uploads',
       year,
       month
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
         .toLowerCase()
       const filename = `${Date.now()}-${safeName}`
       const filepath = path.join(uploadDir, filename)
-      const urlPath = `/uploads/${year}/${month}/${filename}`
+      const urlPath = `/api/uploads/${year}/${month}/${filename}`
 
       await writeFile(filepath, buffer)
 
