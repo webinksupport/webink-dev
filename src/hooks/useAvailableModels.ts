@@ -2,29 +2,32 @@
 
 import { useState, useEffect } from 'react'
 
-interface ImageModel {
+export interface ImageModel {
   id: string
   provider: string
   label: string
   desc: string
   cost: string
   supportsReference?: boolean
+  maxReferenceImages?: number
+  supportsStructuredPrompts?: boolean
+  referenceImageMode?: string | null
 }
 
-interface TextModel {
+export interface TextModel {
   id: string
   provider: string
   label: string
   desc: string
 }
 
-interface ProviderGroup {
+export interface ProviderGroup {
   provider: string
   label: string
   models: ImageModel[]
 }
 
-interface TextProviderGroup {
+export interface TextProviderGroup {
   provider: string
   label: string
   models: TextModel[]

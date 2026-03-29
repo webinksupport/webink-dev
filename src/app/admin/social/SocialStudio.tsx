@@ -85,8 +85,10 @@ export default function SocialStudio() {
     hashtags?: string
     mediaPath?: string
   }>({})
-  // Image studio prompt (pre-filled from Brand Assistant)
+  // Image studio prompt (pre-filled from Brand Assistant or Ideas)
   const [imageStudioPrompt, setImageStudioPrompt] = useState('')
+  const [imageStudioTopic, setImageStudioTopic] = useState('')
+  const [imageStudioIdea, setImageStudioIdea] = useState('')
 
   // Client context switcher
   const [clients, setClients] = useState<SocialClient[]>([])
@@ -116,6 +118,13 @@ export default function SocialStudio() {
 
   function goToImageStudio(prompt: string) {
     setImageStudioPrompt(prompt)
+    setActiveTab('images')
+  }
+
+  function goToImageStudioWithContext(topic: string, idea: string) {
+    setImageStudioTopic(topic)
+    setImageStudioIdea(idea)
+    setImageStudioPrompt('') // Let the studio generate from context
     setActiveTab('images')
   }
 
@@ -223,7 +232,12 @@ export default function SocialStudio() {
 
       {/* Tab Content */}
       <div>
-        {activeTab === 'ideas' && <IdeaGenerator onUseIdea={goToComposer} />}
+        {activeTab === 'ideas' && (
+          <IdeaGenerator
+            onUseIdea={goToComposer}
+            onSendToImageStudio={goToImageStudioWithContext}
+          />
+        )}
         {activeTab === 'brand' && (
           <BrandAssistant
             onUseContent={(content) => goToComposer({
@@ -249,6 +263,8 @@ export default function SocialStudio() {
           <ImageStudio
             onUseImage={(path) => goToComposer({ mediaPath: path })}
             initialPrompt={imageStudioPrompt}
+            initialTopic={imageStudioTopic}
+            initialIdea={imageStudioIdea}
           />
         )}
         {activeTab === 'composer' && <PostComposer initialDraft={composerDraft} />}

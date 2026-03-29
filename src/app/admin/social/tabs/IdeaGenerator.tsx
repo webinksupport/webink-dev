@@ -35,6 +35,7 @@ interface ContentPillar {
 
 interface Props {
   onUseIdea: (draft: { caption?: string; hashtags?: string }) => void
+  onSendToImageStudio?: (topic: string, idea: string) => void
 }
 
 const TOPIC_CATEGORIES = [
@@ -42,7 +43,7 @@ const TOPIC_CATEGORIES = [
   'Promotional', 'Seasonal/Holiday', 'Community', 'Q&A', 'Product/Service Spotlight',
 ]
 
-export default function IdeaGenerator({ onUseIdea }: Props) {
+export default function IdeaGenerator({ onUseIdea, onSendToImageStudio }: Props) {
   const [topic, setTopic] = useState('')
   const [brandVoice, setBrandVoice] = useState('professional')
   const [category, setCategory] = useState('')
@@ -477,6 +478,15 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
                       <Calendar className="w-3.5 h-3.5" />
                       To Calendar
                     </button>
+                    {onSendToImageStudio && (
+                      <button
+                        onClick={() => onSendToImageStudio(topic, `${idea.hook}. ${idea.caption}`)}
+                        className="flex items-center gap-1.5 bg-[#1A1A1A] hover:bg-[#F813BE]/10 text-[#999] hover:text-[#F813BE] px-3 py-1.5 rounded-lg text-xs transition-colors"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Image Studio
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

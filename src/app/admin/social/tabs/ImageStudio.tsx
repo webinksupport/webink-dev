@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Wand2, Download, ArrowRight, Loader2, ImageIcon, Info, Upload, X, FolderOpen, AlertCircle, Sparkles } from 'lucide-react'
+import { Wand2, Download, ArrowRight, Loader2, ImageIcon, Info, Upload, X, FolderOpen, AlertCircle, Sparkles, Zap, Star, Crown } from 'lucide-react'
 import Image from 'next/image'
-import { useAvailableModels } from '@/hooks/useAvailableModels'
+import { useAvailableModels, type ImageModel } from '@/hooks/useAvailableModels'
 
 interface GeneratedImage {
   url: string
@@ -25,19 +25,36 @@ interface BrandAsset {
 interface Props {
   onUseImage: (path: string) => void
   initialPrompt?: string
+  initialTopic?: string
+  initialIdea?: string
 }
 
-export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
+const ASPECT_RATIOS = [
+  { value: '4:5', label: '4:5 Portrait', desc: 'Instagram' },
+  { value: '1:1', label: '1:1 Square', desc: 'Feed' },
+  { value: '9:16', label: '9:16 Story', desc: 'Stories/Reels' },
+  { value: '16:9', label: '16:9 Landscape', desc: 'YouTube/Blog' },
+]
+
+const COST_TIER_ICONS: Record<string, typeof Zap> = {
+  Free: Zap,
+  Fast: Zap,
+  Standard: Star,
+  Premium: Crown,
+}
+
+export default function ImageStudio({ onUseImage, initialPrompt, initialTopic, initialIdea }: Props) {
   const [prompt, setPrompt] = useState(initialPrompt || '')
   const [selectedProvider, setSelectedProvider] = useState('')
   const [selectedModel, setSelectedModel] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [gallery, setGallery] = useState<GeneratedImage[]>([])
-  const [referenceImage, setReferenceImage] = useState<string | null>(null)
+  const [referenceImages, setReferenceImages] = useState<string[]>([])
   const [showAssetPicker, setShowAssetPicker] = useState(false)
   const [brandAssets, setBrandAssets] = useState<BrandAsset[]>([])
   const [suggestingPrompt, setSuggestingPrompt] = useState(false)
+  const [aspectRatio, setAspectRatio] = useState('4:5')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { imageProviders, hasAnyImageKey, loading: modelsLoading } = useAvailableModels()
@@ -57,6 +74,11 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
     fetchBrandAssets()
   }, [])
 
+  // Update prompt if initialPrompt changes
+  useEffect(() => {
+    if (initialPrompt) setPrompt(initialPrompt)
+  }, [initialPrompt])
+
   async function fetchBrandAssets() {
     try {
       const res = await fetch('/api/social/brand-assets')
@@ -69,10 +91,32 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
     setSelectedModel(id)
   }
 
+  // Find current model entry
+  const currentModel: ImageModel | undefined = imageProviders
+    .flatMap((g) => g.models)
+    .find((m) => m.id === selectedModel && m.provider === selectedProvider)
+
+  const currentModelSupportsRef = currentModel?.supportsReference ?? false
+  const maxRefs = currentModel?.maxReferenceImages ?? 0
+  const isGoogleImagen = selectedProvider === 'google'
+
   function selectBrandAsset(asset: BrandAsset) {
     const siteUrl = window.location.origin
-    setReferenceImage(`${siteUrl}${asset.filepath}`)
+    const url = `${siteUrl}${asset.filepath}`
+    if (maxRefs <= 1) {
+      setReferenceImages([url])
+    } else {
+      setReferenceImages((prev) => {
+        if (prev.includes(url)) return prev
+        if (prev.length >= maxRefs) return [...prev.slice(1), url]
+        return [...prev, url]
+      })
+    }
     setShowAssetPicker(false)
+  }
+
+  function removeReferenceImage(idx: number) {
+    setReferenceImages((prev) => prev.filter((_, i) => i !== idx))
   }
 
   async function handleReferenceUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -84,7 +128,12 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
     const data = await res.json()
     if (data.results?.[0]?.path) {
       const siteUrl = window.location.origin
-      setReferenceImage(`${siteUrl}${data.results[0].path}`)
+      const url = `${siteUrl}${data.results[0].path}`
+      if (maxRefs <= 1) {
+        setReferenceImages([url])
+      } else {
+        setReferenceImages((prev) => [...prev, url].slice(0, maxRefs || 4))
+      }
     }
   }
 
@@ -94,7 +143,7 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
       const res = await fetch('/api/social/suggest-prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ context: prompt || undefined }),
+        body: JSON.stringify({ context: prompt || undefined, topic: initialTopic, idea: initialIdea }),
       })
       const data = await res.json()
       if (data.prompt) setPrompt(data.prompt)
@@ -119,7 +168,9 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
           prompt,
           model: selectedModel,
           provider: selectedProvider,
-          referenceImageUrl: referenceImage || undefined,
+          referenceImageUrls: referenceImages.length > 0 ? referenceImages : undefined,
+          referenceImageUrl: referenceImages[0] || undefined,
+          aspectRatio,
         }),
       })
       const data = await res.json()
@@ -145,11 +196,6 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
     a.download = filename
     a.click()
   }
-
-  const currentModelSupportsRef = imageProviders
-    .flatMap((g) => g.models)
-    .find((m) => m.id === selectedModel && m.provider === selectedProvider)
-    ?.supportsReference
 
   if (modelsLoading) {
     return (
@@ -179,10 +225,12 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
         <div className="flex items-center gap-2 mb-4">
           <ImageIcon className="w-5 h-5 text-[#F813BE]" />
           <h2 className="text-white font-semibold">AI Image Generation</h2>
-          <span className="text-xs text-[#555] ml-auto">1080x1350px (Instagram 4:5)</span>
+          <span className="text-xs text-[#555] ml-auto">
+            {ASPECT_RATIOS.find((r) => r.value === aspectRatio)?.label || '4:5 Portrait'}
+          </span>
         </div>
 
-        {/* Dynamic Provider/Model Selector */}
+        {/* Grouped Model Selector */}
         <div className="space-y-4 mb-5">
           {imageProviders.map((group) => (
             <div key={group.provider}>
@@ -190,6 +238,7 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {group.models.map((m) => {
                   const isActive = selectedProvider === m.provider && selectedModel === m.id
+                  const CostIcon = COST_TIER_ICONS[m.cost] || Star
                   return (
                     <button
                       key={`${m.provider}-${m.id}`}
@@ -203,11 +252,21 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
                       <div className="flex items-center gap-1.5">
                         <span className="text-white text-sm font-medium">{m.label}</span>
                         {m.supportsReference && (
-                          <span className="text-[9px] bg-[#14EAEA]/20 text-[#14EAEA] px-1.5 py-0.5 rounded-full" title="Supports reference images">REF</span>
+                          <span className="text-[9px] bg-[#14EAEA]/20 text-[#14EAEA] px-1.5 py-0.5 rounded-full" title={`Supports up to ${m.maxReferenceImages || 1} reference images`}>
+                            REF{(m.maxReferenceImages || 1) > 1 ? ` ×${m.maxReferenceImages}` : ''}
+                          </span>
+                        )}
+                        {m.supportsStructuredPrompts && (
+                          <span className="text-[9px] bg-[#B9FF33]/20 text-[#B9FF33] px-1.5 py-0.5 rounded-full" title="Supports structured JSON prompts">
+                            JSON
+                          </span>
                         )}
                       </div>
                       <div className="text-[#666] text-xs mt-0.5">{m.desc}</div>
-                      <div className={`text-xs mt-1 ${isActive ? 'text-[#F813BE]' : 'text-[#555]'}`}>{m.cost}</div>
+                      <div className={`flex items-center gap-1 text-xs mt-1 ${isActive ? 'text-[#F813BE]' : 'text-[#555]'}`}>
+                        <CostIcon className="w-3 h-3" />
+                        {m.cost}
+                      </div>
                     </button>
                   )
                 })}
@@ -216,52 +275,121 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
           ))}
         </div>
 
-        {/* Reference Image — Brand Assets Picker + Upload */}
-        <div className="mb-4 p-3 bg-[#1A1A1A] border border-[#333] rounded-lg">
-          <label className="text-xs text-[#666] block mb-2">
-            Reference Image {currentModelSupportsRef ? '(for brand consistency)' : '(available for reference-supporting models)'}
-          </label>
-          {referenceImage ? (
-            <div className="flex items-center gap-3">
-              <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-[#0A0A0A]">
-                <Image src={referenceImage} alt="Reference" fill className="object-cover" sizes="64px" />
-              </div>
-              <div className="flex-1">
-                <p className="text-[#888] text-xs truncate">{referenceImage}</p>
-              </div>
+        {/* Aspect Ratio Selector */}
+        <div className="mb-4">
+          <label className="text-xs text-[#666] block mb-2">Aspect Ratio</label>
+          <div className="flex gap-2">
+            {ASPECT_RATIOS.map((r) => (
               <button
-                onClick={() => setReferenceImage(null)}
-                className="text-[#666] hover:text-red-400 transition-colors"
+                key={r.value}
+                onClick={() => setAspectRatio(r.value)}
+                className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
+                  aspectRatio === r.value
+                    ? 'bg-[#14EAEA]/20 text-[#14EAEA] border border-[#14EAEA]'
+                    : 'bg-[#1A1A1A] border border-[#333] text-[#888] hover:border-[#444]'
+                }`}
               >
-                <X className="w-4 h-4" />
+                {r.label}
+                <span className="text-[10px] block text-[#555]">{r.desc}</span>
               </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowAssetPicker(!showAssetPicker)}
-                className="flex items-center gap-2 text-[#14EAEA] hover:text-white text-xs transition-colors bg-[#14EAEA]/10 px-3 py-1.5 rounded-lg"
-              >
-                <FolderOpen className="w-4 h-4" />
-                Pick from Brand Assets
-              </button>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 text-[#666] hover:text-white text-xs transition-colors"
-              >
-                <Upload className="w-4 h-4" />
-                Upload new
-              </button>
-            </div>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleReferenceUpload}
-            className="hidden"
-          />
+            ))}
+          </div>
         </div>
+
+        {/* Reference Image Section — Show/hide based on model support */}
+        {!isGoogleImagen && (
+          <div className="mb-4 p-3 bg-[#1A1A1A] border border-[#333] rounded-lg">
+            <label className="text-xs text-[#666] block mb-2">
+              Reference Images {currentModelSupportsRef
+                ? `(up to ${maxRefs} for brand consistency)`
+                : '(not supported by this model)'}
+            </label>
+
+            {referenceImages.length > 0 ? (
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  {referenceImages.map((url, idx) => (
+                    <div key={idx} className="relative">
+                      <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-[#0A0A0A]">
+                        <Image src={url} alt={`Reference ${idx + 1}`} fill className="object-cover" sizes="64px" />
+                      </div>
+                      <button
+                        onClick={() => removeReferenceImage(idx)}
+                        className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5"
+                      >
+                        <X className="w-3 h-3 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {referenceImages.length < maxRefs && currentModelSupportsRef && (
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setShowAssetPicker(!showAssetPicker)}
+                      className="flex items-center gap-2 text-[#14EAEA] hover:text-white text-xs transition-colors"
+                    >
+                      <FolderOpen className="w-3.5 h-3.5" />
+                      Add from Assets
+                    </button>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-2 text-[#666] hover:text-white text-xs transition-colors"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload
+                    </button>
+                  </div>
+                )}
+                {!currentModelSupportsRef && (
+                  <button
+                    onClick={() => setReferenceImages([])}
+                    className="text-[#666] hover:text-red-400 text-xs transition-colors"
+                  >
+                    Clear references
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowAssetPicker(!showAssetPicker)}
+                  disabled={!currentModelSupportsRef}
+                  className="flex items-center gap-2 text-[#14EAEA] hover:text-white text-xs transition-colors bg-[#14EAEA]/10 px-3 py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  Pick from Brand Assets
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={!currentModelSupportsRef}
+                  className="flex items-center gap-2 text-[#666] hover:text-white text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload new
+                </button>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleReferenceUpload}
+              className="hidden"
+            />
+          </div>
+        )}
+
+        {/* Google Imagen tooltip */}
+        {isGoogleImagen && (
+          <div className="mb-4 p-3 bg-[#1A1A1A] border border-[#333] rounded-lg">
+            <div className="flex items-start gap-2">
+              <Info className="w-4 h-4 text-[#666] mt-0.5 shrink-0" />
+              <p className="text-[#888] text-xs">
+                Google Imagen (Gemini API) does not support reference images. Use FLUX.2 Pro, Max, Dev, or Flex for multi-reference support.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Brand Assets Picker Panel */}
         {showAssetPicker && brandAssets.length > 0 && (
@@ -286,12 +414,11 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
         )}
 
         {/* Reference image warning for unsupported models */}
-        {referenceImage && !currentModelSupportsRef && (
+        {referenceImages.length > 0 && !currentModelSupportsRef && (
           <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />
             <p className="text-yellow-400 text-xs">
-              The selected model does not support reference images. The reference will be ignored.
-              Switch to a model with the <span className="text-[#14EAEA] font-medium">REF</span> badge for reference image support.
+              This model doesn&apos;t support reference images. The reference will be ignored, or switch to FLUX.2 Pro for reference support.
             </p>
           </div>
         )}

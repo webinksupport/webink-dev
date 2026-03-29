@@ -12,7 +12,13 @@ import {
   Pencil,
   Calendar,
   Image as ImageIcon,
+  Tag,
+  Zap,
+  Star,
+  Crown,
 } from 'lucide-react'
+import Image from 'next/image'
+import { useAvailableModels, type ImageModel } from '@/hooks/useAvailableModels'
 
 interface TrendingTopic {
   topic: string
@@ -26,10 +32,22 @@ interface ContentIdea {
   hashtags: string
 }
 
-interface ImageProvider {
-  provider: string
-  label: string
-  models: { id: string; provider: string; label: string; desc: string; cost: string }[]
+interface BrandAsset {
+  id: string
+  filename: string
+  filepath: string
+  altText: string | null
+  assetType: string
+  clientName: string | null
+}
+
+interface BrandProfile {
+  businessName: string
+  tagline: string
+  brandVoice: string
+  primaryColors: string[]
+  targetAudience: string
+  keyServices: string
 }
 
 const STEPS = [
@@ -39,6 +57,20 @@ const STEPS = [
   { num: 4, label: 'Generate Image' },
   { num: 5, label: 'Build & Schedule' },
 ]
+
+const ASPECT_RATIOS = [
+  { value: '4:5', label: '4:5 Portrait' },
+  { value: '1:1', label: '1:1 Square' },
+  { value: '9:16', label: '9:16 Story' },
+  { value: '16:9', label: '16:9 Landscape' },
+]
+
+const COST_TIER_ICONS: Record<string, typeof Zap> = {
+  Free: Zap,
+  Fast: Zap,
+  Standard: Star,
+  Premium: Crown,
+}
 
 export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () => void }) {
   const [step, setStep] = useState(1)
@@ -54,11 +86,16 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
   const [customIdea, setCustomIdea] = useState('')
   const [loadingIdeas, setLoadingIdeas] = useState(false)
 
-  // Step 3
+  // Step 3 — Smart Prompt Builder
   const [imagePrompt, setImagePrompt] = useState('')
   const [loadingPrompt, setLoadingPrompt] = useState(false)
-  const [imageProviders, setImageProviders] = useState<ImageProvider[]>([])
-  const [selectedModel, setSelectedModel] = useState('')
+  const [selectedProvider, setSelectedProvider] = useState('')
+  const [selectedModelId, setSelectedModelId] = useState('')
+  const [aspectRatio, setAspectRatio] = useState('4:5')
+  const [brandAssets, setBrandAssets] = useState<BrandAsset[]>([])
+  const [enabledAssetIds, setEnabledAssetIds] = useState<Set<string>>(new Set())
+  const [brandProfile, setBrandProfile] = useState<BrandProfile | null>(null)
+  const [referenceUrls, setReferenceUrls] = useState<string[]>([])
 
   // Step 4
   const [generatedImage, setGeneratedImage] = useState('')
@@ -70,6 +107,72 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
   const [improvingCaption, setImprovingCaption] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  const { imageProviders } = useAvailableModels()
+
+  // Auto-select first model
+  useEffect(() => {
+    if (imageProviders.length > 0 && !selectedModelId) {
+      const first = imageProviders[0].models[0]
+      if (first) {
+        setSelectedProvider(first.provider)
+        setSelectedModelId(first.id)
+      }
+    }
+  }, [imageProviders, selectedModelId])
+
+  // Fetch brand assets + profile on mount
+  useEffect(() => {
+    fetchBrandAssets()
+    fetchBrandProfile()
+  }, [])
+
+  async function fetchBrandAssets() {
+    try {
+      const res = await fetch('/api/social/brand-assets')
+      if (res.ok) {
+        const data: BrandAsset[] = await res.json()
+        setBrandAssets(data)
+        // Enable all assets by default
+        setEnabledAssetIds(new Set(data.map((a) => a.id)))
+      }
+    } catch { /* silent */ }
+  }
+
+  async function fetchBrandProfile() {
+    try {
+      const res = await fetch('/api/social/brand-profile')
+      if (res.ok) {
+        const data = await res.json()
+        if (data) setBrandProfile(data)
+      }
+    } catch { /* silent */ }
+  }
+
+  // Get the selected content idea text
+  function getSelectedIdeaText(): string {
+    if (selectedIdeaIdx !== null && ideas[selectedIdeaIdx]) {
+      return `${ideas[selectedIdeaIdx].hook}. ${ideas[selectedIdeaIdx].caption}`
+    }
+    return customIdea
+  }
+
+  // Find current model
+  const currentModel: ImageModel | undefined = imageProviders
+    .flatMap((g) => g.models)
+    .find((m) => m.id === selectedModelId && m.provider === selectedProvider)
+
+  // Map asset type names to prompt builder types
+  function mapAssetType(assetType: string): string {
+    const map: Record<string, string> = {
+      Scout: 'character',
+      Logo: 'logo',
+      Product: 'product',
+      Background: 'background',
+      Other: 'style',
+    }
+    return map[assetType] || 'style'
+  }
 
   // Fetch trending topics
   async function fetchTrending() {
@@ -104,61 +207,73 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
     setLoadingIdeas(false)
   }, [topic])
 
-  // Fetch suggested image prompt
-  const fetchSuggestedPrompt = useCallback(async () => {
+  // Smart prompt builder — calls /api/social/build-prompt
+  const buildSmartPrompt = useCallback(async () => {
     setLoadingPrompt(true)
-    const ideaContext = selectedIdeaIdx !== null && ideas[selectedIdeaIdx]
-      ? `Hook: ${ideas[selectedIdeaIdx].hook}. ${ideas[selectedIdeaIdx].caption}`
-      : customIdea
+    const siteUrl = typeof window !== 'undefined' ? window.location.origin : ''
+
+    // Collect enabled brand assets
+    const enabledAssets = brandAssets
+      .filter((a) => enabledAssetIds.has(a.id))
+      .map((a) => ({
+        url: `${siteUrl}${a.filepath}`,
+        type: mapAssetType(a.assetType),
+        name: a.filename,
+      }))
+
     try {
-      const res = await fetch('/api/social/suggest-prompt', {
+      const res = await fetch('/api/social/build-prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, idea: ideaContext }),
+        body: JSON.stringify({
+          topic,
+          contentIdea: getSelectedIdeaText(),
+          brandAssets: enabledAssets,
+          brandProfile: brandProfile ? {
+            colors: brandProfile.primaryColors || [],
+            tone: brandProfile.brandVoice || 'Professional',
+            industry: 'Digital Marketing',
+            name: brandProfile.businessName || 'Webink Solutions',
+          } : { colors: [], tone: 'Professional', industry: '', name: '' },
+          model: selectedModelId,
+          aspectRatio,
+        }),
       })
       if (res.ok) {
         const data = await res.json()
         setImagePrompt(data.prompt || '')
+        setReferenceUrls(data.referenceImageUrls || [])
       }
     } catch { /* ignore */ }
     setLoadingPrompt(false)
-  }, [topic, selectedIdeaIdx, ideas, customIdea])
-
-  // Fetch available image providers
-  useEffect(() => {
-    fetch('/api/social/available-models')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.imageProviders) {
-          setImageProviders(data.imageProviders)
-          if (data.imageProviders.length > 0 && data.imageProviders[0].models.length > 0) {
-            setSelectedModel(`${data.imageProviders[0].models[0].provider}:${data.imageProviders[0].models[0].id}`)
-          }
-        }
-      })
-      .catch(() => {})
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topic, selectedIdeaIdx, ideas, customIdea, brandAssets, enabledAssetIds, brandProfile, selectedModelId, aspectRatio])
 
   // Auto-fetch ideas when entering step 2
   useEffect(() => {
     if (step === 2 && ideas.length === 0) fetchIdeas()
   }, [step, ideas.length, fetchIdeas])
 
-  // Auto-fetch prompt when entering step 3
+  // Auto-build prompt when entering step 3
   useEffect(() => {
-    if (step === 3 && !imagePrompt) fetchSuggestedPrompt()
-  }, [step, imagePrompt, fetchSuggestedPrompt])
+    if (step === 3 && !imagePrompt) buildSmartPrompt()
+  }, [step, imagePrompt, buildSmartPrompt])
 
   // Generate image
   async function generateImage() {
     setLoadingImage(true)
     setGeneratedImage('')
-    const [provider, modelId] = selectedModel.split(':')
     try {
       const res = await fetch('/api/social/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: imagePrompt, provider, model: modelId }),
+        body: JSON.stringify({
+          prompt: imagePrompt,
+          provider: selectedProvider,
+          model: selectedModelId,
+          referenceImageUrls: referenceUrls.length > 0 ? referenceUrls : undefined,
+          aspectRatio,
+        }),
       })
       if (res.ok) {
         const data = await res.json()
@@ -220,6 +335,15 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
       if (res.ok) setSaved(true)
     } catch { /* ignore */ }
     setSaving(false)
+  }
+
+  function toggleAsset(id: string) {
+    setEnabledAssetIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
   }
 
   function canGoNext(): boolean {
@@ -364,19 +488,20 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
           </div>
         )}
 
-        {/* STEP 3 — Image Prompt */}
+        {/* STEP 3 — Smart Image Prompt */}
         {step === 3 && (
           <div>
-            <h2 className="text-xl font-bold text-white mb-1">Describe your image</h2>
-            <p className="text-[#666] text-sm mb-6">Edit the AI-suggested prompt or write your own.</p>
+            <h2 className="text-xl font-bold text-white mb-1">Image prompt</h2>
+            <p className="text-[#666] text-sm mb-6">Smart-built from your topic, idea, and brand assets.</p>
 
             {loadingPrompt ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="w-6 h-6 animate-spin text-[#14EAEA]" />
-                <span className="ml-3 text-[#666]">Generating prompt...</span>
+                <span className="ml-3 text-[#666]">Building smart prompt...</span>
               </div>
             ) : (
               <>
+                {/* Editable prompt */}
                 <textarea
                   value={imagePrompt}
                   onChange={(e) => setImagePrompt(e.target.value)}
@@ -384,22 +509,128 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
                   className="w-full bg-[#141414] border border-[#333] rounded-xl px-4 py-3 text-white text-sm placeholder-[#555] focus:border-[#14EAEA] focus:outline-none transition-colors resize-none mb-4"
                 />
 
-                <div>
-                  <label className="text-[#888] text-xs font-medium block mb-2">Image Provider</label>
-                  <select
-                    value={selectedModel}
-                    onChange={(e) => setSelectedModel(e.target.value)}
-                    className="w-full bg-[#141414] border border-[#333] rounded-xl px-4 py-3 text-white text-sm focus:border-[#14EAEA] focus:outline-none transition-colors"
-                  >
-                    {imageProviders.map((prov) =>
-                      prov.models.map((m) => (
-                        <option key={`${m.provider}:${m.id}`} value={`${m.provider}:${m.id}`}>
-                          {prov.label} — {m.label} ({m.cost})
-                        </option>
-                      ))
-                    )}
-                  </select>
+                {/* Brand assets toggle */}
+                {brandAssets.length > 0 && (
+                  <div className="mb-4">
+                    <label className="text-[#888] text-xs font-medium block mb-2">
+                      Brand Assets as References
+                    </label>
+                    <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                      {brandAssets.map((asset) => {
+                        const enabled = enabledAssetIds.has(asset.id)
+                        return (
+                          <button
+                            key={asset.id}
+                            onClick={() => toggleAsset(asset.id)}
+                            className={`relative rounded-lg overflow-hidden border-2 transition-all ${
+                              enabled
+                                ? 'border-[#14EAEA] ring-1 ring-[#14EAEA]/30'
+                                : 'border-[#333] opacity-50'
+                            }`}
+                            style={{ paddingBottom: '100%' }}
+                          >
+                            <Image
+                              src={asset.filepath}
+                              alt={asset.altText || asset.filename}
+                              fill
+                              className="object-cover"
+                              sizes="80px"
+                            />
+                            <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[8px] px-1 py-0.5 truncate flex items-center gap-0.5">
+                              <Tag className="w-2 h-2 text-[#14EAEA]" />
+                              <span className="text-[#14EAEA]">{asset.assetType}</span>
+                            </span>
+                            {enabled && (
+                              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#14EAEA] flex items-center justify-center">
+                                <Check className="w-2.5 h-2.5 text-[#0A0A0A]" />
+                              </span>
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Reference URL previews */}
+                {referenceUrls.length > 0 && (
+                  <div className="mb-4 p-3 bg-[#141414] border border-[#282828] rounded-lg">
+                    <p className="text-[#888] text-xs mb-2">Reference images that will be sent to the model:</p>
+                    <div className="flex gap-2">
+                      {referenceUrls.map((url, i) => (
+                        <div key={i} className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#0A0A0A] border border-[#333]">
+                          <Image src={url} alt={`Ref ${i + 1}`} fill className="object-cover" sizes="48px" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Model picker */}
+                <div className="mb-4">
+                  <label className="text-[#888] text-xs font-medium block mb-2">Image Model</label>
+                  <div className="space-y-2">
+                    {imageProviders.map((group) => (
+                      <div key={group.provider}>
+                        <p className="text-[#555] text-[10px] uppercase tracking-wider mb-1">{group.label}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {group.models.map((m) => {
+                            const isActive = selectedProvider === m.provider && selectedModelId === m.id
+                            const CostIcon = COST_TIER_ICONS[m.cost] || Star
+                            return (
+                              <button
+                                key={`${m.provider}-${m.id}`}
+                                onClick={() => {
+                                  setSelectedProvider(m.provider)
+                                  setSelectedModelId(m.id)
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-xs border transition-all flex items-center gap-1.5 ${
+                                  isActive
+                                    ? 'border-[#F813BE] bg-[#F813BE]/10 text-white'
+                                    : 'border-[#333] bg-[#141414] text-[#888] hover:border-[#444] hover:text-white'
+                                }`}
+                              >
+                                <CostIcon className="w-3 h-3" />
+                                {m.label}
+                                {m.supportsReference && (
+                                  <span className="text-[8px] bg-[#14EAEA]/20 text-[#14EAEA] px-1 py-0.5 rounded-full">REF</span>
+                                )}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Aspect ratio */}
+                <div className="mb-4">
+                  <label className="text-[#888] text-xs font-medium block mb-2">Aspect Ratio</label>
+                  <div className="flex gap-2">
+                    {ASPECT_RATIOS.map((r) => (
+                      <button
+                        key={r.value}
+                        onClick={() => setAspectRatio(r.value)}
+                        className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
+                          aspectRatio === r.value
+                            ? 'bg-[#14EAEA]/20 text-[#14EAEA] border border-[#14EAEA]'
+                            : 'bg-[#141414] border border-[#333] text-[#888] hover:border-[#444]'
+                        }`}
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Rebuild prompt button */}
+                <button
+                  onClick={() => { setImagePrompt(''); buildSmartPrompt() }}
+                  className="flex items-center gap-1.5 text-xs text-[#14EAEA] hover:text-white transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> Rebuild Prompt
+                </button>
               </>
             )}
           </div>
@@ -415,6 +646,9 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
               <div className="flex flex-col items-center justify-center py-16">
                 <Loader2 className="w-8 h-8 animate-spin text-[#F813BE] mb-3" />
                 <span className="text-[#666] text-sm">Generating image...</span>
+                <span className="text-[#555] text-xs mt-1">
+                  Using {currentModel?.label || selectedModelId}
+                </span>
               </div>
             ) : generatedImage ? (
               <div>
