@@ -68,9 +68,9 @@ const GROUPS: GroupDef[] = [
     color: '#B9FF33',
     fields: [
       { key: 'ANTHROPIC_API_KEY', label: 'Anthropic Claude API Key', type: 'password', hint: 'Primary AI for content & emails' },
-      { key: 'OPENAI_API_KEY', label: 'OpenAI API Key', type: 'password', hint: 'GPT + Whisper' },
-      { key: 'GOOGLE_GEMINI_API_KEY', label: 'Google Gemini API Key', type: 'password', hint: 'Imagen 4 image generation' },
-      { key: 'GROK_API_KEY', label: 'Grok API Key by xAI', type: 'password', hint: 'Alternative LLM' },
+      { key: 'OPENAI_API_KEY', label: 'OpenAI API Key', type: 'password', hint: 'GPT + DALL-E image generation' },
+      { key: 'GOOGLE_AI_API_KEY', label: 'Google AI / Gemini API Key', type: 'password', hint: 'Gemini text + Imagen image generation' },
+      { key: 'XAI_API_KEY', label: 'xAI / Grok API Key', type: 'password', hint: 'Grok text + image generation' },
       { key: 'TOGETHER_AI_API_KEY', label: 'Together AI API Key', type: 'password', hint: 'FLUX image generation' },
     ],
   },

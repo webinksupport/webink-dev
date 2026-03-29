@@ -37,7 +37,7 @@ interface TextProviderGroup {
   models: TextModel[]
 }
 
-const IMAGE_MODELS: Record<string, { key: string; label: string; models: ImageModel[] }> = {
+const IMAGE_MODELS: Record<string, { key: string; altKeys?: string[]; label: string; models: ImageModel[] }> = {
   together: {
     key: 'TOGETHER_AI_API_KEY',
     label: 'Together AI (FLUX)',
@@ -49,7 +49,8 @@ const IMAGE_MODELS: Record<string, { key: string; label: string; models: ImageMo
   },
   google: {
     key: 'GOOGLE_AI_API_KEY',
-    label: 'Google',
+    altKeys: ['GOOGLE_GEMINI_API_KEY'],
+    label: 'Google (Imagen)',
     models: [
       { id: 'imagen4_fast', provider: 'google', label: 'Imagen 4 Fast', desc: 'Best value', cost: '$0.02/img' },
       { id: 'imagen4', provider: 'google', label: 'Imagen 4 Standard', desc: 'High quality', cost: '$0.04/img' },
@@ -65,7 +66,8 @@ const IMAGE_MODELS: Record<string, { key: string; label: string; models: ImageMo
   },
   xai: {
     key: 'XAI_API_KEY',
-    label: 'xAI',
+    altKeys: ['GROK_API_KEY'],
+    label: 'xAI (Grok)',
     models: [
       { id: 'grok-imagine', provider: 'xai', label: 'Grok Imagine', desc: 'Best value', cost: '$0.02/img' },
       { id: 'grok-imagine-pro', provider: 'xai', label: 'Grok Imagine Pro', desc: 'High quality', cost: '$0.07/img' },
@@ -73,7 +75,7 @@ const IMAGE_MODELS: Record<string, { key: string; label: string; models: ImageMo
   },
 }
 
-const TEXT_MODELS: Record<string, { key: string; label: string; models: TextModel[] }> = {
+const TEXT_MODELS: Record<string, { key: string; altKeys?: string[]; label: string; models: TextModel[] }> = {
   anthropic: {
     key: 'ANTHROPIC_API_KEY',
     label: 'Anthropic',
@@ -83,6 +85,7 @@ const TEXT_MODELS: Record<string, { key: string; label: string; models: TextMode
   },
   google: {
     key: 'GOOGLE_AI_API_KEY',
+    altKeys: ['GOOGLE_GEMINI_API_KEY'],
     label: 'Google',
     models: [
       { id: 'gemini-pro', provider: 'google', label: 'Gemini Pro', desc: 'Creative' },
@@ -95,23 +98,42 @@ const TEXT_MODELS: Record<string, { key: string; label: string; models: TextMode
       { id: 'gpt-4o', provider: 'openai', label: 'GPT-4o', desc: 'Versatile' },
     ],
   },
+  xai: {
+    key: 'XAI_API_KEY',
+    altKeys: ['GROK_API_KEY'],
+    label: 'xAI',
+    models: [
+      { id: 'grok-3', provider: 'xai', label: 'Grok 3', desc: 'Powerful' },
+      { id: 'grok-3-mini', provider: 'xai', label: 'Grok 3 Mini', desc: 'Fast' },
+    ],
+  },
 }
 
 export async function GET() {
   const session = await requireAdmin()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const keys = await getSettings([
-    'TOGETHER_AI_API_KEY',
-    'GOOGLE_AI_API_KEY',
-    'OPENAI_API_KEY',
-    'XAI_API_KEY',
-    'ANTHROPIC_API_KEY',
-  ])
+  // Collect all possible key names (primary + alternates)
+  const allKeyNames = new Set<string>()
+  for (const config of Object.values(IMAGE_MODELS)) {
+    allKeyNames.add(config.key)
+    config.altKeys?.forEach((k) => allKeyNames.add(k))
+  }
+  for (const config of Object.values(TEXT_MODELS)) {
+    allKeyNames.add(config.key)
+    config.altKeys?.forEach((k) => allKeyNames.add(k))
+  }
+
+  const keys = await getSettings(Array.from(allKeyNames))
+
+  function hasKey(config: { key: string; altKeys?: string[] }): boolean {
+    if (keys[config.key]) return true
+    return config.altKeys?.some((k) => keys[k]) ?? false
+  }
 
   const imageProviders: ProviderGroup[] = []
   for (const [provider, config] of Object.entries(IMAGE_MODELS)) {
-    if (keys[config.key]) {
+    if (hasKey(config)) {
       imageProviders.push({
         provider,
         label: config.label,
@@ -122,7 +144,7 @@ export async function GET() {
 
   const textProviders: TextProviderGroup[] = []
   for (const [provider, config] of Object.entries(TEXT_MODELS)) {
-    if (keys[config.key]) {
+    if (hasKey(config)) {
       textProviders.push({
         provider,
         label: config.label,

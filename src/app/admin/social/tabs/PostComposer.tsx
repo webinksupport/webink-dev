@@ -4,10 +4,11 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   PenSquare, Sparkles, Calendar,
   Save, Send, Hash, X, Plus, Upload, Loader2, CheckCircle, AlertCircle,
-  Eye, EyeOff, TrendingUp, Zap, FlaskConical, Type, ImageIcon,
+  Eye, EyeOff, TrendingUp, Zap, FlaskConical, Type, ImageIcon, Bot,
 } from 'lucide-react'
 
 import Image from 'next/image'
+import { useAvailableModels } from '@/hooks/useAvailableModels'
 
 // Social platform SVG icons (not in lucide-react v1)
 function FacebookIcon({ className = '' }: { className?: string }) {
@@ -96,6 +97,10 @@ export default function PostComposer({ initialDraft }: Props) {
   const [scheduledAtB, setScheduledAtB] = useState('')
   const [savingAB, setSavingAB] = useState(false)
   const [abSaved, setAbSaved] = useState(false)
+
+  // Text model selector
+  const { textProviders } = useAvailableModels()
+  const [selectedTextModel, setSelectedTextModel] = useState('')
 
   // Post Performance Scoring
   const [scoreData, setScoreData] = useState<{
@@ -598,6 +603,22 @@ export default function PostComposer({ initialDraft }: Props) {
                   <option value="bold">Bold</option>
                   <option value="educational">Educational</option>
                 </select>
+                {textProviders.length > 1 && (
+                  <select
+                    value={selectedTextModel}
+                    onChange={(e) => setSelectedTextModel(e.target.value)}
+                    className="text-xs bg-[#1A1A1A] border border-[#333] rounded px-2 py-1 text-[#666] focus:outline-none"
+                    title="AI Model"
+                  >
+                    {textProviders.map((group) =>
+                      group.models.map((m) => (
+                        <option key={`${m.provider}/${m.id}`} value={`${m.provider}/${m.id}`}>
+                          {m.label}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                )}
                 <button
                   onClick={improveCaption}
                   disabled={improvingCaption || !caption.trim()}

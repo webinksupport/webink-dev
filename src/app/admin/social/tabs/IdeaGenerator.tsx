@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   Lightbulb, Sparkles, Save, Trash2, ArrowRight, BookmarkCheck,
-  Calendar, Plus, X, Layers, Bot,
+  Calendar, Plus, X, Layers, Bot, TrendingUp, Loader2,
 } from 'lucide-react'
 import { useAvailableModels } from '@/hooks/useAvailableModels'
 
@@ -59,6 +59,10 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
   const [selectedTextModel, setSelectedTextModel] = useState('')
   const { textProviders } = useAvailableModels()
 
+  // Trending topics
+  const [researchingTrends, setResearchingTrends] = useState(false)
+  const [trendingSuggestions, setTrendingSuggestions] = useState<{ topic: string; why: string; angle: string }[]>([])
+
   // Content pillars
   const [pillars, setPillars] = useState<ContentPillar[]>([])
   const [showPillarForm, setShowPillarForm] = useState(false)
@@ -108,6 +112,28 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
       body: JSON.stringify({ id }),
     })
     fetchPillars()
+  }
+
+  async function researchTrends() {
+    setResearchingTrends(true)
+    setTrendingSuggestions([])
+    try {
+      const res = await fetch('/api/social/trending-topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          niche: topic || category || undefined,
+          model: selectedTextModel || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (data.topics) setTrendingSuggestions(data.topics)
+      else setError(data.error || 'Failed to research trends')
+    } catch {
+      setError('Failed to research trends')
+    } finally {
+      setResearchingTrends(false)
+    }
   }
 
   async function generate() {
@@ -284,7 +310,17 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <div>
-            <label className="text-xs text-[#666] block mb-1.5">Topic or Theme</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs text-[#666]">Topic or Theme</label>
+              <button
+                onClick={researchTrends}
+                disabled={researchingTrends}
+                className="flex items-center gap-1 text-xs text-[#14EAEA] hover:text-white bg-[#14EAEA]/10 hover:bg-[#14EAEA]/20 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {researchingTrends ? <Loader2 className="w-3 h-3 animate-spin" /> : <TrendingUp className="w-3 h-3" />}
+                {researchingTrends ? 'Researching...' : 'Research Trends'}
+              </button>
+            </div>
             <input
               type="text"
               value={topic}
@@ -332,6 +368,26 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
             </label>
           </div>
         </div>
+
+        {/* Trending Topics Suggestions */}
+        {trendingSuggestions.length > 0 && (
+          <div className="mb-4 p-3 bg-[#0A0A0A] border border-[#14EAEA]/20 rounded-lg">
+            <p className="text-[#14EAEA] text-xs font-medium uppercase tracking-wider mb-2">Trending Topics</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {trendingSuggestions.map((t, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setTopic(t.topic); setTrendingSuggestions([]) }}
+                  className="text-left p-2.5 bg-[#1A1A1A] border border-[#333] rounded-lg hover:border-[#14EAEA] transition-colors"
+                >
+                  <p className="text-white text-sm font-medium mb-1">{t.topic}</p>
+                  <p className="text-[#666] text-xs mb-1">{t.why}</p>
+                  <p className="text-[#14EAEA] text-xs">{t.angle}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Text Model Selector */}
         {textProviders.length > 0 && (

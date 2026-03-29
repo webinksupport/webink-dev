@@ -13,14 +13,16 @@ async function requireAdmin() {
 }
 
 async function saveImageToDisk(imageData: Buffer, prompt: string): Promise<{ publicPath: string; filename: string }> {
-  const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'social')
+  // Save to /app/uploads/ (persistent Docker volume) — NOT public/ which is ephemeral
+  const uploadsDir = path.join('/app', 'uploads', 'social')
   await mkdir(uploadsDir, { recursive: true })
 
   const filename = `social-${Date.now()}.png`
   const filepath = path.join(uploadsDir, filename)
   await writeFile(filepath, imageData)
 
-  const publicPath = `/uploads/social/${filename}`
+  // Serve via the /api/uploads/ dynamic route (reads from /app/uploads/)
+  const publicPath = `/api/uploads/social/${filename}`
 
   // Save to media library
   try {
@@ -104,12 +106,14 @@ async function generateTogetherAI(prompt: string, model: string, referenceImageU
 
 // ─── Google Gemini Imagen ─────────────────────────────────────────────────────
 
-async function generateGeminiImagen(prompt: string) {
-  const apiKey = await getSetting('GOOGLE_AI_API_KEY') || process.env.GOOGLE_AI_API_KEY
-  if (!apiKey) throw new Error('Google AI API key not configured. Add GOOGLE_AI_API_KEY in Admin → Integrations.')
+async function generateGeminiImagen(prompt: string, model?: string) {
+  const apiKey = await getSetting('GOOGLE_AI_API_KEY') || await getSetting('GOOGLE_GEMINI_API_KEY') || process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY
+  if (!apiKey) throw new Error('Google AI API key not configured. Add it in Admin → Integrations or set GEMINI_API_KEY env var.')
+
+  const imagenModel = model === 'imagen4' ? 'imagen-3.0-generate-002' : 'imagen-3.0-generate-001'
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${imagenModel}:predict?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -172,9 +176,9 @@ async function generateDallE3(prompt: string) {
 
 // ─── xAI Grok Aurora ──────────────────────────────────────────────────────────
 
-async function generateGrokAurora(prompt: string) {
-  const apiKey = await getSetting('XAI_API_KEY') || process.env.XAI_API_KEY
-  if (!apiKey) throw new Error('xAI API key not configured. Add XAI_API_KEY in Admin → Integrations.')
+async function generateGrokAurora(prompt: string, model?: string) {
+  const apiKey = await getSetting('XAI_API_KEY') || await getSetting('GROK_API_KEY') || process.env.XAI_API_KEY
+  if (!apiKey) throw new Error('xAI API key not configured. Add it in Admin → Integrations or set XAI_API_KEY env var.')
 
   const response = await fetch('https://api.x.ai/v1/images/generations', {
     method: 'POST',
@@ -183,7 +187,7 @@ async function generateGrokAurora(prompt: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'aurora',
+      model: model === 'grok-imagine-pro' ? 'grok-2-image' : 'grok-2-image',
       prompt,
       n: 1,
       size: '1024x1792',
@@ -224,13 +228,14 @@ export async function POST(req: NextRequest) {
         imageBuffer = await generateTogetherAI(prompt, model, referenceImageUrl)
         break
       case 'gemini':
-        imageBuffer = await generateGeminiImagen(prompt)
+      case 'google':
+        imageBuffer = await generateGeminiImagen(prompt, model)
         break
       case 'openai':
         imageBuffer = await generateDallE3(prompt)
         break
       case 'xai':
-        imageBuffer = await generateGrokAurora(prompt)
+        imageBuffer = await generateGrokAurora(prompt, model)
         break
       default:
         imageBuffer = await generateTogetherAI(prompt, model)

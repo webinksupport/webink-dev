@@ -2,6 +2,7 @@
 const nextConfig = {
   output: 'standalone',
   images: {
+    unoptimized: true,
     formats: ['image/webp'],
     minimumCacheTTL: 60,
     deviceSizes: [640, 750, 1080, 1200, 1920],

@@ -43,6 +43,8 @@ export async function callAiProvider(
         return await callGoogle(apiKey, model, prompt, systemPrompt, maxTokens, temperature)
       case "PERPLEXITY":
         return await callPerplexity(apiKey, model, prompt, systemPrompt, maxTokens, temperature)
+      case "XAI":
+        return await callXAI(apiKey, model, prompt, systemPrompt, maxTokens, temperature)
       default:
         return {
           text: "",
@@ -302,6 +304,45 @@ async function callPerplexity(
     inputTokens,
     outputTokens,
     estimatedCost: estimateCost("PERPLEXITY", model, inputTokens, outputTokens),
+    success: true,
+  }
+}
+
+async function callXAI(
+  apiKey: string,
+  model: string,
+  prompt: string,
+  systemPrompt?: string,
+  maxTokens: number = 2000,
+  temperature: number = 0.7
+): Promise<AiResponse> {
+  const messages = []
+  if (systemPrompt) messages.push({ role: "system", content: systemPrompt })
+  messages.push({ role: "user", content: prompt })
+
+  const res = await fetch("https://api.x.ai/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature }),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error?.message || `xAI API error: ${res.status}`)
+  }
+
+  const data = await res.json()
+  const text = data.choices?.[0]?.message?.content || ""
+  const inputTokens = data.usage?.prompt_tokens || 0
+  const outputTokens = data.usage?.completion_tokens || 0
+
+  return {
+    text,
+    provider: "XAI",
+    model,
+    inputTokens,
+    outputTokens,
+    estimatedCost: 0,
     success: true,
   }
 }

@@ -1,6 +1,6 @@
 // AI Provider configuration and model lists
 
-export type ProviderSlug = "OPENAI" | "ANTHROPIC" | "GOOGLE" | "PERPLEXITY" | "STABILITY"
+export type ProviderSlug = "OPENAI" | "ANTHROPIC" | "GOOGLE" | "PERPLEXITY" | "STABILITY" | "XAI"
 
 export interface ProviderConfig {
   slug: ProviderSlug
@@ -87,6 +87,20 @@ export const PROVIDERS: Record<ProviderSlug, ProviderConfig> = {
     keyPrefix: "sk-",
     models: [
       { id: "stable-diffusion-3", name: "Stable Diffusion 3", type: "image", inputCostPer1M: 0, outputCostPer1M: 0, imageCost: 0.03 },
+    ],
+  },
+  XAI: {
+    slug: "XAI",
+    name: "xAI (Grok)",
+    description: "Grok for text generation and image generation",
+    icon: "Zap",
+    supportsText: true,
+    supportsImages: true,
+    keyPrefix: "xai-",
+    models: [
+      { id: "grok-3", name: "Grok 3", type: "text", inputCostPer1M: 3, outputCostPer1M: 15 },
+      { id: "grok-3-mini-fast", name: "Grok 3 Mini Fast", type: "text", inputCostPer1M: 0.3, outputCostPer1M: 0.5 },
+      { id: "grok-2-image", name: "Grok 2 Image", type: "image", inputCostPer1M: 0, outputCostPer1M: 0, imageCost: 0.02 },
     ],
   },
 }

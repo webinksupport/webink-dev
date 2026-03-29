@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Wand2, Download, ArrowRight, Loader2, ImageIcon, Info, Upload, X, FolderOpen, AlertCircle } from 'lucide-react'
+import { Wand2, Download, ArrowRight, Loader2, ImageIcon, Info, Upload, X, FolderOpen, AlertCircle, Sparkles } from 'lucide-react'
 import Image from 'next/image'
 import { useAvailableModels } from '@/hooks/useAvailableModels'
 
@@ -37,6 +37,7 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
   const [referenceImage, setReferenceImage] = useState<string | null>(null)
   const [showAssetPicker, setShowAssetPicker] = useState(false)
   const [brandAssets, setBrandAssets] = useState<BrandAsset[]>([])
+  const [suggestingPrompt, setSuggestingPrompt] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { imageProviders, hasAnyImageKey, loading: modelsLoading } = useAvailableModels()
@@ -84,6 +85,24 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
     if (data.results?.[0]?.path) {
       const siteUrl = window.location.origin
       setReferenceImage(`${siteUrl}${data.results[0].path}`)
+    }
+  }
+
+  async function suggestPrompt() {
+    setSuggestingPrompt(true)
+    try {
+      const res = await fetch('/api/social/suggest-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context: prompt || undefined }),
+      })
+      const data = await res.json()
+      if (data.prompt) setPrompt(data.prompt)
+      else setError(data.error || 'Failed to suggest prompt')
+    } catch {
+      setError('Failed to suggest prompt')
+    } finally {
+      setSuggestingPrompt(false)
     }
   }
 
@@ -263,7 +282,17 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
 
         {/* Prompt Input */}
         <div className="mb-4">
-          <label className="text-xs text-[#666] block mb-1.5">Image Prompt</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs text-[#666]">Image Prompt</label>
+            <button
+              onClick={suggestPrompt}
+              disabled={suggestingPrompt}
+              className="flex items-center gap-1 text-xs text-[#14EAEA] hover:text-white bg-[#14EAEA]/10 hover:bg-[#14EAEA]/20 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {suggestingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+              {suggestingPrompt ? 'Thinking...' : 'Suggest Prompt'}
+            </button>
+          </div>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

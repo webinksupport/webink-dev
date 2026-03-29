@@ -47,6 +47,12 @@ export async function generateTextWithProviders(
     if (result.success) return result.text
   }
 
+  const xaiKey = await getSetting("XAI_API_KEY") || await getSetting("GROK_API_KEY") || process.env.XAI_API_KEY
+  if (xaiKey) {
+    const result = await callAiProvider(xaiKey, "XAI", "grok-3-mini-fast", prompt)
+    if (result.success) return result.text
+  }
+
   throw new Error("No AI API key configured. Connect a provider in Admin > Integrations, or add API keys.")
 }
 
