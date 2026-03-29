@@ -288,7 +288,7 @@ export async function getAvailableModels(
     await prisma.aiProvider.update({
       where: { id: p.id },
       data: {
-        models: models as unknown as import("@prisma/client").Prisma.InputJsonValue,
+        models: JSON.parse(JSON.stringify(models)),
         modelsRefreshed: refreshedAt,
       },
     })
