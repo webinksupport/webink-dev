@@ -2,8 +2,8 @@
 // Checks connected AiProviders first, falls back to Settings/env keys
 
 import { prisma } from "@/lib/prisma"
-import { getSetting } from "@/lib/settings"
 import { callAiProvider, decryptApiKey } from "./service"
+import { getProviderApiKey } from "./get-api-keys"
 
 // Map frontend provider slugs to backend ProviderSlug and key settings
 const PROVIDER_SLUG_MAP: Record<string, { slug: "OPENAI" | "ANTHROPIC" | "GOOGLE" | "XAI"; keys: string[] }> = {
@@ -43,12 +43,10 @@ export async function generateTextWithProviders(
         }
       }
       // Try settings/env keys for the requested provider
-      for (const keyName of mapping.keys) {
-        const key = await getSetting(keyName) || process.env[keyName]
-        if (key) {
-          const result = await callAiProvider(key, mapping.slug, requestedModelId, prompt)
-          if (result.success) return result.text
-        }
+      const fallbackKey = await getProviderApiKey(requestedProvider, userId)
+      if (fallbackKey) {
+        const result = await callAiProvider(fallbackKey, mapping.slug, requestedModelId, prompt)
+        if (result.success) return result.text
       }
     }
   }
@@ -70,10 +68,10 @@ export async function generateTextWithProviders(
     }
   }
 
-  // 3. Fallback to Settings/env keys (original behavior)
-  const googleKey = await getSetting("GOOGLE_AI_API_KEY") || await getSetting("GOOGLE_GEMINI_API_KEY") || process.env.GOOGLE_AI_API_KEY
-  const anthropicKey = await getSetting("ANTHROPIC_API_KEY") || process.env.ANTHROPIC_API_KEY
-  const openaiKey = await getSetting("OPENAI_API_KEY") || process.env.OPENAI_API_KEY
+  // 3. Fallback: check AiProvider table, Setting table, and env vars
+  const googleKey = await getProviderApiKey("google", userId)
+  const anthropicKey = await getProviderApiKey("anthropic", userId)
+  const openaiKey = await getProviderApiKey("openai", userId)
 
   if (googleKey) {
     const result = await callAiProvider(googleKey, "GOOGLE", "gemini-2.0-flash", prompt)
@@ -90,7 +88,7 @@ export async function generateTextWithProviders(
     if (result.success) return result.text
   }
 
-  const xaiKey = await getSetting("XAI_API_KEY") || await getSetting("GROK_API_KEY") || process.env.XAI_API_KEY
+  const xaiKey = await getProviderApiKey("xai", userId)
   if (xaiKey) {
     const result = await callAiProvider(xaiKey, "XAI", "grok-3-mini-fast", prompt)
     if (result.success) return result.text

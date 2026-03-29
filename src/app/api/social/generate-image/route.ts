@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getSetting } from '@/lib/settings'
+import { getProviderApiKey } from '@/lib/ai/get-api-keys'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 
@@ -52,8 +52,8 @@ async function downloadImageFromUrl(url: string): Promise<Buffer> {
 
 // ─── Together AI FLUX ─────────────────────────────────────────────────────────
 
-async function generateTogetherAI(prompt: string, model: string, referenceImageUrl?: string) {
-  const apiKey = await getSetting('TOGETHER_AI_API_KEY') || process.env.TOGETHER_API_KEY
+async function generateTogetherAI(prompt: string, model: string, referenceImageUrl?: string, adminUserId?: string) {
+  const apiKey = await getProviderApiKey('together', adminUserId)
   if (!apiKey) throw new Error('Together AI API key not configured. Add it in Admin → Integrations or set TOGETHER_API_KEY env var.')
 
   const modelMap: Record<string, string> = {
@@ -106,8 +106,8 @@ async function generateTogetherAI(prompt: string, model: string, referenceImageU
 
 // ─── Google Gemini Imagen ─────────────────────────────────────────────────────
 
-async function generateGeminiImagen(prompt: string, model?: string) {
-  const apiKey = await getSetting('GOOGLE_AI_API_KEY') || await getSetting('GOOGLE_GEMINI_API_KEY') || process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY
+async function generateGeminiImagen(prompt: string, model?: string, adminUserId?: string) {
+  const apiKey = await getProviderApiKey('google', adminUserId)
   if (!apiKey) throw new Error('Google AI API key not configured. Add it in Admin → Integrations or set GEMINI_API_KEY env var.')
 
   const imagenModel = model === 'imagen4' ? 'imagen-3.0-generate-002' : 'imagen-3.0-generate-001'
@@ -145,8 +145,8 @@ async function generateGeminiImagen(prompt: string, model?: string) {
 
 // ─── OpenAI Image Generation ─────────────────────────────────────────────────
 
-async function generateOpenAI(prompt: string, model?: string) {
-  const apiKey = await getSetting('OPENAI_API_KEY') || process.env.OPENAI_API_KEY
+async function generateOpenAI(prompt: string, model?: string, adminUserId?: string) {
+  const apiKey = await getProviderApiKey('openai', adminUserId)
   if (!apiKey) throw new Error('OpenAI API key not configured. Add OPENAI_API_KEY in Admin → Integrations.')
 
   // gpt-image-mini uses gpt-image-1 with low quality; dall-e-3 uses its own model
@@ -196,8 +196,8 @@ async function generateOpenAI(prompt: string, model?: string) {
 
 // ─── xAI Grok Aurora ──────────────────────────────────────────────────────────
 
-async function generateGrokAurora(prompt: string, model?: string) {
-  const apiKey = await getSetting('XAI_API_KEY') || await getSetting('GROK_API_KEY') || process.env.XAI_API_KEY
+async function generateGrokAurora(prompt: string, model?: string, adminUserId?: string) {
+  const apiKey = await getProviderApiKey('xai', adminUserId)
   if (!apiKey) throw new Error('xAI API key not configured. Add it in Admin → Integrations or set XAI_API_KEY env var.')
 
   const grokModel = model === 'grok-imagine-pro' ? 'grok-2-image-generation' : 'grok-2-image-generation'
@@ -240,6 +240,7 @@ export async function POST(req: NextRequest) {
   const session = await requireAdmin()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const adminUserId = (session.user as { id?: string }).id
   const body = await req.json()
   const { prompt, model = 'schnell', provider = 'together', referenceImageUrl } = body
 
@@ -252,20 +253,20 @@ export async function POST(req: NextRequest) {
 
     switch (provider) {
       case 'together':
-        imageBuffer = await generateTogetherAI(prompt, model, referenceImageUrl)
+        imageBuffer = await generateTogetherAI(prompt, model, referenceImageUrl, adminUserId)
         break
       case 'gemini':
       case 'google':
-        imageBuffer = await generateGeminiImagen(prompt, model)
+        imageBuffer = await generateGeminiImagen(prompt, model, adminUserId)
         break
       case 'openai':
-        imageBuffer = await generateOpenAI(prompt, model)
+        imageBuffer = await generateOpenAI(prompt, model, adminUserId)
         break
       case 'xai':
-        imageBuffer = await generateGrokAurora(prompt, model)
+        imageBuffer = await generateGrokAurora(prompt, model, adminUserId)
         break
       default:
-        imageBuffer = await generateTogetherAI(prompt, model)
+        imageBuffer = await generateTogetherAI(prompt, model, undefined, adminUserId)
     }
 
     const { publicPath, filename } = await saveImageToDisk(imageBuffer, prompt)

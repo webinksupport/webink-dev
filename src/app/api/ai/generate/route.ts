@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { callAiProvider, decryptApiKey } from "@/lib/ai/service"
-import { getSetting } from "@/lib/settings"
+import { getProviderApiKey } from "@/lib/ai/get-api-keys"
 import type { ProviderSlug } from "@/lib/ai/providers"
 
 async function requireAdmin() {
@@ -61,10 +61,10 @@ export async function POST(req: NextRequest) {
     // If connected provider failed, continue to fallback
   }
 
-  // 2. Fallback to env/settings keys (existing behavior)
-  const googleKey = await getSetting("GOOGLE_AI_API_KEY") || await getSetting("GOOGLE_GEMINI_API_KEY") || process.env.GOOGLE_AI_API_KEY
-  const anthropicKey = await getSetting("ANTHROPIC_API_KEY") || process.env.ANTHROPIC_API_KEY
-  const openaiKey = await getSetting("OPENAI_API_KEY") || process.env.OPENAI_API_KEY
+  // 2. Fallback: check AiProvider table, Setting table, and env vars
+  const googleKey = await getProviderApiKey("google", userId)
+  const anthropicKey = await getProviderApiKey("anthropic", userId)
+  const openaiKey = await getProviderApiKey("openai", userId)
 
   if (googleKey) {
     const result = await callAiProvider(googleKey, "GOOGLE", "gemini-2.0-flash", prompt, systemPrompt, maxTokens || 2000, temperature || 0.7)

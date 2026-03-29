@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getSettings } from '@/lib/settings'
+import { getConfiguredProviders } from '@/lib/ai/get-api-keys'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
@@ -115,27 +115,13 @@ export async function GET() {
   const session = await requireAdmin()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Collect all possible key names (primary + alternates)
-  const allKeyNames = new Set<string>()
-  for (const config of Object.values(IMAGE_MODELS)) {
-    allKeyNames.add(config.key)
-    config.altKeys?.forEach((k) => allKeyNames.add(k))
-  }
-  for (const config of Object.values(TEXT_MODELS)) {
-    allKeyNames.add(config.key)
-    config.altKeys?.forEach((k) => allKeyNames.add(k))
-  }
-
-  const keys = await getSettings(Array.from(allKeyNames))
-
-  function hasKey(config: { key: string; altKeys?: string[] }): boolean {
-    if (keys[config.key]) return true
-    return config.altKeys?.some((k) => keys[k]) ?? false
-  }
+  // Check all storage layers: AiProvider table, Setting table, and env vars
+  const adminUserId = (session.user as { id?: string }).id
+  const configured = await getConfiguredProviders(adminUserId)
 
   const imageProviders: ProviderGroup[] = []
   for (const [provider, config] of Object.entries(IMAGE_MODELS)) {
-    if (hasKey(config)) {
+    if (configured.has(provider)) {
       imageProviders.push({
         provider,
         label: config.label,
@@ -146,7 +132,7 @@ export async function GET() {
 
   const textProviders: TextProviderGroup[] = []
   for (const [provider, config] of Object.entries(TEXT_MODELS)) {
-    if (hasKey(config)) {
+    if (configured.has(provider)) {
       textProviders.push({
         provider,
         label: config.label,
