@@ -57,7 +57,7 @@ async function generateTogetherAI(prompt: string, model: string, referenceImageU
   if (!apiKey) throw new Error('Together AI API key not configured. Add it in Admin → Integrations or set TOGETHER_API_KEY env var.')
 
   const modelMap: Record<string, string> = {
-    schnell: 'black-forest-labs/FLUX.1-schnell-Free',
+    schnell: 'black-forest-labs/FLUX.1-schnell',
     schnell_paid: 'black-forest-labs/FLUX.1-schnell',
     kontext_pro: 'black-forest-labs/FLUX.1-Kontext-pro',
   }
