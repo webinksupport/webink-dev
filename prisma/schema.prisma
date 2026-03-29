@@ -27,6 +27,7 @@ model User {
   orders        Order[]
   sessions      Session[]
   accounts      Account[]
+  aiProviders   AiProvider[]
 
   @@index([email])
 }
@@ -472,4 +473,38 @@ model SocialBrandAsset {
   assetType  String   @default("Other") // Scout, Logo, Product, Background, Other
   clientName String?
   createdAt  DateTime @default(now())
+}
+
+// ─── AI Providers ──────────────────────────────────────────────────
+
+enum AiProviderSlug {
+  OPENAI
+  ANTHROPIC
+  GOOGLE
+  PERPLEXITY
+  STABILITY
+}
+
+model AiProvider {
+  id              String         @id @default(cuid())
+  userId          String
+  slug            AiProviderSlug
+  apiKey          String         @db.Text   // encrypted at rest
+  authMethod      String         @default("api_key") // "api_key" | "subscription"
+  accessToken     String?        @db.Text
+  refreshToken    String?        @db.Text
+  tokenExpiresAt  DateTime?
+  oauthEmail      String?
+  isConnected     Boolean        @default(false)
+  isDefault       Boolean        @default(false)
+  models          Json?          // cached model list
+  modelsRefreshed DateTime?
+  rateLimit       Int            @default(100) // requests per hour
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, slug])
+  @@index([userId])
 }

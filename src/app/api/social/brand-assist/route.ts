@@ -2,62 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getSetting } from '@/lib/settings'
-import Anthropic from '@anthropic-ai/sdk'
+import { generateTextWithProviders } from '@/lib/ai/generate-text'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== 'ADMIN') return null
+  if (!session || (session.user as { role: string }).role !== 'ADMIN') return null
   return session
-}
-
-// Route text generation to the selected model provider
-async function generateText(prompt: string, model?: string): Promise<string> {
-  // Parse model param: "google/gemini-pro", "openai/gpt-4o", "anthropic/claude-sonnet"
-  const [provider] = model ? model.split('/') : ['auto']
-
-  // Default: prefer Gemini if key is available, fall back to Anthropic
-  const googleKey = await getSetting('GOOGLE_AI_API_KEY') || process.env.GOOGLE_AI_API_KEY
-  const anthropicKey = await getSetting('ANTHROPIC_API_KEY') || process.env.ANTHROPIC_API_KEY
-  const openaiKey = await getSetting('OPENAI_API_KEY') || process.env.OPENAI_API_KEY
-
-  const useProvider = provider === 'auto'
-    ? (googleKey ? 'google' : anthropicKey ? 'anthropic' : 'openai')
-    : provider
-
-  if (useProvider === 'google' && googleKey) {
-    const { GoogleGenerativeAI } = await import('@google/generative-ai')
-    const genAI = new GoogleGenerativeAI(googleKey)
-    const gemini = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
-    const result = await gemini.generateContent(prompt)
-    return result.response.text()
-  }
-
-  if (useProvider === 'openai' && openaiKey) {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 2000,
-      }),
-    })
-    const data = await response.json()
-    return data.choices?.[0]?.message?.content || ''
-  }
-
-  // Anthropic (default fallback)
-  if (!anthropicKey) {
-    throw new Error('No AI API key configured. Add GOOGLE_AI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY in Admin → Integrations.')
-  }
-  const client = new Anthropic({ apiKey: anthropicKey })
-  const message = await client.messages.create({
-    model: 'claude-3-5-haiku-20241022',
-    max_tokens: 2000,
-    messages: [{ role: 'user', content: prompt }],
-  })
-  return message.content[0].type === 'text' ? message.content[0].text : ''
 }
 
 export async function POST(req: NextRequest) {
@@ -98,7 +48,7 @@ Identify 5-7 content topics or angles that competitors likely cover but we haven
 Return plain text analysis, formatted with bullet points.`
 
     try {
-      const text = await generateText(prompt, selectedModel)
+      const text = await generateTextWithProviders(prompt, (session.user as { id: string }).id, selectedModel)
       return NextResponse.json({ analysis: text })
     } catch (error) {
       console.error('Content gap analysis error:', error)
@@ -130,7 +80,7 @@ Return ONLY valid JSON:
 }`
 
     try {
-      const text = await generateText(prompt, selectedModel)
+      const text = await generateTextWithProviders(prompt, (session.user as { id: string }).id, selectedModel)
       const parsed = JSON.parse(text)
       return NextResponse.json(parsed)
     } catch (error) {
@@ -204,7 +154,7 @@ Rules:
 - Do not include any text outside the JSON`
 
   try {
-    const text = await generateText(systemPrompt, selectedModel)
+    const text = await generateTextWithProviders(systemPrompt, (session.user as { id: string }).id, selectedModel)
     const parsed = JSON.parse(text)
     return NextResponse.json(parsed)
   } catch (error) {

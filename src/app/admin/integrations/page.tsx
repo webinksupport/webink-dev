@@ -16,7 +16,9 @@ import {
   AlertTriangle,
   Check,
   Loader2,
+  Sparkles,
 } from 'lucide-react'
+import AiProviderManager from '@/components/admin/AiProviderManager'
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -262,6 +264,22 @@ export default function IntegrationsPage() {
           {toast.message}
         </div>
       )}
+
+      {/* AI Providers — Connected Accounts */}
+      <div className="bg-[#0A0A0A] border border-[#333] rounded-2xl overflow-hidden mb-8">
+        <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-[#333]">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#B9FF3315' }}>
+            <Sparkles className="w-4 h-4" style={{ color: '#B9FF33' }} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-white">AI Providers</h2>
+            <p className="text-xs text-[#666]">Connect your own AI accounts for content generation</p>
+          </div>
+        </div>
+        <div className="p-4 sm:p-6">
+          <AiProviderManager />
+        </div>
+      </div>
 
       {/* Groups */}
       <div className="space-y-8">

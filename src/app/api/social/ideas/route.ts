@@ -2,59 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getSetting } from '@/lib/settings'
-import Anthropic from '@anthropic-ai/sdk'
+import { generateTextWithProviders } from '@/lib/ai/generate-text'
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== 'ADMIN') return null
+  if (!session || (session.user as { role: string }).role !== 'ADMIN') return null
   return session
-}
-
-// Route text generation to the selected model provider
-async function generateText(prompt: string, model?: string): Promise<string> {
-  const [provider] = model ? model.split('/') : ['auto']
-
-  const googleKey = await getSetting('GOOGLE_AI_API_KEY') || process.env.GOOGLE_AI_API_KEY
-  const anthropicKey = await getSetting('ANTHROPIC_API_KEY') || process.env.ANTHROPIC_API_KEY
-  const openaiKey = await getSetting('OPENAI_API_KEY') || process.env.OPENAI_API_KEY
-
-  const useProvider = provider === 'auto'
-    ? (googleKey ? 'google' : anthropicKey ? 'anthropic' : 'openai')
-    : provider
-
-  if (useProvider === 'google' && googleKey) {
-    const { GoogleGenerativeAI } = await import('@google/generative-ai')
-    const genAI = new GoogleGenerativeAI(googleKey)
-    const gemini = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
-    const result = await gemini.generateContent(prompt)
-    return result.response.text()
-  }
-
-  if (useProvider === 'openai' && openaiKey) {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 3000,
-      }),
-    })
-    const data = await response.json()
-    return data.choices?.[0]?.message?.content || ''
-  }
-
-  if (!anthropicKey) {
-    throw new Error('No AI API key configured. Add GOOGLE_AI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY in Admin → Integrations.')
-  }
-  const client = new Anthropic({ apiKey: anthropicKey })
-  const message = await client.messages.create({
-    model: 'claude-3-5-haiku-20241022',
-    max_tokens: 3000,
-    messages: [{ role: 'user', content: prompt }],
-  })
-  return message.content[0].type === 'text' ? message.content[0].text : ''
 }
 
 // GET — list saved ideas
@@ -160,7 +113,8 @@ Return ONLY valid JSON in this exact format:
 Do not include any text outside the JSON.`
 
   try {
-    const text = await generateText(prompt, selectedModel)
+    const userId = (session.user as { id: string }).id
+    const text = await generateTextWithProviders(prompt, userId, selectedModel)
     const parsed = JSON.parse(text)
     return NextResponse.json({ ideas: parsed.ideas, topic, brandVoice, category })
   } catch (error) {
