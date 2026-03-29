@@ -11,6 +11,52 @@ async function requireAdmin() {
   return session
 }
 
+// Route text generation to the selected model provider
+async function generateText(prompt: string, model?: string): Promise<string> {
+  const [provider] = model ? model.split('/') : ['auto']
+
+  const googleKey = await getSetting('GOOGLE_AI_API_KEY') || process.env.GOOGLE_AI_API_KEY
+  const anthropicKey = await getSetting('ANTHROPIC_API_KEY') || process.env.ANTHROPIC_API_KEY
+  const openaiKey = await getSetting('OPENAI_API_KEY') || process.env.OPENAI_API_KEY
+
+  const useProvider = provider === 'auto'
+    ? (googleKey ? 'google' : anthropicKey ? 'anthropic' : 'openai')
+    : provider
+
+  if (useProvider === 'google' && googleKey) {
+    const { GoogleGenerativeAI } = await import('@google/generative-ai')
+    const genAI = new GoogleGenerativeAI(googleKey)
+    const gemini = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+    const result = await gemini.generateContent(prompt)
+    return result.response.text()
+  }
+
+  if (useProvider === 'openai' && openaiKey) {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 3000,
+      }),
+    })
+    const data = await response.json()
+    return data.choices?.[0]?.message?.content || ''
+  }
+
+  if (!anthropicKey) {
+    throw new Error('No AI API key configured. Add GOOGLE_AI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY in Admin → Integrations.')
+  }
+  const client = new Anthropic({ apiKey: anthropicKey })
+  const message = await client.messages.create({
+    model: 'claude-3-5-haiku-20241022',
+    max_tokens: 3000,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  return message.content[0].type === 'text' ? message.content[0].text : ''
+}
+
 // GET — list saved ideas
 export async function GET() {
   const session = await requireAdmin()
@@ -56,7 +102,6 @@ export async function POST(req: NextRequest) {
         scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
       },
     })
-    // Mark the source idea as used if id provided
     if (body.ideaId) {
       await prisma.socialIdea.update({
         where: { id: body.ideaId },
@@ -66,16 +111,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(post)
   }
 
-  // Generate ideas with Claude
-  const { topic, brandVoice = 'professional', category, contentPillar, bulkGenerate } = body
+  // Generate ideas
+  const { topic, brandVoice = 'professional', category, contentPillar, bulkGenerate, model: selectedModel } = body
 
   if (!topic) {
     return NextResponse.json({ error: 'topic is required' }, { status: 400 })
-  }
-
-  const apiKey = await getSetting('ANTHROPIC_API_KEY') || process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Anthropic API key not configured. Add it in Admin → Integrations or set ANTHROPIC_API_KEY env var.' }, { status: 500 })
   }
 
   const brandVoiceDescriptions: Record<string, string> = {
@@ -120,19 +160,11 @@ Return ONLY valid JSON in this exact format:
 Do not include any text outside the JSON.`
 
   try {
-    const client = new Anthropic({ apiKey })
-    const message = await client.messages.create({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 3000,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const text = message.content[0].type === 'text' ? message.content[0].text : ''
+    const text = await generateText(prompt, selectedModel)
     const parsed = JSON.parse(text)
-
     return NextResponse.json({ ideas: parsed.ideas, topic, brandVoice, category })
   } catch (error) {
-    console.error('Claude idea generation error:', error)
+    console.error('Idea generation error:', error)
     return NextResponse.json({ error: 'Failed to generate ideas' }, { status: 500 })
   }
 }

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Wand2, Download, ArrowRight, Loader2, ImageIcon, Info, Upload, X } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Wand2, Download, ArrowRight, Loader2, ImageIcon, Info, Upload, X, FolderOpen, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
+import { useAvailableModels } from '@/hooks/useAvailableModels'
 
 interface GeneratedImage {
   url: string
@@ -12,67 +13,65 @@ interface GeneratedImage {
   timestamp: number
 }
 
+interface BrandAsset {
+  id: string
+  filename: string
+  filepath: string
+  altText: string | null
+  assetType: string
+  clientName: string | null
+}
+
 interface Props {
   onUseImage: (path: string) => void
   initialPrompt?: string
 }
 
-type Provider = 'together' | 'gemini' | 'openai' | 'xai'
-
-interface ModelOption {
-  id: string
-  provider: Provider
-  label: string
-  desc: string
-  cost: string
-}
-
-const MODELS: { provider: Provider; label: string; models: ModelOption[] }[] = [
-  {
-    provider: 'together',
-    label: 'Together AI (FLUX)',
-    models: [
-      { id: 'schnell', provider: 'together', label: 'FLUX.1 Schnell Free', desc: 'Fast drafts, ~4 steps', cost: 'Free' },
-      { id: 'schnell_paid', provider: 'together', label: 'FLUX.1 Schnell Pro', desc: 'Faster, higher priority', cost: '$0.003/img' },
-      { id: 'kontext_pro', provider: 'together', label: 'FLUX.1 Kontext Pro', desc: 'Branded/reference images', cost: '$0.04/img' },
-    ],
-  },
-  {
-    provider: 'gemini',
-    label: 'Google Gemini',
-    models: [
-      { id: 'imagen3', provider: 'gemini', label: 'Imagen 3.0', desc: 'High quality, photorealistic', cost: '$0.04/img' },
-    ],
-  },
-  {
-    provider: 'openai',
-    label: 'OpenAI',
-    models: [
-      { id: 'dall-e-3', provider: 'openai', label: 'DALL-E 3', desc: 'Creative, artistic styles', cost: '$0.04/img' },
-    ],
-  },
-  {
-    provider: 'xai',
-    label: 'xAI Grok',
-    models: [
-      { id: 'aurora', provider: 'xai', label: 'Aurora', desc: 'Photorealistic generation', cost: '$0.01/img' },
-    ],
-  },
-]
-
 export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
   const [prompt, setPrompt] = useState(initialPrompt || '')
-  const [selectedProvider, setSelectedProvider] = useState<Provider>('together')
-  const [selectedModel, setSelectedModel] = useState('schnell')
+  const [selectedProvider, setSelectedProvider] = useState('')
+  const [selectedModel, setSelectedModel] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [gallery, setGallery] = useState<GeneratedImage[]>([])
   const [referenceImage, setReferenceImage] = useState<string | null>(null)
+  const [showAssetPicker, setShowAssetPicker] = useState(false)
+  const [brandAssets, setBrandAssets] = useState<BrandAsset[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  function selectModel(model: ModelOption) {
-    setSelectedProvider(model.provider)
-    setSelectedModel(model.id)
+  const { imageProviders, hasAnyImageKey, loading: modelsLoading } = useAvailableModels()
+
+  // Auto-select first available model
+  useEffect(() => {
+    if (imageProviders.length > 0 && !selectedModel) {
+      const first = imageProviders[0].models[0]
+      if (first) {
+        setSelectedProvider(first.provider)
+        setSelectedModel(first.id)
+      }
+    }
+  }, [imageProviders, selectedModel])
+
+  useEffect(() => {
+    fetchBrandAssets()
+  }, [])
+
+  async function fetchBrandAssets() {
+    try {
+      const res = await fetch('/api/social/brand-assets')
+      if (res.ok) setBrandAssets(await res.json())
+    } catch { /* silent */ }
+  }
+
+  function selectModel(provider: string, id: string) {
+    setSelectedProvider(provider)
+    setSelectedModel(id)
+  }
+
+  function selectBrandAsset(asset: BrandAsset) {
+    const siteUrl = window.location.origin
+    setReferenceImage(`${siteUrl}${asset.filepath}`)
+    setShowAssetPicker(false)
   }
 
   async function handleReferenceUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -82,9 +81,9 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
     formData.append('file', file)
     const res = await fetch('/api/media/upload', { method: 'POST', body: formData })
     const data = await res.json()
-    if (data.path) {
+    if (data.results?.[0]?.path) {
       const siteUrl = window.location.origin
-      setReferenceImage(`${siteUrl}${data.path}`)
+      setReferenceImage(`${siteUrl}${data.results[0].path}`)
     }
   }
 
@@ -101,7 +100,7 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
           prompt,
           model: selectedModel,
           provider: selectedProvider,
-          referenceImageUrl: selectedModel === 'kontext_pro' ? referenceImage : undefined,
+          referenceImageUrl: referenceImage || undefined,
         }),
       })
       const data = await res.json()
@@ -128,7 +127,31 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
     a.click()
   }
 
-  const isKontext = selectedModel === 'kontext_pro'
+  const currentModelSupportsRef = imageProviders
+    .flatMap((g) => g.models)
+    .find((m) => m.id === selectedModel && m.provider === selectedProvider)
+    ?.supportsReference
+
+  if (modelsLoading) {
+    return (
+      <div className="flex items-center justify-center py-16 text-[#666]">
+        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+        Loading available models...
+      </div>
+    )
+  }
+
+  if (!hasAnyImageKey) {
+    return (
+      <div className="bg-[#141414] border border-[#222] rounded-xl p-8 text-center">
+        <AlertCircle className="w-10 h-10 text-[#F813BE] mx-auto mb-3" />
+        <h3 className="text-white font-semibold mb-2">No Image API Keys Configured</h3>
+        <p className="text-[#888] text-sm mb-4">
+          Add at least one API key (Together AI, Google AI, OpenAI, or xAI) in Admin &rarr; Integrations to enable image generation.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -140,9 +163,9 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
           <span className="text-xs text-[#555] ml-auto">1080x1350px (Instagram 4:5)</span>
         </div>
 
-        {/* Provider/Model Selector */}
+        {/* Dynamic Provider/Model Selector */}
         <div className="space-y-4 mb-5">
-          {MODELS.map((group) => (
+          {imageProviders.map((group) => (
             <div key={group.provider}>
               <p className="text-[#666] text-xs font-medium uppercase tracking-wider mb-2">{group.label}</p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -151,7 +174,7 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
                   return (
                     <button
                       key={`${m.provider}-${m.id}`}
-                      onClick={() => selectModel(m)}
+                      onClick={() => selectModel(m.provider, m.id)}
                       className={`p-3 rounded-lg border text-left transition-all ${
                         isActive
                           ? 'border-[#F813BE] bg-[#F813BE]/10'
@@ -169,41 +192,72 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
           ))}
         </div>
 
-        {/* Reference Image Upload (Kontext Pro only) */}
-        {isKontext && (
-          <div className="mb-4 p-3 bg-[#1A1A1A] border border-[#333] rounded-lg">
-            <label className="text-xs text-[#666] block mb-2">Reference Image (for brand consistency)</label>
-            {referenceImage ? (
-              <div className="flex items-center gap-3">
-                <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-[#0A0A0A]">
-                  <Image src={referenceImage} alt="Reference" fill className="object-cover" sizes="64px" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[#888] text-xs truncate">{referenceImage}</p>
-                </div>
-                <button
-                  onClick={() => setReferenceImage(null)}
-                  className="text-[#666] hover:text-red-400 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+        {/* Reference Image — Brand Assets Picker + Upload */}
+        <div className="mb-4 p-3 bg-[#1A1A1A] border border-[#333] rounded-lg">
+          <label className="text-xs text-[#666] block mb-2">
+            Reference Image {currentModelSupportsRef ? '(for brand consistency)' : '(available for reference-supporting models)'}
+          </label>
+          {referenceImage ? (
+            <div className="flex items-center gap-3">
+              <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-[#0A0A0A]">
+                <Image src={referenceImage} alt="Reference" fill className="object-cover" sizes="64px" />
               </div>
-            ) : (
+              <div className="flex-1">
+                <p className="text-[#888] text-xs truncate">{referenceImage}</p>
+              </div>
+              <button
+                onClick={() => setReferenceImage(null)}
+                className="text-[#666] hover:text-red-400 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowAssetPicker(!showAssetPicker)}
+                className="flex items-center gap-2 text-[#14EAEA] hover:text-white text-xs transition-colors bg-[#14EAEA]/10 px-3 py-1.5 rounded-lg"
+              >
+                <FolderOpen className="w-4 h-4" />
+                Pick from Brand Assets
+              </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center gap-2 text-[#666] hover:text-white text-xs transition-colors"
               >
                 <Upload className="w-4 h-4" />
-                Upload reference image (logo, brand asset, etc.)
+                Upload new
               </button>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleReferenceUpload}
-              className="hidden"
-            />
+            </div>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleReferenceUpload}
+            className="hidden"
+          />
+        </div>
+
+        {/* Brand Assets Picker Panel */}
+        {showAssetPicker && brandAssets.length > 0 && (
+          <div className="mb-4 p-3 bg-[#0A0A0A] border border-[#222] rounded-lg">
+            <p className="text-[#666] text-xs mb-2">Select a brand asset as reference:</p>
+            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2 max-h-48 overflow-y-auto">
+              {brandAssets.map((asset) => (
+                <button
+                  key={asset.id}
+                  onClick={() => selectBrandAsset(asset)}
+                  className="relative w-full rounded-lg overflow-hidden border border-[#333] hover:border-[#14EAEA] transition-colors"
+                  style={{ paddingBottom: '100%' }}
+                >
+                  <Image src={asset.filepath} alt={asset.altText || asset.filename} fill className="object-cover" sizes="80px" />
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[8px] text-[#14EAEA] px-1 py-0.5 truncate">
+                    {asset.assetType}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -255,7 +309,6 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {gallery.map((img) => (
               <div key={img.timestamp} className="group bg-[#141414] border border-[#222] rounded-xl overflow-hidden">
-                {/* Image Preview — 4:5 ratio */}
                 <div className="relative w-full" style={{ paddingBottom: '125%' }}>
                   <Image
                     src={img.url}
@@ -265,7 +318,6 @@ export default function ImageStudio({ onUseImage, initialPrompt }: Props) {
                     sizes="(max-width: 640px) 50vw, 25vw"
                   />
                 </div>
-                {/* Actions */}
                 <div className="p-2 space-y-1.5">
                   <p className="text-[#555] text-xs truncate">{img.prompt}</p>
                   <p className="text-[#444] text-[10px]">{img.model}</p>

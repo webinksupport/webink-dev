@@ -463,3 +463,13 @@ model SocialStory {
   igStoryId   String?
   createdAt   DateTime  @default(now())
 }
+
+model SocialBrandAsset {
+  id         String   @id @default(cuid())
+  filename   String
+  filepath   String
+  altText    String?
+  assetType  String   @default("Other") // Scout, Logo, Product, Background, Other
+  clientName String?
+  createdAt  DateTime @default(now())
+}

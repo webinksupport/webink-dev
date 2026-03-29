@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import {
   Lightbulb, Sparkles, Save, Trash2, ArrowRight, BookmarkCheck,
-  Calendar, Plus, X, Layers,
+  Calendar, Plus, X, Layers, Bot,
 } from 'lucide-react'
+import { useAvailableModels } from '@/hooks/useAvailableModels'
 
 interface Idea {
   hook: string
@@ -54,6 +55,10 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
   const [showSaved, setShowSaved] = useState(false)
   const [error, setError] = useState('')
 
+  // Text model selector
+  const [selectedTextModel, setSelectedTextModel] = useState('')
+  const { textProviders } = useAvailableModels()
+
   // Content pillars
   const [pillars, setPillars] = useState<ContentPillar[]>([])
   const [showPillarForm, setShowPillarForm] = useState(false)
@@ -64,6 +69,14 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
     fetchSaved()
     fetchPillars()
   }, [])
+
+  // Auto-select first text model
+  useEffect(() => {
+    if (textProviders.length > 0 && !selectedTextModel) {
+      const first = textProviders[0].models[0]
+      if (first) setSelectedTextModel(`${first.provider}/${first.id}`)
+    }
+  }, [textProviders, selectedTextModel])
 
   async function fetchSaved() {
     const res = await fetch('/api/social/ideas')
@@ -113,6 +126,7 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
           category: category || undefined,
           contentPillar: selectedPillar || undefined,
           bulkGenerate,
+          model: selectedTextModel || undefined,
         }),
       })
       const data = await res.json()
@@ -142,7 +156,6 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
   }
 
   async function saveToCalendar(idea: Idea, idx: number) {
-    // Calculate next occurrence of the day
     let scheduledAt: string | undefined
     if (idea.dayOfWeek) {
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -153,7 +166,7 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
         const daysUntil = (targetDay - currentDay + 7) % 7 || 7
         const target = new Date(now)
         target.setDate(now.getDate() + daysUntil)
-        target.setHours(9, 0, 0, 0) // Default 9:00 AM
+        target.setHours(9, 0, 0, 0)
         scheduledAt = target.toISOString()
       }
     }
@@ -319,6 +332,37 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
             </label>
           </div>
         </div>
+
+        {/* Text Model Selector */}
+        {textProviders.length > 0 && (
+          <div className="mb-4">
+            <label className="text-xs text-[#666] block mb-1.5 flex items-center gap-1">
+              <Bot className="w-3 h-3" />
+              AI Model
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              {textProviders.map((group) =>
+                group.models.map((m) => {
+                  const modelKey = `${m.provider}/${m.id}`
+                  const isActive = selectedTextModel === modelKey
+                  return (
+                    <button
+                      key={modelKey}
+                      onClick={() => setSelectedTextModel(modelKey)}
+                      className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${
+                        isActive
+                          ? 'border-[#F813BE] bg-[#F813BE]/10 text-[#F813BE]'
+                          : 'border-[#333] text-[#888] hover:border-[#444]'
+                      }`}
+                    >
+                      {m.label} — {m.desc}
+                    </button>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        )}
 
         <button
           onClick={generate}

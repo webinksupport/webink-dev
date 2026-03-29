@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@google/generative-ai": "^0.24.1",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@prisma/adapter-mariadb": "^7.5.0",
     "@prisma/client": "^7.5.0",

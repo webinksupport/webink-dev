@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   PenSquare, Sparkles, Calendar,
   Save, Send, Hash, X, Plus, Upload, Loader2, CheckCircle, AlertCircle,
-  Eye, EyeOff, TrendingUp, Zap, FlaskConical,
+  Eye, EyeOff, TrendingUp, Zap, FlaskConical, Type, ImageIcon,
 } from 'lucide-react'
 
 import Image from 'next/image'
@@ -56,10 +56,25 @@ interface Props {
   }
 }
 
+type PostType = 'standard' | 'text-overlay' | 'carousel' | 'reel'
+
 export default function PostComposer({ initialDraft }: Props) {
+  const [postType, setPostType] = useState<PostType>('standard')
   const [caption, setCaption] = useState(initialDraft?.caption || '')
   const [hashtags, setHashtags] = useState(initialDraft?.hashtags || '')
   const [mediaPath, setMediaPath] = useState(initialDraft?.mediaPath || '')
+
+  // Text Overlay state
+  const [overlayText, setOverlayText] = useState('')
+  const [overlayBgImage, setOverlayBgImage] = useState('')
+  const [overlayBgColor, setOverlayBgColor] = useState('#0F0F0F')
+  const [overlayTextPosition, setOverlayTextPosition] = useState('center')
+  const [overlayFontSize, setOverlayFontSize] = useState('lg')
+  const [overlayTextColor, setOverlayTextColor] = useState('#FFFFFF')
+  const [overlayOpacity, setOverlayOpacity] = useState(0.5)
+  const [overlayBrandColor, setOverlayBrandColor] = useState('#14EAEA')
+  const [renderingOverlay, setRenderingOverlay] = useState(false)
+  const overlayBgInputRef = useRef<HTMLInputElement>(null)
   const [platforms, setPlatforms] = useState<string[]>(['instagram', 'facebook'])
   const [scheduledAt, setScheduledAt] = useState('')
   const [brandVoice, setBrandVoice] = useState('professional')
@@ -301,6 +316,40 @@ export default function PostComposer({ initialDraft }: Props) {
     setSavingAB(false)
   }
 
+  async function handleOverlayBgUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await fetch('/api/media/upload', { method: 'POST', body: formData })
+    const data = await res.json()
+    if (data.results?.[0]?.path) setOverlayBgImage(data.results[0].path)
+  }
+
+  async function renderOverlay() {
+    if (!overlayText.trim()) return
+    setRenderingOverlay(true)
+    try {
+      const res = await fetch('/api/social/render-overlay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          backgroundImagePath: overlayBgImage || undefined,
+          backgroundColor: !overlayBgImage ? overlayBgColor : undefined,
+          text: overlayText,
+          textPosition: overlayTextPosition,
+          fontSize: overlayFontSize,
+          textColor: overlayTextColor,
+          overlayOpacity,
+          brandColor: overlayBrandColor,
+        }),
+      })
+      const data = await res.json()
+      if (data.url) setMediaPath(data.url)
+    } catch { /* silent */ }
+    setRenderingOverlay(false)
+  }
+
   const charCount = caption.length + (hashtags ? hashtags.length + 2 : 0)
 
   return (
@@ -325,6 +374,174 @@ export default function PostComposer({ initialDraft }: Props) {
               A/B Test Mode
             </button>
           </div>
+
+          {/* Post Type Toggle */}
+          <div className="mb-5">
+            <label className="text-xs text-[#666] block mb-2">Post Type</label>
+            <div className="flex gap-2 flex-wrap">
+              {([
+                { id: 'standard' as PostType, label: 'Standard Post', icon: PenSquare },
+                { id: 'text-overlay' as PostType, label: 'Text Overlay', icon: Type },
+                { id: 'carousel' as PostType, label: 'Carousel', icon: ImageIcon },
+                { id: 'reel' as PostType, label: 'Reel', icon: Eye },
+              ]).map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setPostType(id)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
+                    postType === id
+                      ? 'border-[#14EAEA] bg-[#14EAEA]/10 text-[#14EAEA]'
+                      : 'border-[#333] text-[#666] hover:border-[#444]'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Text Overlay Builder */}
+          {postType === 'text-overlay' && (
+            <div className="mb-5 p-4 bg-[#0A0A0A] border border-[#14EAEA]/20 rounded-xl">
+              <p className="text-[#14EAEA] text-xs font-bold tracking-[2px] uppercase mb-4">
+                Text Overlay Builder
+              </p>
+
+              {/* Background */}
+              <div className="grid sm:grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label className="text-xs text-[#666] block mb-1.5">Background Image (optional)</label>
+                  {overlayBgImage ? (
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-12 h-12 rounded overflow-hidden bg-[#1A1A1A]">
+                        <Image src={overlayBgImage} alt="BG" fill className="object-cover" sizes="48px" />
+                      </div>
+                      <button onClick={() => setOverlayBgImage('')} className="text-[#666] hover:text-red-400"><X className="w-4 h-4" /></button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => overlayBgInputRef.current?.click()}
+                      className="text-xs text-[#666] hover:text-white flex items-center gap-1 transition-colors"
+                    >
+                      <Upload className="w-3.5 h-3.5" /> Upload background
+                    </button>
+                  )}
+                  <input ref={overlayBgInputRef} type="file" accept="image/*" onChange={handleOverlayBgUpload} className="hidden" />
+                </div>
+                <div>
+                  <label className="text-xs text-[#666] block mb-1.5">Solid Color (if no image)</label>
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={overlayBgColor} onChange={(e) => setOverlayBgColor(e.target.value)} className="w-8 h-8 rounded border border-[#333] bg-transparent cursor-pointer" />
+                    <input type="text" value={overlayBgColor} onChange={(e) => setOverlayBgColor(e.target.value)} className="w-24 bg-[#1A1A1A] border border-[#333] rounded px-2 py-1 text-[#888] text-xs focus:outline-none" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Text Content */}
+              <div className="mb-3">
+                <label className="text-xs text-[#666] block mb-1.5">Overlay Text (tip, quote, headline)</label>
+                <textarea
+                  value={overlayText}
+                  onChange={(e) => setOverlayText(e.target.value)}
+                  rows={2}
+                  placeholder="e.g. 5 Signs Your Website Needs a Redesign"
+                  className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-white text-sm placeholder-[#555] focus:outline-none focus:border-[#14EAEA] resize-none"
+                />
+              </div>
+
+              {/* Text Style Controls */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                <div>
+                  <label className="text-xs text-[#666] block mb-1">Position</label>
+                  <select value={overlayTextPosition} onChange={(e) => setOverlayTextPosition(e.target.value)} className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-[#14EAEA]">
+                    <option value="top">Top</option>
+                    <option value="center">Center</option>
+                    <option value="bottom">Bottom</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-[#666] block mb-1">Font Size</label>
+                  <select value={overlayFontSize} onChange={(e) => setOverlayFontSize(e.target.value)} className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-[#14EAEA]">
+                    <option value="lg">Large</option>
+                    <option value="md">Medium</option>
+                    <option value="sm">Small</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-[#666] block mb-1">Text Color</label>
+                  <div className="flex gap-1">
+                    {['#FFFFFF', '#000000', '#14EAEA'].map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => setOverlayTextColor(c)}
+                        className={`w-7 h-7 rounded border transition-all ${overlayTextColor === c ? 'border-[#F813BE] scale-110' : 'border-[#333]'}`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-[#666] block mb-1">Brand Accent</label>
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={overlayBrandColor} onChange={(e) => setOverlayBrandColor(e.target.value)} className="w-7 h-7 rounded border border-[#333] bg-transparent cursor-pointer" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Overlay Opacity */}
+              <div className="mb-4">
+                <label className="text-xs text-[#666] block mb-1">Overlay Darkness: {Math.round(overlayOpacity * 100)}%</label>
+                <input type="range" min="0" max="1" step="0.05" value={overlayOpacity} onChange={(e) => setOverlayOpacity(parseFloat(e.target.value))} className="w-full accent-[#14EAEA]" />
+              </div>
+
+              {/* Live Preview */}
+              {overlayText && (
+                <div className="mb-4 rounded-lg overflow-hidden border border-[#333]" style={{ aspectRatio: '4/5', maxHeight: 320 }}>
+                  <div
+                    className="relative w-full h-full flex items-center justify-center"
+                    style={{
+                      backgroundColor: !overlayBgImage ? overlayBgColor : '#0A0A0A',
+                      backgroundImage: overlayBgImage ? `url(${overlayBgImage})` : undefined,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  >
+                    <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity})` }} />
+                    <div
+                      className="relative z-10 px-6 text-center"
+                      style={{
+                        alignSelf: overlayTextPosition === 'top' ? 'flex-start' : overlayTextPosition === 'bottom' ? 'flex-end' : 'center',
+                        paddingTop: overlayTextPosition === 'top' ? '20%' : 0,
+                        paddingBottom: overlayTextPosition === 'bottom' ? '20%' : 0,
+                      }}
+                    >
+                      <p
+                        className="font-bold leading-tight drop-shadow-lg"
+                        style={{
+                          color: overlayTextColor,
+                          fontSize: overlayFontSize === 'lg' ? 24 : overlayFontSize === 'md' ? 18 : 14,
+                        }}
+                      >
+                        {overlayText}
+                      </p>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1.5" style={{ backgroundColor: overlayBrandColor }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Render Button */}
+              <button
+                onClick={renderOverlay}
+                disabled={renderingOverlay || !overlayText.trim()}
+                className="flex items-center gap-2 bg-[#14EAEA] hover:bg-[#11cccc] text-[#0A0A0A] px-4 py-2.5 rounded-lg text-sm font-bold transition-colors disabled:opacity-50"
+              >
+                {renderingOverlay ? <Loader2 className="w-4 h-4 animate-spin" /> : <Type className="w-4 h-4" />}
+                {renderingOverlay ? 'Rendering...' : 'Generate Overlay Image'}
+              </button>
+            </div>
+          )}
 
           {/* Media Section */}
           <div className="mb-5">

@@ -13,6 +13,19 @@ export async function GET() {
   const session = await requireAdmin()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  // Auto-seed Pro Tips pillar if no pillars exist
+  const count = await prisma.socialContentPillar.count()
+  if (count === 0) {
+    await prisma.socialContentPillar.create({
+      data: {
+        title: 'Pro Tips',
+        description: 'Weekly actionable tips for small business owners',
+        icon: 'Lightbulb',
+        color: '#14EAEA',
+      },
+    })
+  }
+
   const pillars = await prisma.socialContentPillar.findMany({
     orderBy: { createdAt: 'asc' },
   })

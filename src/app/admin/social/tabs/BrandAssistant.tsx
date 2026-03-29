@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Palette, Save, Loader2, Sparkles, ArrowRight, Clock, ImageIcon, CheckCircle,
+  Upload, X, Trash2, FolderOpen, Tag,
 } from 'lucide-react'
+import Image from 'next/image'
 
 interface BrandProfile {
   id?: string
@@ -16,6 +18,16 @@ interface BrandProfile {
   brandKeywords: string
   competitorHandles: string
   logoPath: string
+}
+
+interface BrandAsset {
+  id: string
+  filename: string
+  filepath: string
+  altText: string | null
+  assetType: string
+  clientName: string | null
+  createdAt: string
 }
 
 interface Variation {
@@ -41,6 +53,7 @@ const CONTENT_TYPES = [
 ]
 
 const VOICE_OPTIONS = ['Professional', 'Casual', 'Witty', 'Inspirational', 'Bold']
+const ASSET_TYPES = ['Scout', 'Logo', 'Product', 'Background', 'Other']
 
 const defaultProfile: BrandProfile = {
   businessName: 'Webink Solutions',
@@ -59,6 +72,14 @@ export default function BrandAssistant({ onUseContent, onGoToImageStudio }: Prop
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
+  // Brand Assets state
+  const [assets, setAssets] = useState<BrandAsset[]>([])
+  const [uploadAssetType, setUploadAssetType] = useState('Scout')
+  const [uploadClientName, setUploadClientName] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [assetFilter, setAssetFilter] = useState<string>('')
+  const assetFileRef = useRef<HTMLInputElement>(null)
+
   // Generator state
   const [contentType, setContentType] = useState(CONTENT_TYPES[0])
   const [platform, setPlatform] = useState('Instagram')
@@ -70,6 +91,7 @@ export default function BrandAssistant({ onUseContent, onGoToImageStudio }: Prop
 
   useEffect(() => {
     fetchProfile()
+    fetchAssets()
   }, [])
 
   async function fetchProfile() {
@@ -90,6 +112,15 @@ export default function BrandAssistant({ onUseContent, onGoToImageStudio }: Prop
     }
   }
 
+  async function fetchAssets() {
+    try {
+      const res = await fetch('/api/social/brand-assets')
+      if (res.ok) setAssets(await res.json())
+    } catch {
+      // silent
+    }
+  }
+
   async function saveProfile() {
     setSaving(true)
     setSaved(false)
@@ -107,6 +138,36 @@ export default function BrandAssistant({ onUseContent, onGoToImageStudio }: Prop
       // silent fail
     }
     setSaving(false)
+  }
+
+  async function uploadAssets(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      for (let i = 0; i < files.length; i++) {
+        formData.append('file', files[i])
+      }
+      formData.append('assetType', uploadAssetType)
+      if (uploadClientName) formData.append('clientName', uploadClientName)
+
+      const res = await fetch('/api/social/brand-assets', { method: 'POST', body: formData })
+      if (res.ok) fetchAssets()
+    } catch {
+      // silent
+    }
+    setUploading(false)
+    if (assetFileRef.current) assetFileRef.current.value = ''
+  }
+
+  async function deleteAsset(id: string) {
+    await fetch('/api/social/brand-assets', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    fetchAssets()
   }
 
   async function generateContent() {
@@ -142,8 +203,120 @@ export default function BrandAssistant({ onUseContent, onGoToImageStudio }: Prop
     setProfile({ ...profile, primaryColors: colors })
   }
 
+  const filteredAssets = assetFilter
+    ? assets.filter((a) => a.assetType === assetFilter)
+    : assets
+
   return (
     <div className="space-y-6">
+      {/* Brand Assets Section */}
+      <div className="bg-[#141414] border border-[#222] rounded-xl p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <FolderOpen className="w-5 h-5 text-[#14EAEA]" />
+          <h2 className="text-white font-semibold">Brand Assets</h2>
+          <span className="text-[#555] text-xs ml-auto">{assets.length} assets uploaded</span>
+        </div>
+
+        {/* Upload Controls */}
+        <div className="flex flex-wrap items-end gap-3 mb-4">
+          <div>
+            <label className="text-xs text-[#666] block mb-1.5">Asset Type</label>
+            <select
+              value={uploadAssetType}
+              onChange={(e) => setUploadAssetType(e.target.value)}
+              className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#14EAEA]"
+            >
+              {ASSET_TYPES.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-[#666] block mb-1.5">Client (optional)</label>
+            <input
+              type="text"
+              value={uploadClientName}
+              onChange={(e) => setUploadClientName(e.target.value)}
+              placeholder="e.g. Gulf Sands Realty"
+              className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-white text-sm placeholder-[#555] focus:outline-none focus:border-[#14EAEA] w-48"
+            />
+          </div>
+          <button
+            onClick={() => assetFileRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-2 bg-[#14EAEA] hover:bg-[#11cccc] text-[#0A0A0A] px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50"
+          >
+            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            {uploading ? 'Uploading...' : 'Upload Files'}
+          </button>
+          <input
+            ref={assetFileRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={uploadAssets}
+            className="hidden"
+          />
+        </div>
+
+        {/* Filter Tags */}
+        <div className="flex gap-2 mb-4 flex-wrap">
+          <button
+            onClick={() => setAssetFilter('')}
+            className={`px-3 py-1 rounded-lg text-xs transition-all ${
+              !assetFilter ? 'bg-[#14EAEA]/20 text-[#14EAEA] border border-[#14EAEA]' : 'bg-[#1A1A1A] border border-[#333] text-[#888] hover:border-[#444]'
+            }`}
+          >
+            All
+          </button>
+          {ASSET_TYPES.map((t) => (
+            <button
+              key={t}
+              onClick={() => setAssetFilter(assetFilter === t ? '' : t)}
+              className={`px-3 py-1 rounded-lg text-xs transition-all ${
+                assetFilter === t ? 'bg-[#14EAEA]/20 text-[#14EAEA] border border-[#14EAEA]' : 'bg-[#1A1A1A] border border-[#333] text-[#888] hover:border-[#444]'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* Assets Grid */}
+        {filteredAssets.length > 0 ? (
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+            {filteredAssets.map((asset) => (
+              <div key={asset.id} className="group relative bg-[#0A0A0A] border border-[#222] rounded-lg overflow-hidden">
+                <div className="relative w-full" style={{ paddingBottom: '100%' }}>
+                  <Image src={asset.filepath} alt={asset.altText || asset.filename} fill className="object-cover" sizes="120px" />
+                </div>
+                <div className="p-1.5">
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <Tag className="w-2.5 h-2.5 text-[#14EAEA]" />
+                    <span className="text-[#14EAEA] text-[10px]">{asset.assetType}</span>
+                  </div>
+                  <p className="text-[#666] text-[10px] truncate">{asset.filename}</p>
+                  {asset.clientName && (
+                    <p className="text-[#555] text-[10px] truncate">{asset.clientName}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => deleteAsset(asset.id)}
+                  className="absolute top-1 right-1 bg-black/60 hover:bg-red-500/80 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="w-3 h-3 text-white" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-[#444]">
+            <FolderOpen className="w-8 h-8 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">No brand assets yet. Upload Scout images, logos, and product photos.</p>
+          </div>
+        )}
+      </div>
+
       {/* Brand Profile Card */}
       <div className="bg-[#141414] border border-[#222] rounded-xl p-6">
         <div className="flex items-center gap-2 mb-5">
@@ -344,7 +517,6 @@ export default function BrandAssistant({ onUseContent, onGoToImageStudio }: Prop
       {/* Results */}
       {result && (
         <div className="space-y-4">
-          {/* Caption Variations */}
           {result.variations.map((v, i) => (
             <div key={i} className="bg-[#141414] border border-[#222] rounded-xl p-5">
               <div className="flex items-center justify-between mb-3">
@@ -364,7 +536,6 @@ export default function BrandAssistant({ onUseContent, onGoToImageStudio }: Prop
             </div>
           ))}
 
-          {/* Image Prompt Suggestion */}
           <div className="bg-[#141414] border border-[#222] rounded-xl p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -382,7 +553,6 @@ export default function BrandAssistant({ onUseContent, onGoToImageStudio }: Prop
             <p className="text-[#888] text-sm leading-relaxed">{result.imagePrompt}</p>
           </div>
 
-          {/* Best Time */}
           <div className="bg-[#141414] border border-[#222] rounded-xl p-5">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-[#14EAEA]" />
