@@ -5,12 +5,55 @@ import { prisma } from "@/lib/prisma"
 import { getSetting } from "@/lib/settings"
 import { callAiProvider, decryptApiKey } from "./service"
 
+// Map frontend provider slugs to backend ProviderSlug and key settings
+const PROVIDER_SLUG_MAP: Record<string, { slug: "OPENAI" | "ANTHROPIC" | "GOOGLE" | "XAI"; keys: string[] }> = {
+  anthropic: { slug: "ANTHROPIC", keys: ["ANTHROPIC_API_KEY"] },
+  openai: { slug: "OPENAI", keys: ["OPENAI_API_KEY"] },
+  google: { slug: "GOOGLE", keys: ["GOOGLE_AI_API_KEY", "GOOGLE_GEMINI_API_KEY", "GEMINI_API_KEY"] },
+  xai: { slug: "XAI", keys: ["XAI_API_KEY", "GROK_API_KEY"] },
+}
+
 export async function generateTextWithProviders(
   prompt: string,
   userId?: string,
   selectedModel?: string
 ): Promise<string> {
-  // 1. Try connected providers if userId is available
+  // Parse "provider/model" format from the frontend model selector
+  let requestedProvider: string | undefined
+  let requestedModelId: string | undefined
+  if (selectedModel?.includes("/")) {
+    const [prov, ...rest] = selectedModel.split("/")
+    requestedProvider = prov
+    requestedModelId = rest.join("/")
+  }
+
+  // 1. If a specific provider/model was requested, try to fulfill it directly
+  if (requestedProvider && requestedModelId) {
+    const mapping = PROVIDER_SLUG_MAP[requestedProvider]
+    if (mapping) {
+      // Try connected providers first
+      if (userId) {
+        const connectedProvider = await prisma.aiProvider.findFirst({
+          where: { userId, isConnected: true, slug: mapping.slug as never },
+        })
+        if (connectedProvider) {
+          const apiKey = decryptApiKey(connectedProvider.apiKey)
+          const result = await callAiProvider(apiKey, mapping.slug, requestedModelId, prompt)
+          if (result.success) return result.text
+        }
+      }
+      // Try settings/env keys for the requested provider
+      for (const keyName of mapping.keys) {
+        const key = await getSetting(keyName) || process.env[keyName]
+        if (key) {
+          const result = await callAiProvider(key, mapping.slug, requestedModelId, prompt)
+          if (result.success) return result.text
+        }
+      }
+    }
+  }
+
+  // 2. Try connected providers if userId is available (no specific model requested)
   if (userId) {
     const connectedProviders = await prisma.aiProvider.findMany({
       where: { userId, isConnected: true },
@@ -20,14 +63,14 @@ export async function generateTextWithProviders(
     if (connectedProviders.length > 0) {
       const provider = connectedProviders[0]
       const apiKey = decryptApiKey(provider.apiKey)
-      const model = selectedModel || getDefaultModel(provider.slug)
+      const model = getDefaultModel(provider.slug)
 
       const result = await callAiProvider(apiKey, provider.slug, model, prompt)
       if (result.success) return result.text
     }
   }
 
-  // 2. Fallback to Settings/env keys (original behavior)
+  // 3. Fallback to Settings/env keys (original behavior)
   const googleKey = await getSetting("GOOGLE_AI_API_KEY") || await getSetting("GOOGLE_GEMINI_API_KEY") || process.env.GOOGLE_AI_API_KEY
   const anthropicKey = await getSetting("ANTHROPIC_API_KEY") || process.env.ANTHROPIC_API_KEY
   const openaiKey = await getSetting("OPENAI_API_KEY") || process.env.OPENAI_API_KEY

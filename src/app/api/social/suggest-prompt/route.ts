@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const session = await requireAdmin()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { context, model } = await req.json()
+  const { context, topic, idea, model } = await req.json()
 
   // Load brand profile for context
   let brandContext = ''
@@ -35,6 +35,8 @@ export async function POST(req: NextRequest) {
   const prompt = `You are a social media image prompt expert. Generate a detailed, creative image prompt for AI image generation (FLUX/DALL-E/Imagen).
 
 ${brandContext ? `Brand context: ${brandContext}\n` : ''}
+${topic ? `Post topic: ${topic}\n` : ''}
+${idea ? `Content idea/angle: ${idea}\n` : ''}
 ${context ? `Additional context from user: ${context}\n` : ''}
 
 Requirements:

@@ -14,6 +14,7 @@ import PublishingSettings from './tabs/PublishingSettings'
 import Intelligence from './tabs/Intelligence'
 import ClientManager from './tabs/ClientManager'
 import StoriesPlanner from './tabs/StoriesPlanner'
+import PostBuilder from './tabs/PostBuilder'
 import {
   Lightbulb,
   ImageIcon,
@@ -28,6 +29,7 @@ import {
   Radar,
   Users,
   Film,
+  Wand2,
   ChevronDown,
 } from 'lucide-react'
 
@@ -47,6 +49,7 @@ const tabGroups = [
       { id: 'carousel', label: 'Carousel/Reels', icon: Layers },
       { id: 'images', label: 'Image Studio', icon: ImageIcon },
       { id: 'composer', label: 'Composer', icon: PenSquare },
+      { id: 'postbuilder', label: 'Post Builder', icon: Wand2 },
     ],
   },
   {
@@ -269,6 +272,7 @@ export default function SocialStudio() {
         {activeTab === 'intelligence' && <Intelligence />}
         {activeTab === 'settings' && <PublishingSettings />}
         {activeTab === 'clients' && <ClientManager />}
+        {activeTab === 'postbuilder' && <PostBuilder onGoToCalendar={() => setActiveTab('calendar')} />}
       </div>
     </div>
   )

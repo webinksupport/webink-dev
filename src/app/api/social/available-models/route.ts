@@ -81,7 +81,8 @@ const TEXT_MODELS: Record<string, { key: string; altKeys?: string[]; label: stri
     key: 'ANTHROPIC_API_KEY',
     label: 'Anthropic',
     models: [
-      { id: 'claude-sonnet', provider: 'anthropic', label: 'Claude Sonnet', desc: 'Fast' },
+      { id: 'claude-sonnet-4-5', provider: 'anthropic', label: 'Claude Sonnet 4.5', desc: 'Fast & smart' },
+      { id: 'claude-haiku-4-5', provider: 'anthropic', label: 'Claude Haiku 4.5', desc: 'Fastest' },
     ],
   },
   google: {
