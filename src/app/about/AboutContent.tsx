@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Heart, Target, Users, Zap } from 'lucide-react'
 import EditableText from '@/components/editor/EditableText'
 import EditableImage from '@/components/editor/EditableImage'
+import { useEditor } from '@/components/editor/EditorContext'
 
 const ease = [0.25, 0.46, 0.45, 0.94]
 
@@ -23,6 +24,7 @@ const values = [
 ]
 
 export default function AboutContent({ content }: { content: Record<string, string> }) {
+  const { editMode } = useEditor()
   return (
     <>
       {/* ═══ HERO ═══ */}
@@ -338,10 +340,10 @@ export default function AboutContent({ content }: { content: Record<string, stri
             viewport={{ once: true, margin: '-60px' }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Link href="/contact" className="bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200">
+            <Link href="/contact" onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }} className="bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200">
               <EditableText as="span" blockKey="cta_button_1" defaultValue="Get a Free Quote" />
             </Link>
-            <a href="tel:9418401381" className="border border-[#14EAEA] text-[#14EAEA] font-semibold px-8 py-4 rounded-full hover:bg-[#14EAEA] hover:text-[#0A0A0A] transition-colors duration-200">
+            <a href="tel:9418401381" onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }} className="border border-[#14EAEA] text-[#14EAEA] font-semibold px-8 py-4 rounded-full hover:bg-[#14EAEA] hover:text-[#0A0A0A] transition-colors duration-200">
               <EditableText as="span" blockKey="cta_button_2" defaultValue="Call (941) 840-1381" />
             </a>
           </motion.div>

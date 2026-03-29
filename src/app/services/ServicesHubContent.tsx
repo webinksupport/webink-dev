@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import EditableText from '@/components/editor/EditableText'
 import EditableImage from '@/components/editor/EditableImage'
+import { useEditor } from '@/components/editor/EditorContext'
 
 const services = [
   {
@@ -76,6 +77,7 @@ const services = [
 const ease = [0.25, 0.46, 0.45, 0.94]
 
 export default function ServicesHubContent() {
+  const { editMode } = useEditor()
   return (
     <>
       {/* ── Hero ── */}
@@ -200,6 +202,7 @@ export default function ServicesHubContent() {
                 >
                   <Link
                     href={svc.href}
+                    onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
                     className="group relative flex flex-col bg-white rounded-2xl border border-[#E5E5E5] hover:border-[#14EAEA] hover:shadow-[0_8px_40px_rgba(20,234,234,0.15)] transition-all duration-300 cursor-pointer h-full overflow-hidden"
                   >
                     {/* Card image */}
@@ -326,12 +329,14 @@ export default function ServicesHubContent() {
           >
             <Link
               href="/contact"
+              onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
               className="bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200"
             >
               <EditableText as="span" blockKey="cta_button_1" defaultValue="Get a Free Quote" />
             </Link>
             <a
               href="tel:9418401381"
+              onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
               className="border border-[#14EAEA] text-[#14EAEA] font-semibold px-8 py-4 rounded-full hover:bg-[#14EAEA] hover:text-[#0A0A0A] transition-colors duration-200"
             >
               <EditableText as="span" blockKey="cta_button_2" defaultValue="Call (941) 840-1381" />

@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import EditableImage from '@/components/editor/EditableImage'
+import EditableText from '@/components/editor/EditableText'
+import { useEditor } from '@/components/editor/EditorContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 import { ChevronDown } from 'lucide-react'
@@ -42,6 +44,7 @@ function getInitials(name?: string | null): string {
 
 export default function NavI() {
   const { data: session, status } = useSession()
+  const { editMode } = useEditor()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -349,13 +352,19 @@ export default function NavI() {
 
             <a
               href="#contact"
+              onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
               className={`hidden lg:inline-flex items-center gap-2 font-urbanist text-sm font-bold px-6 py-3 rounded-full transition-all duration-300 ${
                 scrolled
                   ? 'bg-[#0A0A0A] text-white hover:bg-[#14EAEA] hover:text-black'
                   : 'bg-white text-[#0A0A0A] hover:bg-[#14EAEA] hover:text-black'
               }`}
             >
-              Get Free Audit
+              <EditableText
+                as="span"
+                pageSlug="global"
+                blockKey="global_nav_cta"
+                defaultValue="Get Free Audit"
+              />
             </a>
 
             {/* Hamburger — all screen sizes */}
@@ -598,12 +607,23 @@ export default function NavI() {
               <div className="px-8 py-8 border-t border-black/8">
                 <a
                   href="/contact"
-                  onClick={handleLinkClick}
+                  onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } else { handleLinkClick() } }}
                   className="block w-full text-center font-urbanist font-bold py-4 bg-[#0A0A0A] text-white rounded-2xl hover:bg-[#14EAEA] hover:text-black transition-all duration-300 text-sm tracking-wide"
                 >
-                  Get a Free Audit →
+                  <EditableText
+                    as="span"
+                    pageSlug="global"
+                    blockKey="global_nav_mobile_cta"
+                    defaultValue="Get a Free Audit →"
+                  />
                 </a>
-                <p className="text-center text-xs text-black/30 mt-3 font-urbanist">No commitment. Response in 24h.</p>
+                <EditableText
+                  as="p"
+                  pageSlug="global"
+                  blockKey="global_nav_mobile_cta_sub"
+                  defaultValue="No commitment. Response in 24h."
+                  className="text-center text-xs text-black/30 mt-3 font-urbanist"
+                />
               </div>
             </motion.nav>
           </>

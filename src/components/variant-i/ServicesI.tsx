@@ -6,6 +6,7 @@ import {
   Globe, Search, TrendingUp, Share2, Server, Brain,
 } from 'lucide-react'
 import EditableText from '@/components/editor/EditableText'
+import { useEditor } from '@/components/editor/EditorContext'
 
 /* ── SERVICE CARDS (3x2 grid) ─────────────────────────────── */
 const services = [
@@ -108,10 +109,12 @@ function ServiceCard({
   titleValue?: string
   descValue?: string
 }) {
+  const { editMode } = useEditor()
   const cardNum = index + 1
   return (
     <motion.a
       href={href}
+      onClick={(e: React.MouseEvent) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
       initial={{ opacity: 0, y: 30, scale: 0.96 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: '-40px' }}
@@ -342,6 +345,7 @@ function HorizontalProcess({ content }: { content?: Record<string, string> }) {
 
 /* ── MAIN EXPORT ─────────────────────────────────────────── */
 export default function ServicesI({ content }: { content?: Record<string, string> } = {}) {
+  const { editMode } = useEditor()
   return (
     <>
       {/* ── SERVICES GRID SECTION ── */}
@@ -399,6 +403,7 @@ export default function ServicesI({ content }: { content?: Record<string, string
           <div className="text-center mt-14">
             <a
               href="/services"
+              onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
               className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-4 bg-[#0F0F0F] text-white rounded-full hover:bg-[#14EAEA] hover:text-[#0F0F0F] transition-all duration-300"
             >
               <EditableText

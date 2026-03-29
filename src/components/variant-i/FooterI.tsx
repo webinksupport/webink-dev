@@ -1,6 +1,7 @@
 'use client'
 import EditableImage from '@/components/editor/EditableImage'
 import EditableText from '@/components/editor/EditableText'
+import { useEditor } from '@/components/editor/EditorContext'
 import Link from 'next/link'
 
 const footerLinks = {
@@ -67,6 +68,7 @@ const socials = [
 ]
 
 export default function FooterI() {
+  const { editMode } = useEditor()
   const year = new Date().getFullYear()
 
   return (
@@ -146,12 +148,22 @@ export default function FooterI() {
 
         {/* Bottom bar */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-          <p className="font-urbanist text-xs text-white/20">
-            © {year} Webink Solutions · Sean Rowe · 1609 Georgetowne Blvd, Sarasota, FL 34232
-          </p>
+          <EditableText
+            as="p"
+            pageSlug="global"
+            blockKey="global_footer_copyright"
+            defaultValue={`© ${year} Webink Solutions · Sean Rowe · 1609 Georgetowne Blvd, Sarasota, FL 34232`}
+            className="font-urbanist text-xs text-white/20"
+          />
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-[#14EAEA] animate-pulse" />
-            <span className="font-urbanist text-xs text-white/20">Sarasota, Florida</span>
+            <EditableText
+              as="span"
+              pageSlug="global"
+              blockKey="global_footer_location"
+              defaultValue="Sarasota, Florida"
+              className="font-urbanist text-xs text-white/20"
+            />
           </div>
         </div>
       </div>

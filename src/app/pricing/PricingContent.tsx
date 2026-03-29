@@ -6,6 +6,7 @@ import EditableImage from '@/components/editor/EditableImage'
 import { motion } from 'framer-motion'
 import { ChevronDown, Loader2 } from 'lucide-react'
 import EditableText from '@/components/editor/EditableText'
+import { useEditor } from '@/components/editor/EditorContext'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -364,6 +365,7 @@ interface PricingContentProps {
 }
 
 export default function PricingContent({ content }: PricingContentProps = {}) {
+  const { editMode } = useEditor()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [annual, setAnnual] = useState(false)
@@ -589,14 +591,22 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
           {/* Empty state (shouldn't happen with fallback, but just in case) */}
           {!loading && products.length === 0 && (
             <div className="text-center py-20">
-              <p className="text-xl text-[#333]/60 mb-6">
-                Pricing information is currently being updated.
-              </p>
+              <EditableText
+                as="p"
+                blockKey="pricing_empty_state"
+                defaultValue="Pricing information is currently being updated."
+                className="text-xl text-[#333]/60 mb-6"
+              />
               <Link
                 href="/contact"
+                onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
                 className="inline-block bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors"
               >
-                Contact Us for Pricing
+                <EditableText
+                  as="span"
+                  blockKey="pricing_empty_cta"
+                  defaultValue="Contact Us for Pricing"
+                />
               </Link>
             </div>
           )}
@@ -666,15 +676,25 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <Link
                 href="/contact"
+                onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
                 className="bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors"
               >
-                Get a Free Consultation
+                <EditableText
+                  as="span"
+                  blockKey="pricing_cta_button_1"
+                  defaultValue="Get a Free Consultation"
+                />
               </Link>
               <a
                 href="tel:+19418401381"
+                onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
                 className="border border-white text-white font-semibold px-8 py-4 rounded-full hover:bg-white hover:text-[#0A0A0A] transition-colors"
               >
-                Call (941) 840-1381
+                <EditableText
+                  as="span"
+                  blockKey="pricing_cta_button_2"
+                  defaultValue="Call (941) 840-1381"
+                />
               </a>
             </div>
           </motion.div>
@@ -687,12 +707,18 @@ export default function PricingContent({ content }: PricingContentProps = {}) {
       <section className="px-6 md:px-16 lg:px-24 py-20 lg:py-32 bg-white">
         <div className="max-w-3xl mx-auto">
           <motion.div {...fadeUp}>
-            <p className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4">
-              FAQ
-            </p>
-            <h2 className="text-3xl lg:text-4xl font-bold text-[#1A1A1A] mb-10">
-              Frequently Asked Questions
-            </h2>
+            <EditableText
+              as="p"
+              blockKey="pricing_faq_eyebrow"
+              defaultValue="FAQ"
+              className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
+            />
+            <EditableText
+              as="h2"
+              blockKey="pricing_faq_heading"
+              defaultValue="Frequently Asked Questions"
+              className="text-3xl lg:text-4xl font-bold text-[#1A1A1A] mb-10"
+            />
           </motion.div>
 
           <motion.div {...fadeUp}>

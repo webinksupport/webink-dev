@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Phone, Mail, MapPin, Clock, Send, Loader2, Check, AlertCircle } from 'lucide-react'
 import EditableText from '@/components/editor/EditableText'
 import EditableImage from '@/components/editor/EditableImage'
+import { useEditor } from '@/components/editor/EditorContext'
 
 const ease = [0.25, 0.46, 0.45, 0.94]
 
@@ -30,6 +31,7 @@ const budgetRanges = [
 ]
 
 export default function ContactContent({ content }: { content: Record<string, string> }) {
+  const { editMode } = useEditor()
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -219,7 +221,7 @@ export default function ContactContent({ content }: { content: Record<string, st
                   </div>
                   <div>
                     <h4 className="font-urbanist font-bold text-white text-sm mb-1">Phone</h4>
-                    <a href="tel:9418401381" className="font-urbanist text-white/60 hover:text-[#14EAEA] transition-colors">
+                    <a href="tel:9418401381" onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }} className="font-urbanist text-white/60 hover:text-[#14EAEA] transition-colors">
                       <EditableText as="span" blockKey="info_phone" defaultValue="(941) 840-1381" />
                     </a>
                   </div>
@@ -231,7 +233,7 @@ export default function ContactContent({ content }: { content: Record<string, st
                   </div>
                   <div>
                     <h4 className="font-urbanist font-bold text-white text-sm mb-1">Email</h4>
-                    <a href="mailto:hello@webink.solutions" className="font-urbanist text-white/60 hover:text-[#F813BE] transition-colors">
+                    <a href="mailto:hello@webink.solutions" onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }} className="font-urbanist text-white/60 hover:text-[#F813BE] transition-colors">
                       <EditableText as="span" blockKey="info_email" defaultValue="hello@webink.solutions" />
                     </a>
                   </div>

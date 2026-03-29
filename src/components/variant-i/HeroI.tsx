@@ -113,6 +113,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
         >
           <a
             href={content?.hero_cta_link || '/pricing'}
+            onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
             className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-5 bg-[#14EAEA] text-[#0F0F0F] rounded-full hover:bg-white transition-all duration-300 shadow-lg"
           >
             <EditableText
@@ -125,6 +126,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
           </a>
           <a
             href="#services"
+            onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
             className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-5 border-2 border-white/25 text-white rounded-full hover:border-white/60 transition-all duration-300"
           >
             <EditableText

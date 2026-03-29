@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import EditableImage from '@/components/editor/EditableImage'
 import EditableText from '@/components/editor/EditableText'
+import { useEditor } from '@/components/editor/EditorContext'
 
 interface StatData {
   value: number
@@ -84,6 +85,7 @@ function StatCard({ value, suffix, label, sublabel, delay, underlineColor }: {
 }
 
 export default function StatsI({ content = {}, stats }: { content?: Record<string, string>; stats?: StatData[] }) {
+  const { editMode } = useEditor()
   // Only use DB stats if they contain non-zero values (prevents showing "0+" from empty DB)
   const hasValidStats = stats && stats.length > 0 && stats.some(s => s.value > 0)
   const displayStats = hasValidStats ? stats : defaultStats
@@ -179,6 +181,7 @@ export default function StatsI({ content = {}, stats }: { content?: Record<strin
           </div>
           <a
             href="https://webink.solutions/portfolio"
+            onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
             className="font-urbanist font-bold text-sm text-white/40 border-b border-[#14EAEA] pb-0.5 hover:text-[#14EAEA] transition-colors duration-200"
           >
             <EditableText

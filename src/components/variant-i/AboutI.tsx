@@ -3,6 +3,7 @@ import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import EditableText from '@/components/editor/EditableText'
 import EditableImage from '@/components/editor/EditableImage'
+import { useEditor } from '@/components/editor/EditorContext'
 
 const aboutSteps = [
   { step: '01', titleKey: 'about_step_1_title', titleDefault: 'Audit & Strategy', descKey: 'about_step_1_desc', descDefault: 'We start by understanding your business, your goals, and where you stand.' },
@@ -11,6 +12,7 @@ const aboutSteps = [
 ]
 
 export default function AboutI({ content }: { content?: Record<string, string> } = {}) {
+  const { editMode } = useEditor()
   const sectionRef = useRef<HTMLElement>(null)
 
   const { scrollYProgress } = useScroll({
@@ -166,6 +168,7 @@ export default function AboutI({ content }: { content?: Record<string, string> }
 
               <a
                 href="/about"
+                onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
                 className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-4 bg-[#0F0F0F] text-white rounded-full hover:bg-[#F813BE] hover:text-white transition-all duration-300"
               >
                 <EditableText

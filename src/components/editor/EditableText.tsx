@@ -113,6 +113,7 @@ export default function EditableText({
   const handleClick = useCallback((e: React.MouseEvent) => {
     if (!editMode) return
     e.stopPropagation()
+    e.preventDefault()
 
     const el = ref.current
     if (!el) return

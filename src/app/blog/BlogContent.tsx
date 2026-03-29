@@ -1,8 +1,10 @@
 'use client'
 
 import EditableText from '@/components/editor/EditableText'
+import { useEditor } from '@/components/editor/EditorContext'
 
 export default function BlogContent() {
+  const { editMode } = useEditor()
   return (
     <section className="pt-40 pb-20 px-6 md:px-16 lg:px-24">
       <div className="max-w-4xl mx-auto text-center">
@@ -27,6 +29,7 @@ export default function BlogContent() {
         />
         <a
           href="/contact"
+          onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
           className="inline-flex items-center gap-2 bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200"
         >
           <EditableText as="span" blockKey="cta_text" defaultValue="Get Notified When We Launch" />

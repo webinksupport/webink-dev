@@ -3,10 +3,12 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import EditableText from '@/components/editor/EditableText'
 import EditableImage from '@/components/editor/EditableImage'
+import { useEditor } from '@/components/editor/EditorContext'
 
 const ease = [0.25, 0.46, 0.45, 0.94]
 
 export default function FounderI({ content }: { content?: Record<string, string> } = {}) {
+  const { editMode } = useEditor()
   return (
     <section className="bg-[#0F0F0F] py-24 lg:py-36 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">
@@ -81,6 +83,7 @@ export default function FounderI({ content }: { content?: Record<string, string>
 
             <Link
               href="/about"
+              onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
               className="inline-flex items-center gap-3 font-urbanist font-bold text-sm px-8 py-4 border border-[#14EAEA] text-[#14EAEA] rounded-full hover:bg-[#14EAEA] hover:text-[#0A0A0A] transition-all duration-300"
             >
               <EditableText

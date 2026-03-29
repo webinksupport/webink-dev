@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import EditableText from '@/components/editor/EditableText'
 import EditableBackground from '@/components/editor/EditableBackground'
+import { useEditor } from '@/components/editor/EditorContext'
 
 /* ── Icon Map ─────────────────────────────────────────────── */
 const iconMap: Record<string, React.ElementType> = {
@@ -120,6 +121,7 @@ export default function ServicePageLayout({
   heroImagePosition = 'center',
   productSlug,
 }: ServicePageProps) {
+  const { editMode } = useEditor()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
   return (
@@ -239,25 +241,35 @@ export default function ServicePageLayout({
       ════════════════════════════════════════════════════════ */}
       <section className="bg-white px-6 md:px-16 lg:px-24 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
           >
-            Why Choose Us
-          </motion.p>
-          <motion.h2
+            <EditableText
+              as="p"
+              pageSlug={pageSlug || 'services'}
+              blockKey="features_eyebrow"
+              defaultValue="Why Choose Us"
+              className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="font-urbanist font-black text-[#1A1A1A] mb-16 leading-tight"
-            style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
           >
-            What Sets Us Apart
-          </motion.h2>
+            <EditableText
+              as="h2"
+              pageSlug={pageSlug || 'services'}
+              blockKey="features_heading"
+              defaultValue="What Sets Us Apart"
+              className="font-urbanist font-black text-[#1A1A1A] mb-16 leading-tight"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
+            />
+          </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, i) => {
@@ -296,25 +308,35 @@ export default function ServicePageLayout({
       ════════════════════════════════════════════════════════ */}
       <section className="bg-[#F8F8F8] px-6 md:px-16 lg:px-24 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
           >
-            Our Process
-          </motion.p>
-          <motion.h2
+            <EditableText
+              as="p"
+              pageSlug={pageSlug || 'services'}
+              blockKey="process_eyebrow"
+              defaultValue="Our Process"
+              className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="font-urbanist font-black text-[#1A1A1A] mb-16 leading-tight"
-            style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
           >
-            How We Work
-          </motion.h2>
+            <EditableText
+              as="h2"
+              pageSlug={pageSlug || 'services'}
+              blockKey="process_heading"
+              defaultValue="How We Work"
+              className="font-urbanist font-black text-[#1A1A1A] mb-16 leading-tight"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
+            />
+          </motion.div>
 
           <div className="grid md:grid-cols-3 gap-10">
             {processSteps.map((step, i) => {
@@ -386,22 +408,35 @@ export default function ServicePageLayout({
                 transition={{ duration: 0.8, delay: 0.15, ease }}
                 className="lg:col-span-7"
               >
-                <p className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4">
-                  Real People, Real Results
-                </p>
-                <h2
+                <EditableText
+                  as="p"
+                  pageSlug={pageSlug || 'services'}
+                  blockKey="team_eyebrow"
+                  defaultValue="Real People, Real Results"
+                  className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
+                />
+                <EditableText
+                  as="h2"
+                  pageSlug={pageSlug || 'services'}
+                  blockKey="team_heading"
+                  defaultValue="Built by a Team That Gets It."
                   className="font-urbanist font-black text-[#1A1A1A] mb-6 leading-tight"
                   style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '-0.03em' }}
-                >
-                  Built by a Team That{' '}
-                  <span className="text-[#F813BE]">Gets It.</span>
-                </h2>
-                <p className="font-urbanist text-[17px] text-[#333]/60 leading-relaxed mb-6">
-                  Webink Solutions is a Sarasota-based digital agency founded by Sean Rowe. Every strategy is backed by data, built for humans, and optimized for growth.
-                </p>
-                <p className="font-urbanist text-[15px] text-[#333]/40 leading-relaxed">
-                  No outsourcing, no cookie-cutter templates. Just a dedicated local team that shows up, delivers results, and genuinely cares about your success.
-                </p>
+                />
+                <EditableText
+                  as="p"
+                  pageSlug={pageSlug || 'services'}
+                  blockKey="team_body_1"
+                  defaultValue="Webink Solutions is a Sarasota-based digital agency founded by Sean Rowe. Every strategy is backed by data, built for humans, and optimized for growth."
+                  className="font-urbanist text-[17px] text-[#333]/60 leading-relaxed mb-6"
+                />
+                <EditableText
+                  as="p"
+                  pageSlug={pageSlug || 'services'}
+                  blockKey="team_body_2"
+                  defaultValue="No outsourcing, no cookie-cutter templates. Just a dedicated local team that shows up, delivers results, and genuinely cares about your success."
+                  className="font-urbanist text-[15px] text-[#333]/40 leading-relaxed"
+                />
               </motion.div>
             </div>
           </div>
@@ -414,34 +449,49 @@ export default function ServicePageLayout({
       {pricing && pricing.length > 0 && (
         <section id="pricing" className="bg-white px-6 md:px-16 lg:px-24 py-20 lg:py-32">
           <div className="max-w-7xl mx-auto">
-            <motion.p
+            <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease }}
               viewport={{ once: true, margin: '-60px' }}
-              className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
             >
-              Pricing
-            </motion.p>
-            <motion.h2
+              <EditableText
+                as="p"
+                pageSlug={pageSlug || 'services'}
+                blockKey="pricing_eyebrow"
+                defaultValue="Pricing"
+                className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
+              />
+            </motion.div>
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease }}
               viewport={{ once: true, margin: '-60px' }}
-              className="font-urbanist font-black text-[#1A1A1A] mb-6 leading-tight"
-              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
             >
-              Transparent Pricing
-            </motion.h2>
-            <motion.p
+              <EditableText
+                as="h2"
+                pageSlug={pageSlug || 'services'}
+                blockKey="pricing_heading"
+                defaultValue="Transparent Pricing"
+                className="font-urbanist font-black text-[#1A1A1A] mb-6 leading-tight"
+                style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
+              />
+            </motion.div>
+            <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease }}
               viewport={{ once: true, margin: '-60px' }}
-              className="font-urbanist text-[17px] text-[#333]/60 leading-relaxed max-w-2xl mb-14"
             >
-              No hidden fees, no long-term contracts. Choose the plan that fits your business and scale as you grow.
-            </motion.p>
+              <EditableText
+                as="p"
+                pageSlug={pageSlug || 'services'}
+                blockKey="pricing_subtext"
+                defaultValue="No hidden fees, no long-term contracts. Choose the plan that fits your business and scale as you grow."
+                className="font-urbanist text-[17px] text-[#333]/60 leading-relaxed max-w-2xl mb-14"
+              />
+            </motion.div>
 
             <div
               className={`grid gap-8 ${
@@ -546,25 +596,35 @@ export default function ServicePageLayout({
       ════════════════════════════════════════════════════════ */}
       <section className="bg-[#F8F8F8] px-6 md:px-16 lg:px-24 py-20 lg:py-32">
         <div className="max-w-3xl mx-auto">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
           >
-            FAQ
-          </motion.p>
-          <motion.h2
+            <EditableText
+              as="p"
+              pageSlug={pageSlug || 'services'}
+              blockKey="faq_eyebrow"
+              defaultValue="FAQ"
+              className="text-[#14EAEA] text-xs font-bold tracking-[3px] uppercase mb-4"
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="font-urbanist font-black text-[#1A1A1A] mb-12 leading-tight"
-            style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
           >
-            Frequently Asked Questions
-          </motion.h2>
+            <EditableText
+              as="h2"
+              pageSlug={pageSlug || 'services'}
+              blockKey="faq_heading"
+              defaultValue="Frequently Asked Questions"
+              className="font-urbanist font-black text-[#1A1A1A] mb-12 leading-tight"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
+            />
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -591,34 +651,49 @@ export default function ServicePageLayout({
       ════════════════════════════════════════════════════════ */}
       <section className="bg-[#0F0F0F] px-6 md:px-16 lg:px-24 py-20 lg:py-32">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
           >
-            Let&apos;s Talk
-          </motion.p>
-          <motion.h2
+            <EditableText
+              as="p"
+              pageSlug={pageSlug || 'services'}
+              blockKey="cta_eyebrow"
+              defaultValue="Let's Talk"
+              className="text-[#F813BE] text-xs font-bold tracking-[3px] uppercase mb-4"
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="font-urbanist font-black text-white mb-6 leading-tight"
-            style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
           >
-            Ready to Get Started?
-          </motion.h2>
-          <motion.p
+            <EditableText
+              as="h2"
+              pageSlug={pageSlug || 'services'}
+              blockKey="cta_heading"
+              defaultValue="Ready to Get Started?"
+              className="font-urbanist font-black text-white mb-6 leading-tight"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', letterSpacing: '-0.03em' }}
+            />
+          </motion.div>
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease }}
             viewport={{ once: true, margin: '-60px' }}
-            className="font-urbanist text-white/60 text-lg leading-relaxed max-w-xl mx-auto mb-10"
           >
-            Schedule a free consultation and let us show you how we can grow your business with a clear, results-driven strategy.
-          </motion.p>
+            <EditableText
+              as="p"
+              pageSlug={pageSlug || 'services'}
+              blockKey="cta_subtext"
+              defaultValue="Schedule a free consultation and let us show you how we can grow your business with a clear, results-driven strategy."
+              className="font-urbanist text-white/60 text-lg leading-relaxed max-w-xl mx-auto mb-10"
+            />
+          </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -628,15 +703,27 @@ export default function ServicePageLayout({
           >
             <Link
               href={ctaHref}
+              onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
               className="bg-[#F813BE] text-white font-semibold px-8 py-4 rounded-full hover:bg-[#d10fa3] transition-colors duration-200"
             >
-              {ctaText}
+              <EditableText
+                as="span"
+                pageSlug={pageSlug || 'services'}
+                blockKey="cta_button_text"
+                defaultValue={ctaText}
+              />
             </Link>
             <a
               href="tel:9418401381"
+              onClick={(e) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
               className="border border-[#14EAEA] text-[#14EAEA] font-semibold px-8 py-4 rounded-full hover:bg-[#14EAEA] hover:text-[#0A0A0A] transition-colors duration-200"
             >
-              Call (941) 840-1381
+              <EditableText
+                as="span"
+                pageSlug={pageSlug || 'services'}
+                blockKey="cta_phone_text"
+                defaultValue="Call (941) 840-1381"
+              />
             </a>
           </motion.div>
         </div>

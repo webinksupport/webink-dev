@@ -156,10 +156,26 @@ export default function EditableBackground({
       {/* Actual section content */}
       {children}
 
-      {/* Camera icon badge — edit mode only */}
-      {editMode && (
+      {/* Full-area clickable overlay — edit mode only */}
+      {editMode && !showToolbar && (
+        <div
+          onClick={(e) => { e.stopPropagation(); openToolbar() }}
+          data-editor-toolbar
+          className="absolute inset-0 z-40 cursor-pointer group/bg-edit"
+        >
+          <div className="absolute inset-0 bg-black/0 group-hover/bg-edit:bg-black/30 transition-all duration-300 flex items-center justify-center">
+            <div className="flex items-center gap-2 bg-black/70 backdrop-blur-sm rounded-full px-5 py-2.5 border border-white/20 opacity-0 group-hover/bg-edit:opacity-100 transition-opacity duration-300 shadow-lg">
+              <Camera size={16} className="text-[#14EAEA]" />
+              <span className="font-urbanist text-sm font-semibold text-white/90">Edit Background</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Camera icon badge — persistent edit mode indicator */}
+      {editMode && !showToolbar && (
         <button
-          onClick={openToolbar}
+          onClick={(e) => { e.stopPropagation(); openToolbar() }}
           data-editor-toolbar
           className="absolute top-4 right-4 z-50 w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-[#14EAEA] hover:border-[#14EAEA] transition-all duration-200 shadow-lg"
           title="Edit background image"
