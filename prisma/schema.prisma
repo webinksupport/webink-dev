@@ -379,6 +379,7 @@ model SocialPost {
 
 enum SocialPostStatus {
   DRAFT
+  PENDING_REVIEW
   SCHEDULED
   PUBLISHING
   PUBLISHED
@@ -402,4 +403,27 @@ model SocialHashtagSet {
   hashtags  String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SocialBrandProfile {
+  id                String   @id @default(cuid())
+  businessName      String
+  tagline           String?
+  brandVoice        String?  // Professional, Casual, Witty, Inspirational, Bold
+  primaryColors     Json?    // Array of hex color strings
+  targetAudience    String?  @db.Text
+  keyServices       String?  @db.Text
+  brandKeywords     String?  @db.Text
+  competitorHandles String?  @db.Text
+  logoPath          String?
+  updatedAt         DateTime @updatedAt
+}
+
+model SocialContentPillar {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  icon        String?
+  color       String?
+  createdAt   DateTime @default(now())
 }

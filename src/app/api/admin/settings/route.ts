@@ -49,6 +49,16 @@ const SETTING_DEFS: Record<string, { isSecret: boolean }> = {
   TWILIO_ACCOUNT_SID: { isSecret: false },
   TWILIO_AUTH_TOKEN: { isSecret: true },
   TWILIO_PHONE_NUMBER: { isSecret: false },
+  // Image Generation
+  GOOGLE_AI_API_KEY: { isSecret: true },
+  XAI_API_KEY: { isSecret: true },
+  // Social Publishing
+  FACEBOOK_ACCESS_TOKEN: { isSecret: true },
+  INSTAGRAM_ACCOUNT_ID: { isSecret: false },
+  FACEBOOK_PAGE_ID: { isSecret: false },
+  SOCIAL_AUTO_PUBLISH: { isSecret: false },
+  SOCIAL_DEFAULT_POST_TIME: { isSecret: false },
+  CRON_SECRET: { isSecret: true },
 }
 
 function maskValue(value: string): string {

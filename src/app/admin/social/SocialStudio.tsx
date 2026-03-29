@@ -2,24 +2,33 @@
 
 import { useState } from 'react'
 import IdeaGenerator from './tabs/IdeaGenerator'
+import BrandAssistant from './tabs/BrandAssistant'
 import ImageStudio from './tabs/ImageStudio'
 import PostComposer from './tabs/PostComposer'
+import ReviewQueue from './tabs/ReviewQueue'
 import CalendarView from './tabs/CalendarView'
 import Analytics from './tabs/Analytics'
+import PublishingSettings from './tabs/PublishingSettings'
 import {
   Lightbulb,
   ImageIcon,
   PenSquare,
   Calendar,
   BarChart2,
+  Palette,
+  ClipboardCheck,
+  Settings,
 } from 'lucide-react'
 
 const tabs = [
   { id: 'ideas', label: 'Idea Generator', icon: Lightbulb },
+  { id: 'brand', label: 'Brand Assistant', icon: Palette },
   { id: 'images', label: 'Image Studio', icon: ImageIcon },
   { id: 'composer', label: 'Post Composer', icon: PenSquare },
+  { id: 'review', label: 'Review Queue', icon: ClipboardCheck },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
   { id: 'analytics', label: 'Analytics', icon: BarChart2 },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ]
 
 export default function SocialStudio() {
@@ -30,10 +39,17 @@ export default function SocialStudio() {
     hashtags?: string
     mediaPath?: string
   }>({})
+  // Image studio prompt (pre-filled from Brand Assistant)
+  const [imageStudioPrompt, setImageStudioPrompt] = useState('')
 
   function goToComposer(draft: { caption?: string; hashtags?: string; mediaPath?: string }) {
     setComposerDraft(draft)
     setActiveTab('composer')
+  }
+
+  function goToImageStudio(prompt: string) {
+    setImageStudioPrompt(prompt)
+    setActiveTab('images')
   }
 
   return (
@@ -71,14 +87,34 @@ export default function SocialStudio() {
       {/* Tab Content */}
       <div>
         {activeTab === 'ideas' && <IdeaGenerator onUseIdea={goToComposer} />}
-        {activeTab === 'images' && <ImageStudio onUseImage={(path) => goToComposer({ mediaPath: path })} />}
+        {activeTab === 'brand' && (
+          <BrandAssistant
+            onUseContent={(content) => goToComposer({
+              caption: content.caption,
+              hashtags: content.hashtags,
+            })}
+            onGoToImageStudio={goToImageStudio}
+          />
+        )}
+        {activeTab === 'images' && (
+          <ImageStudio
+            onUseImage={(path) => goToComposer({ mediaPath: path })}
+            initialPrompt={imageStudioPrompt}
+          />
+        )}
         {activeTab === 'composer' && <PostComposer initialDraft={composerDraft} />}
+        {activeTab === 'review' && <ReviewQueue onEditPost={(post) => goToComposer({
+          caption: post.caption || '',
+          hashtags: post.hashtags || '',
+          mediaPath: post.mediaPath || '',
+        })} />}
         {activeTab === 'calendar' && <CalendarView onEditPost={(post) => goToComposer({
           caption: post.caption || '',
           hashtags: post.hashtags || '',
           mediaPath: post.mediaPath || '',
         })} />}
         {activeTab === 'analytics' && <Analytics />}
+        {activeTab === 'settings' && <PublishingSettings />}
       </div>
     </div>
   )

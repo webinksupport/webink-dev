@@ -171,6 +171,33 @@ export default function PostComposer({ initialDraft }: Props) {
     setPublishing(false)
   }
 
+  async function submitForReview() {
+    setSaving(true)
+    setStatus('idle')
+    try {
+      const method = savedPost ? 'PATCH' : 'POST'
+      const url = savedPost ? `/api/social/posts/${savedPost.id}` : '/api/social/posts'
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          caption,
+          hashtags,
+          mediaPath: mediaPath || null,
+          platforms,
+          scheduledAt: scheduledAt || null,
+          status: 'PENDING_REVIEW',
+        }),
+      })
+      const post = await res.json()
+      setSavedPost(post)
+      setStatus('saved')
+    } catch {
+      setStatus('error')
+    }
+    setSaving(false)
+  }
+
   async function saveHashtagSet() {
     if (!newSetName.trim() || !hashtags.trim()) return
     await fetch('/api/social/hashtag-sets', {
@@ -383,6 +410,14 @@ export default function PostComposer({ initialDraft }: Props) {
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               {scheduledAt ? 'Schedule' : 'Save Draft'}
+            </button>
+            <button
+              onClick={submitForReview}
+              disabled={saving || !caption.trim()}
+              className="flex items-center gap-2 bg-[#14EAEA]/20 hover:bg-[#14EAEA]/30 border border-[#14EAEA]/40 text-[#14EAEA] px-4 py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50"
+            >
+              <CheckCircle className="w-4 h-4" />
+              Submit for Review
             </button>
             <button
               onClick={publishNow}

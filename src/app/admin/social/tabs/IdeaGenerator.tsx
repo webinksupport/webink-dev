@@ -1,12 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Lightbulb, Sparkles, Save, Trash2, ArrowRight, BookmarkCheck } from 'lucide-react'
+import {
+  Lightbulb, Sparkles, Save, Trash2, ArrowRight, BookmarkCheck,
+  Calendar, Plus, X, Layers,
+} from 'lucide-react'
 
 interface Idea {
   hook: string
   caption: string
   hashtags: string
+  dayOfWeek?: string
 }
 
 interface SavedIdea {
@@ -20,13 +24,29 @@ interface SavedIdea {
   createdAt: string
 }
 
+interface ContentPillar {
+  id: string
+  title: string
+  description: string | null
+  icon: string | null
+  color: string | null
+}
+
 interface Props {
   onUseIdea: (draft: { caption?: string; hashtags?: string }) => void
 }
 
+const TOPIC_CATEGORIES = [
+  'Industry Trends', 'Client Success', 'Behind the Scenes', 'Educational/Tips',
+  'Promotional', 'Seasonal/Holiday', 'Community', 'Q&A', 'Product/Service Spotlight',
+]
+
 export default function IdeaGenerator({ onUseIdea }: Props) {
   const [topic, setTopic] = useState('')
   const [brandVoice, setBrandVoice] = useState('professional')
+  const [category, setCategory] = useState('')
+  const [selectedPillar, setSelectedPillar] = useState('')
+  const [bulkGenerate, setBulkGenerate] = useState(false)
   const [loading, setLoading] = useState(false)
   const [ideas, setIdeas] = useState<Idea[]>([])
   const [savedIdeas, setSavedIdeas] = useState<SavedIdea[]>([])
@@ -34,8 +54,15 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
   const [showSaved, setShowSaved] = useState(false)
   const [error, setError] = useState('')
 
+  // Content pillars
+  const [pillars, setPillars] = useState<ContentPillar[]>([])
+  const [showPillarForm, setShowPillarForm] = useState(false)
+  const [newPillarTitle, setNewPillarTitle] = useState('')
+  const [newPillarDesc, setNewPillarDesc] = useState('')
+
   useEffect(() => {
     fetchSaved()
+    fetchPillars()
   }, [])
 
   async function fetchSaved() {
@@ -43,16 +70,50 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
     if (res.ok) setSavedIdeas(await res.json())
   }
 
+  async function fetchPillars() {
+    const res = await fetch('/api/social/content-pillars')
+    if (res.ok) setPillars(await res.json())
+  }
+
+  async function addPillar() {
+    if (!newPillarTitle.trim()) return
+    await fetch('/api/social/content-pillars', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newPillarTitle, description: newPillarDesc }),
+    })
+    setNewPillarTitle('')
+    setNewPillarDesc('')
+    setShowPillarForm(false)
+    fetchPillars()
+  }
+
+  async function deletePillar(id: string) {
+    await fetch('/api/social/content-pillars', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    fetchPillars()
+  }
+
   async function generate() {
     if (!topic.trim()) return
     setLoading(true)
     setError('')
     setIdeas([])
+    setSavedIds(new Set())
     try {
       const res = await fetch('/api/social/ideas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, brandVoice }),
+        body: JSON.stringify({
+          topic,
+          brandVoice,
+          category: category || undefined,
+          contentPillar: selectedPillar || undefined,
+          bulkGenerate,
+        }),
       })
       const data = await res.json()
       if (data.ideas) {
@@ -80,6 +141,39 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
     }
   }
 
+  async function saveToCalendar(idea: Idea, idx: number) {
+    // Calculate next occurrence of the day
+    let scheduledAt: string | undefined
+    if (idea.dayOfWeek) {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+      const targetDay = days.indexOf(idea.dayOfWeek)
+      if (targetDay >= 0) {
+        const now = new Date()
+        const currentDay = now.getDay()
+        const daysUntil = (targetDay - currentDay + 7) % 7 || 7
+        const target = new Date(now)
+        target.setDate(now.getDate() + daysUntil)
+        target.setHours(9, 0, 0, 0) // Default 9:00 AM
+        scheduledAt = target.toISOString()
+      }
+    }
+
+    const res = await fetch('/api/social/ideas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'save_to_calendar',
+        hook: idea.hook,
+        caption: idea.caption,
+        hashtags: idea.hashtags,
+        scheduledAt,
+      }),
+    })
+    if (res.ok) {
+      setSavedIds((prev) => new Set(Array.from(prev).concat(idx)))
+    }
+  }
+
   async function markIdeaUsed(id: string) {
     await fetch('/api/social/ideas', {
       method: 'PATCH',
@@ -100,6 +194,74 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Content Pillars */}
+      <div className="bg-[#141414] border border-[#222] rounded-xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-[#14EAEA]" />
+            <h3 className="text-white text-sm font-medium">Content Pillars</h3>
+          </div>
+          <button
+            onClick={() => setShowPillarForm(!showPillarForm)}
+            className="flex items-center gap-1 text-xs text-[#666] hover:text-[#14EAEA] transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add Pillar
+          </button>
+        </div>
+
+        {showPillarForm && (
+          <div className="flex gap-2 mb-3">
+            <input
+              type="text"
+              value={newPillarTitle}
+              onChange={(e) => setNewPillarTitle(e.target.value)}
+              placeholder="Pillar name (e.g. Web Design Tips)"
+              className="flex-1 bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-[#14EAEA]"
+            />
+            <input
+              type="text"
+              value={newPillarDesc}
+              onChange={(e) => setNewPillarDesc(e.target.value)}
+              placeholder="Description (optional)"
+              className="flex-1 bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-[#14EAEA]"
+            />
+            <button
+              onClick={addPillar}
+              className="bg-[#14EAEA]/20 hover:bg-[#14EAEA]/30 text-[#14EAEA] px-3 py-1.5 rounded-lg text-xs transition-colors"
+            >
+              Add
+            </button>
+          </div>
+        )}
+
+        {pillars.length > 0 ? (
+          <div className="flex gap-2 flex-wrap">
+            {pillars.map((p) => (
+              <div
+                key={p.id}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs cursor-pointer transition-all ${
+                  selectedPillar === p.title
+                    ? 'border-[#14EAEA] bg-[#14EAEA]/10 text-[#14EAEA]'
+                    : 'border-[#333] text-[#888] hover:border-[#444]'
+                }`}
+                onClick={() => setSelectedPillar(selectedPillar === p.title ? '' : p.title)}
+              >
+                {p.title}
+                <button
+                  onClick={(e) => { e.stopPropagation(); deletePillar(p.id) }}
+                  className="text-[#555] hover:text-red-400 transition-colors ml-1"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[#555] text-xs">Define 3-5 content pillars to guide idea generation. E.g. &quot;Web Design Tips&quot;, &quot;SEO Insights&quot;, &quot;Client Stories&quot;</p>
+        )}
+      </div>
+
       {/* Generator Card */}
       <div className="bg-[#141414] border border-[#222] rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -107,7 +269,7 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
           <h2 className="text-white font-semibold">Generate Content Ideas</h2>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4 mb-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <div>
             <label className="text-xs text-[#666] block mb-1.5">Topic or Theme</label>
             <input
@@ -118,6 +280,19 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
               placeholder="e.g. web design tips, SEO for restaurants..."
               className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#555] focus:outline-none focus:border-[#F813BE]"
             />
+          </div>
+          <div>
+            <label className="text-xs text-[#666] block mb-1.5">Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#F813BE]"
+            >
+              <option value="">All Categories</option>
+              {TOPIC_CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="text-xs text-[#666] block mb-1.5">Brand Voice</label>
@@ -132,6 +307,17 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
               <option value="educational">Educational</option>
             </select>
           </div>
+          <div className="flex items-end">
+            <label className="flex items-center gap-2 cursor-pointer py-2.5">
+              <input
+                type="checkbox"
+                checked={bulkGenerate}
+                onChange={(e) => setBulkGenerate(e.target.checked)}
+                className="rounded border-[#333] bg-[#1A1A1A] text-[#F813BE] focus:ring-[#F813BE]"
+              />
+              <span className="text-white text-sm">Weekly Plan (7 days)</span>
+            </label>
+          </div>
         </div>
 
         <button
@@ -140,7 +326,7 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
           className="flex items-center gap-2 bg-[#F813BE] hover:bg-[#d10fa0] text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Sparkles className="w-4 h-4" />
-          {loading ? 'Generating...' : 'Generate Ideas'}
+          {loading ? 'Generating...' : bulkGenerate ? 'Generate Weekly Plan' : 'Generate Ideas'}
         </button>
 
         {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
@@ -158,7 +344,12 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
               <div key={i} className="bg-[#141414] border border-[#222] rounded-xl p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[#14EAEA] font-medium text-sm mb-2">"{idea.hook}"</p>
+                    {idea.dayOfWeek && (
+                      <span className="text-[#F813BE] text-xs font-medium bg-[#F813BE]/10 px-2 py-0.5 rounded mb-2 inline-block">
+                        {idea.dayOfWeek}
+                      </span>
+                    )}
+                    <p className="text-[#14EAEA] font-medium text-sm mb-2">&quot;{idea.hook}&quot;</p>
                     <p className="text-[#aaa] text-sm leading-relaxed mb-3">{idea.caption}</p>
                     <p className="text-[#555] text-xs">{idea.hashtags}</p>
                   </div>
@@ -178,6 +369,14 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
                       {savedIds.has(i) ? <BookmarkCheck className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
                       {savedIds.has(i) ? 'Saved' : 'Save'}
                     </button>
+                    <button
+                      onClick={() => saveToCalendar(idea, i)}
+                      disabled={savedIds.has(i)}
+                      className="flex items-center gap-1.5 bg-[#1A1A1A] hover:bg-[#14EAEA]/10 text-[#999] hover:text-[#14EAEA] px-3 py-1.5 rounded-lg text-xs transition-colors disabled:opacity-50"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      To Calendar
+                    </button>
                   </div>
                 </div>
               </div>
@@ -192,7 +391,7 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
           onClick={() => setShowSaved(!showSaved)}
           className="text-[#666] hover:text-white text-sm transition-colors mb-3"
         >
-          {showSaved ? '▼' : '▶'} Saved Ideas ({savedIdeas.length})
+          {showSaved ? '\u25BC' : '\u25B6'} Saved Ideas ({savedIdeas.length})
         </button>
 
         {showSaved && savedIdeas.length > 0 && (
@@ -210,7 +409,7 @@ export default function IdeaGenerator({ onUseIdea }: Props) {
                         <span className="text-green-500 text-xs bg-green-500/10 px-2 py-0.5 rounded">Used</span>
                       )}
                     </div>
-                    <p className="text-[#14EAEA] text-sm mb-1.5">"{idea.hook}"</p>
+                    <p className="text-[#14EAEA] text-sm mb-1.5">&quot;{idea.hook}&quot;</p>
                     <p className="text-[#777] text-xs leading-relaxed line-clamp-2">{idea.caption}</p>
                   </div>
                   <div className="flex gap-2 shrink-0">

@@ -44,8 +44,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(idea)
   }
 
+  // Save idea to calendar (create draft post)
+  if (body.action === 'save_to_calendar') {
+    const post = await prisma.socialPost.create({
+      data: {
+        title: body.hook,
+        caption: body.caption,
+        hashtags: body.hashtags || null,
+        platforms: JSON.stringify(['instagram', 'facebook']),
+        status: 'DRAFT',
+        scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
+      },
+    })
+    // Mark the source idea as used if id provided
+    if (body.ideaId) {
+      await prisma.socialIdea.update({
+        where: { id: body.ideaId },
+        data: { used: true },
+      }).catch(() => {})
+    }
+    return NextResponse.json(post)
+  }
+
   // Generate ideas with Claude
-  const { topic, brandVoice = 'professional' } = body
+  const { topic, brandVoice = 'professional', category, contentPillar, bulkGenerate } = body
 
   if (!topic) {
     return NextResponse.json({ error: 'topic is required' }, { status: 400 })
@@ -64,17 +86,25 @@ export async function POST(req: NextRequest) {
   }
 
   const voiceDesc = brandVoiceDescriptions[brandVoice] || brandVoiceDescriptions.professional
+  const ideaCount = bulkGenerate ? 7 : 7
+
+  const categoryContext = category ? `\nContent Category: ${category}` : ''
+  const pillarContext = contentPillar ? `\nContent Pillar to align with: ${contentPillar}` : ''
+  const dayLabels = bulkGenerate
+    ? '\nAssign each idea to a day of the week (Monday through Sunday). Vary the content types across the week.'
+    : ''
 
   const prompt = `You are a social media strategist for Webink Solutions, a web design and digital marketing agency in Sarasota, FL.
 
-Brand Voice: ${voiceDesc}
+Brand Voice: ${voiceDesc}${categoryContext}${pillarContext}
 
-Generate 7 unique social media content ideas for the topic: "${topic}"
+Generate ${ideaCount} unique social media content ideas for the topic: "${topic}"${dayLabels}
 
 For each idea, provide:
 1. A hook (attention-grabbing opening line, max 15 words)
 2. A caption (2-4 sentences, engaging, ends with a CTA)
-3. 5-8 relevant hashtags
+3. 5-8 relevant hashtags (mix broad + niche + trending)
+${bulkGenerate ? '4. A suggested day of the week (Monday-Sunday)' : ''}
 
 Return ONLY valid JSON in this exact format:
 {
@@ -82,7 +112,7 @@ Return ONLY valid JSON in this exact format:
     {
       "hook": "...",
       "caption": "...",
-      "hashtags": "#tag1 #tag2 #tag3 #tag4 #tag5"
+      "hashtags": "#tag1 #tag2 #tag3 #tag4 #tag5"${bulkGenerate ? ',\n      "dayOfWeek": "Monday"' : ''}
     }
   ]
 }
@@ -93,14 +123,14 @@ Do not include any text outside the JSON.`
     const client = new Anthropic({ apiKey })
     const message = await client.messages.create({
       model: 'claude-3-5-haiku-20241022',
-      max_tokens: 2000,
+      max_tokens: 3000,
       messages: [{ role: 'user', content: prompt }],
     })
 
     const text = message.content[0].type === 'text' ? message.content[0].text : ''
     const parsed = JSON.parse(text)
 
-    return NextResponse.json({ ideas: parsed.ideas, topic, brandVoice })
+    return NextResponse.json({ ideas: parsed.ideas, topic, brandVoice, category })
   } catch (error) {
     console.error('Claude idea generation error:', error)
     return NextResponse.json({ error: 'Failed to generate ideas' }, { status: 500 })
