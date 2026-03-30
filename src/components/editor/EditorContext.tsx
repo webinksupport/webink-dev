@@ -102,7 +102,15 @@ export function EditorProvider({
         const textMap: Record<string, string> = {}
         const jsonMap: Record<string, unknown> = {}
         for (const block of blocks) {
-          textMap[block.blockKey] = block.value
+          // Ensure value is always a plain string — never an object
+          if (typeof block.value === 'string') {
+            textMap[block.blockKey] = block.value
+          } else if (block.value && typeof block.value === 'object') {
+            const obj = block.value as Record<string, unknown>
+            textMap[block.blockKey] = (typeof obj.text === 'string' ? obj.text : typeof obj.src === 'string' ? obj.src : '')
+          } else {
+            textMap[block.blockKey] = String(block.value ?? '')
+          }
           if (block.jsonValue !== null && block.jsonValue !== undefined) {
             jsonMap[block.blockKey] = block.jsonValue
           }

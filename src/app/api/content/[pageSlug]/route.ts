@@ -16,7 +16,18 @@ export async function GET(
       orderBy: { blockKey: 'asc' },
     })
 
-    return NextResponse.json(blocks)
+    // Sanitize: ensure value is always a plain string, never an object
+    const sanitized = blocks.map(block => ({
+      ...block,
+      value: typeof block.value === 'string'
+        ? block.value
+        : (block.value && typeof block.value === 'object'
+          ? ((block.value as Record<string, unknown>).text as string ??
+             (block.value as Record<string, unknown>).src as string ?? '')
+          : String(block.value ?? '')),
+    }))
+
+    return NextResponse.json(sanitized)
   } catch {
     return NextResponse.json(
       { error: 'Failed to fetch content blocks' },
@@ -62,12 +73,23 @@ export async function PUT(
           ? (block.jsonValue === null ? Prisma.DbNull : block.jsonValue as Prisma.InputJsonValue)
           : undefined
 
+        // Ensure value is always a plain string — never store an object in the value column
+        let safeValue: string
+        if (typeof block.value === 'string') {
+          safeValue = block.value
+        } else if (block.value && typeof block.value === 'object') {
+          const obj = block.value as Record<string, unknown>
+          safeValue = (typeof obj.text === 'string' ? obj.text : typeof obj.src === 'string' ? obj.src : '')
+        } else {
+          safeValue = String(block.value ?? '')
+        }
+
         return prisma.pageContent.upsert({
           where: {
             pageSlug_blockKey: { pageSlug, blockKey: block.blockKey },
           },
           update: {
-            value: block.value,
+            value: safeValue,
             blockType: block.blockType,
             ...(jsonVal !== undefined ? { jsonValue: jsonVal } : {}),
           },
@@ -75,7 +97,7 @@ export async function PUT(
             pageSlug,
             blockKey: block.blockKey,
             blockType: block.blockType,
-            value: block.value,
+            value: safeValue,
             ...(jsonVal !== undefined ? { jsonValue: jsonVal } : {}),
           },
         })

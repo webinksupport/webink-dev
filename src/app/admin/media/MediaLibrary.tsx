@@ -303,6 +303,13 @@ function DetailPanel({
   )
 }
 
+const GRID_PAGE_SIZE = 40
+
+function paginateItems(items: MediaFile[], page: number) {
+  const visible = items.slice(0, page * GRID_PAGE_SIZE)
+  return { visible, remaining: items.length - visible.length }
+}
+
 // ───────── Main Media Library ─────────
 
 export default function MediaLibrary() {
@@ -323,6 +330,7 @@ export default function MediaLibrary() {
   const [selectedFile, setSelectedFile] = useState<MediaFile | null>(null)
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set())
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number>(-1)
+  const [gridPage, setGridPage] = useState(1)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const toastTimeout = useRef<NodeJS.Timeout | null>(null)
 
@@ -692,78 +700,97 @@ export default function MediaLibrary() {
       )}
 
       {/* Grid view */}
-      {!loading && filtered.length > 0 && viewMode === 'grid' && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {filtered.map((file, index) => {
-            const isSelected = selectedPaths.has(file.path)
-            return (
-              <div
-                key={file.path}
-                className={`group relative bg-[#1A1A1A] rounded-xl border overflow-hidden cursor-pointer transition-all ${
-                  isSelected
-                    ? 'border-[#14EAEA] ring-1 ring-[#14EAEA]/30'
-                    : 'border-white/10 hover:border-[#14EAEA]/50'
-                }`}
-              >
-                {/* Checkbox */}
-                <div
-                  className={`absolute top-2 left-2 z-10 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
-                >
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleCheckbox(file, index, e.shiftKey)
-                    }}
-                    className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+      {!loading && filtered.length > 0 && viewMode === 'grid' && (() => {
+        const { visible, remaining } = paginateItems(filtered, gridPage)
+        return (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {visible.map((file, index) => {
+                const isSelected = selectedPaths.has(file.path)
+                return (
+                  <div
+                    key={file.path}
+                    className={`group relative bg-[#1A1A1A] rounded-xl border overflow-hidden cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-[#14EAEA] border-[#14EAEA]'
-                        : 'border-white/40 bg-black/40 hover:border-[#14EAEA]'
+                        ? 'border-[#14EAEA] ring-1 ring-[#14EAEA]/30'
+                        : 'border-white/10 hover:border-[#14EAEA]/50'
                     }`}
                   >
-                    {isSelected && (
-                      <Check className="w-3 h-3 text-[#0A0A0A]" />
-                    )}
-                  </button>
-                </div>
+                    {/* Checkbox */}
+                    <div
+                      className={`absolute top-2 left-2 z-10 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleCheckbox(file, index, e.shiftKey)
+                        }}
+                        className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                          isSelected
+                            ? 'bg-[#14EAEA] border-[#14EAEA]'
+                            : 'border-white/40 bg-black/40 hover:border-[#14EAEA]'
+                        }`}
+                      >
+                        {isSelected && (
+                          <Check className="w-3 h-3 text-[#0A0A0A]" />
+                        )}
+                      </button>
+                    </div>
 
-                {/* Image */}
-                <div
-                  className="relative h-36 bg-[#111]"
-                  onClick={() => setSelectedFile(file)}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={file.path}
-                    alt={file.altText || file.name}
-                    className={`w-full h-full ${file.name.endsWith('.svg') ? 'object-contain p-4' : 'object-cover'}`}
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                  />
+                    {/* Image */}
+                    <div
+                      className="relative h-36 bg-[#111]"
+                      onClick={() => setSelectedFile(file)}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={file.path}
+                        alt={file.altText || file.name}
+                        width={200}
+                        height={144}
+                        className={`w-full h-full ${file.name.endsWith('.svg') ? 'object-contain p-4' : 'object-cover'}`}
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
 
-                  {/* Hover overlay with filename + size */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
-                    <p className="text-white text-xs font-medium truncate">
-                      {file.name}
-                    </p>
-                    <p className="text-white/60 text-[10px]">
-                      {formatSize(file.size)}
-                      {file.width && file.height
-                        ? ` • ${file.width}×${file.height}`
-                        : ''}
-                    </p>
+                      {/* Hover overlay with filename + size */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                        <p className="text-white text-xs font-medium truncate">
+                          {file.name}
+                        </p>
+                        <p className="text-white/60 text-[10px]">
+                          {formatSize(file.size)}
+                          {file.width && file.height
+                            ? ` • ${file.width}×${file.height}`
+                            : ''}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="p-2.5">
+                      <p className="text-xs text-white/60 truncate" title={file.name}>
+                        {file.name}
+                      </p>
+                    </div>
                   </div>
-                </div>
-
-                {/* Footer */}
-                <div className="p-2.5">
-                  <p className="text-xs text-white/60 truncate" title={file.name}>
-                    {file.name}
-                  </p>
-                </div>
+                )
+              })}
+            </div>
+            {remaining > 0 && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setGridPage(p => p + 1)}
+                  className="font-urbanist font-bold text-sm text-[#14EAEA] hover:text-white transition-colors px-6 py-2 border border-[#14EAEA]/30 rounded-full hover:border-[#14EAEA] duration-200"
+                >
+                  Load more ({remaining} remaining)
+                </button>
               </div>
-            )
-          })}
-        </div>
-      )}
+            )}
+          </>
+        )
+      })()}
 
       {/* List view */}
       {!loading && filtered.length > 0 && viewMode === 'list' && (

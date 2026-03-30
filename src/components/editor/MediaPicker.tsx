@@ -236,8 +236,12 @@ export default function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
                     <img
                       src={file.path}
                       alt={file.name}
+                      width={150}
+                      height={150}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                     <span className="absolute bottom-1 left-1 right-1 font-urbanist text-[10px] text-white truncate opacity-0 group-hover:opacity-100 transition-opacity duration-200">

@@ -1,5 +1,19 @@
 import { prisma } from '@/lib/prisma'
 
+/** Ensure a stored value is a plain string — not a serialized style object */
+function safeStringValue(val: unknown): string {
+  if (typeof val === 'string') return val
+  if (val && typeof val === 'object') {
+    // If it's a style object (color, fontSize, etc.), extract the text if present
+    const obj = val as Record<string, unknown>
+    if ('text' in obj && typeof obj.text === 'string') return obj.text
+    if ('src' in obj && typeof obj.src === 'string') return obj.src
+    // Last resort: return empty string rather than crash React with an object
+    return ''
+  }
+  return String(val ?? '')
+}
+
 export async function getPageContent(pageSlug: string): Promise<Record<string, string>> {
   try {
     const blocks = await prisma.pageContent.findMany({
@@ -8,7 +22,7 @@ export async function getPageContent(pageSlug: string): Promise<Record<string, s
 
     const content: Record<string, string> = {}
     for (const block of blocks) {
-      content[block.blockKey] = block.value
+      content[block.blockKey] = safeStringValue(block.value)
     }
     return content
   } catch {
