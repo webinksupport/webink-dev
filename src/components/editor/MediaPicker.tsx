@@ -3,6 +3,8 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { Search, X, Upload } from 'lucide-react'
 
+const INITIAL_RENDER_COUNT = 30
+
 interface MediaFile {
   name: string
   path: string
@@ -105,18 +107,24 @@ export default function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
     }
   }, [handleUpload])
 
+  const [showAll, setShowAll] = useState(false)
+
   const filtered = files.filter(f =>
     f.name.toLowerCase().includes(search.toLowerCase()) ||
     f.path.toLowerCase().includes(search.toLowerCase())
   )
+  const visibleFiles = showAll || search ? filtered : filtered.slice(0, INITIAL_RENDER_COUNT)
+  const hasMore = !showAll && !search && filtered.length > INITIAL_RENDER_COUNT
 
   const modal = (
     <div
       className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      onWheel={(e) => e.stopPropagation()}
       data-editor-toolbar
+      data-lenis-prevent
     >
-      <div className="bg-[#0F0F0F] rounded-2xl shadow-2xl border border-white/10 w-[90vw] max-w-4xl max-h-[80vh] flex flex-col">
+      <div className="bg-[#0F0F0F] rounded-2xl shadow-2xl border border-white/10 w-[90vw] max-w-4xl max-h-[80vh] flex flex-col" style={{ isolation: 'isolate' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <h3 className="font-urbanist font-bold text-white text-lg">Media Library</h3>
@@ -201,7 +209,12 @@ export default function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
         </div>
 
         {/* Grid */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div
+          className="flex-1 overflow-y-auto p-6"
+          onWheel={(e) => e.stopPropagation()}
+          data-lenis-prevent
+          style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+        >
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <span className="font-urbanist text-white/40">Loading media...</span>
@@ -211,27 +224,39 @@ export default function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
               <span className="font-urbanist text-white/40">No images found</span>
             </div>
           ) : (
-            <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-              {filtered.map((file) => (
-                <button
-                  key={file.path}
-                  onClick={() => onSelect(file.path)}
-                  className="group relative aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/10 hover:border-[#14EAEA] transition-all duration-200"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={file.path}
-                    alt={file.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                  <span className="absolute bottom-1 left-1 right-1 font-urbanist text-[10px] text-white truncate opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    {file.name}
-                  </span>
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                {visibleFiles.map((file) => (
+                  <button
+                    key={file.path}
+                    onClick={() => onSelect(file.path)}
+                    className="group relative aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/10 hover:border-[#14EAEA] transition-all duration-200"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={file.path}
+                      alt={file.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    <span className="absolute bottom-1 left-1 right-1 font-urbanist text-[10px] text-white truncate opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      {file.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {hasMore && (
+                <div className="flex justify-center mt-4">
+                  <button
+                    onClick={() => setShowAll(true)}
+                    className="font-urbanist font-bold text-sm text-[#14EAEA] hover:text-white transition-colors px-6 py-2 border border-[#14EAEA]/30 rounded-full hover:border-[#14EAEA] duration-200"
+                  >
+                    Load all {filtered.length} images
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
