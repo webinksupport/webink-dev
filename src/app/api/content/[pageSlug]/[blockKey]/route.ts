@@ -44,9 +44,11 @@ export async function PUT(
     })
 
     return NextResponse.json(block)
-  } catch {
+  } catch (error) {
+    console.error('PUT /api/content/[blockKey] error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to update content block' },
+      { error: 'Failed to update content block', detail: message },
       { status: 500 }
     )
   }
@@ -71,9 +73,11 @@ export async function DELETE(
     })
 
     return NextResponse.json({ success: true })
-  } catch {
+  } catch (error) {
+    console.error('DELETE /api/content/[blockKey] error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to delete content block' },
+      { error: 'Failed to delete content block', detail: message },
       { status: 500 }
     )
   }

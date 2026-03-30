@@ -48,6 +48,12 @@ export default function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
 
   useEffect(() => { loadMedia() }, [loadMedia])
 
+  // Lock body scroll when picker is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
   // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

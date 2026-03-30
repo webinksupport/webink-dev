@@ -47,6 +47,7 @@ export function EditorToolbar() {
   const [showMediaPicker, setShowMediaPicker] = useState(false)
   const [showEffects, setShowEffects] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [cacheCleared, setCacheCleared] = useState(false)
 
   const [textState, setTextState] = useState<TextProps>({ text: '' })
@@ -91,19 +92,19 @@ export function EditorToolbar() {
 
   const handleSave = useCallback(async () => {
     if (!selectedElement) return
-    let success: boolean
+    setSaveError(null)
+    let result: { ok: boolean; error?: string }
     if (selectedElement.type === 'text') {
-      // Read the current text from the DOM element (user may have edited inline via contenteditable)
       const currentText = selectedElement.element?.textContent || textState.text
-      success = await saveBlock(selectedElement.pageSlug, selectedElement.blockKey, 'TEXT', currentText, { fontSize: textState.fontSize, fontWeight: textState.fontWeight, color: textState.color, alignment: textState.alignment, effects: textState.effects })
-      // Sync textarea state with what was actually saved
-      if (success) setTextState(prev => ({ ...prev, text: currentText }))
+      result = await saveBlock(selectedElement.pageSlug, selectedElement.blockKey, 'TEXT', currentText, { fontSize: textState.fontSize, fontWeight: textState.fontWeight, color: textState.color, alignment: textState.alignment, effects: textState.effects })
+      if (result.ok) setTextState(prev => ({ ...prev, text: currentText }))
     } else if (selectedElement.type === 'background') {
-      success = await saveBlock(selectedElement.pageSlug, selectedElement.blockKey, 'JSON', bgState.src, { src: bgState.src, objectPosition: bgState.objectPosition, overlayOpacity: bgState.overlayOpacity, backgroundSize: bgState.backgroundSize })
+      result = await saveBlock(selectedElement.pageSlug, selectedElement.blockKey, 'JSON', bgState.src, { src: bgState.src, objectPosition: bgState.objectPosition, overlayOpacity: bgState.overlayOpacity, backgroundSize: bgState.backgroundSize })
     } else {
-      success = await saveBlock(selectedElement.pageSlug, selectedElement.blockKey, 'JSON', imageState.src, { src: imageState.src, objectPosition: imageState.objectPosition, zoom: imageState.zoom })
+      result = await saveBlock(selectedElement.pageSlug, selectedElement.blockKey, 'JSON', imageState.src, { src: imageState.src, objectPosition: imageState.objectPosition, zoom: imageState.zoom })
     }
-    if (success) { setSaved(true); setTimeout(() => setSaved(false), 2000); fetch('/api/clear-cache', { method: 'POST' }).catch(() => {}) }
+    if (result.ok) { setSaved(true); setSaveError(null); setTimeout(() => setSaved(false), 2000); fetch('/api/clear-cache', { method: 'POST' }).catch(() => {}) }
+    else { setSaveError(result.error || 'Save failed — check console for details') }
   }, [selectedElement, saveBlock, textState, imageState, bgState])
 
   if (!selectedElement) return null
@@ -261,6 +262,9 @@ export function EditorToolbar() {
           <button onClick={handleSave} disabled={saving} className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-urbanist font-bold text-sm transition-all duration-300 ${saved ? 'bg-green-500/20 text-green-400 border border-green-500/30' : saving ? 'bg-white/5 text-white/30 cursor-not-allowed' : 'bg-[#14EAEA] text-[#0A0A0A] hover:bg-white shadow-lg shadow-[#14EAEA]/20'}`}>
             {saved ? (<><Check size={14} /> Saved</>) : saving ? (<>Saving...</>) : (<><Save size={14} /> Save Changes</>)}
           </button>
+          {saveError && (
+            <p className="mt-2 font-urbanist text-xs text-red-400 text-center">{saveError}</p>
+          )}
         </div>
       </div>
 

@@ -28,9 +28,11 @@ export async function GET(
     }))
 
     return NextResponse.json(sanitized)
-  } catch {
+  } catch (error) {
+    console.error('GET /api/content error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to fetch content blocks' },
+      { error: 'Failed to fetch content blocks', detail: message },
       { status: 500 }
     )
   }
@@ -78,9 +80,11 @@ export async function PUT(
         if (typeof block.value === 'string') {
           safeValue = block.value
         } else if (block.value && typeof block.value === 'object') {
+          console.error(`Block ${block.blockKey}: value is not a string, got ${typeof block.value}`, block.value)
           const obj = block.value as Record<string, unknown>
-          safeValue = (typeof obj.text === 'string' ? obj.text : typeof obj.src === 'string' ? obj.src : '')
+          safeValue = (typeof obj.text === 'string' ? obj.text : typeof obj.src === 'string' ? obj.src : JSON.stringify(block.value))
         } else {
+          console.error(`Block ${block.blockKey}: value is not a string, got ${typeof block.value}`, block.value)
           safeValue = String(block.value ?? '')
         }
 
@@ -105,9 +109,11 @@ export async function PUT(
     )
 
     return NextResponse.json(results)
-  } catch {
+  } catch (error) {
+    console.error('PUT /api/content error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to save content blocks' },
+      { error: 'Failed to save content blocks', detail: message },
       { status: 500 }
     )
   }

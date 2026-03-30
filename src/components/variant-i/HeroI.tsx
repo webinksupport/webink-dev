@@ -59,7 +59,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
       {/* Hero text content */}
       <motion.div
         style={{ opacity: textOpacity, y: textY }}
-        className="relative z-20 min-h-screen flex flex-col justify-center max-w-[1400px] mx-auto px-6 lg:px-20 pt-32 pb-48"
+        className="relative z-30 min-h-screen flex flex-col justify-center max-w-[1400px] mx-auto px-6 lg:px-20 pt-32 pb-48"
       >
         {/* Eyebrow */}
         <motion.div

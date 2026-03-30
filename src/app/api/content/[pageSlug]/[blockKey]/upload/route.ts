@@ -65,9 +65,11 @@ export async function POST(
     })
 
     return NextResponse.json({ url })
-  } catch {
+  } catch (error) {
+    console.error('POST /api/content/[blockKey]/upload error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to upload file' },
+      { error: 'Failed to upload file', detail: message },
       { status: 500 }
     )
   }

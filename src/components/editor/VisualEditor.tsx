@@ -133,12 +133,14 @@ function InlineEditScanner() {
         if (newText !== originalText) {
           const blockKey = el.getAttribute('data-block')!
           const page = el.getAttribute('data-page') || pageSlug
-          const success = await saveBlock(page, blockKey, 'TEXT', newText)
-          if (success) {
+          const result = await saveBlock(page, blockKey, 'TEXT', newText)
+          if (result.ok) {
             originalContents.current.set(el, newText)
             setShowSaveToast(true)
             setTimeout(() => setShowSaveToast(false), 2000)
             fetch('/api/clear-cache', { method: 'POST' }).catch(() => {})
+          } else {
+            console.error(`Auto-save failed for ${blockKey}:`, result.error)
           }
         }
       }

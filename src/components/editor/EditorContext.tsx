@@ -4,6 +4,11 @@ import { useSession } from 'next-auth/react'
 
 export type ElementType = 'text' | 'image' | 'background'
 
+export interface SaveResult {
+  ok: boolean
+  error?: string
+}
+
 export interface TextProps {
   text: string
   fontSize?: string
@@ -47,7 +52,7 @@ interface EditorContextType {
   setEditMode: (v: boolean) => void
   selectedElement: SelectedElement | null
   selectElement: (el: SelectedElement | null) => void
-  saveBlock: (pageSlug: string, blockKey: string, blockType: string, value: string, jsonValue?: unknown) => Promise<boolean>
+  saveBlock: (pageSlug: string, blockKey: string, blockType: string, value: string, jsonValue?: unknown) => Promise<SaveResult>
   saving: boolean
   pageSlug: string
   getContent: (blockKey: string) => string | undefined
@@ -60,7 +65,7 @@ const EditorContext = createContext<EditorContextType>({
   setEditMode: () => {},
   selectedElement: null,
   selectElement: () => {},
-  saveBlock: async () => false,
+  saveBlock: async () => ({ ok: false }),
   saving: false,
   pageSlug: '',
   getContent: () => undefined,
@@ -139,9 +144,14 @@ export function EditorProvider({
     blockType: string,
     value: string,
     jsonValue?: unknown,
-  ): Promise<boolean> => {
+  ): Promise<SaveResult> => {
     setSaving(true)
     try {
+      if (typeof value !== 'string') {
+        console.error(`saveBlock: value for ${blockKey} is not a string:`, value)
+        return { ok: false, error: 'Value must be a string' }
+      }
+
       const res = await fetch(`/api/content/${encodeURIComponent(slug)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -154,15 +164,21 @@ export function EditorProvider({
           }],
         }),
       })
+
       if (res.ok) {
         setContent(prev => ({ ...prev, [blockKey]: value }))
         if (jsonValue !== undefined) {
           setJsonContent(prev => ({ ...prev, [blockKey]: jsonValue }))
         }
+        return { ok: true }
+      } else {
+        const data = await res.json().catch(() => ({ error: 'Unknown error' }))
+        console.error(`saveBlock failed for ${blockKey}:`, res.status, data)
+        return { ok: false, error: data.error || `HTTP ${res.status}` }
       }
-      return res.ok
-    } catch {
-      return false
+    } catch (err) {
+      console.error(`saveBlock network error for ${blockKey}:`, err)
+      return { ok: false, error: 'Network error' }
     } finally {
       setSaving(false)
     }
