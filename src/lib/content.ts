@@ -32,6 +32,14 @@ export async function getPageContent(pageSlug: string): Promise<Record<string, s
   }
 }
 
+/** Detect style-metadata objects that must NOT be rendered as React children */
+function isStyleMetadata(val: unknown): boolean {
+  if (!val || typeof val !== 'object' || Array.isArray(val)) return false
+  const keys = Object.keys(val as Record<string, unknown>)
+  const styleKeys = ['color', 'fontSize', 'alignment', 'fontWeight', 'textAlign']
+  return keys.length > 0 && keys.every(k => styleKeys.includes(k))
+}
+
 export async function getPageJsonContent(pageSlug: string): Promise<Record<string, unknown>> {
   try {
     const blocks = await prisma.pageContent.findMany({
@@ -41,7 +49,12 @@ export async function getPageJsonContent(pageSlug: string): Promise<Record<strin
     const content: Record<string, unknown> = {}
     for (const block of blocks) {
       if (block.jsonValue !== null && block.jsonValue !== undefined) {
-        content[block.blockKey] = block.jsonValue
+        // For TEXT/HTML blocks, jsonValue is style metadata — use value (the actual text)
+        if ((block.blockType === 'TEXT' || block.blockType === 'HTML') && isStyleMetadata(block.jsonValue)) {
+          content[block.blockKey] = block.value
+        } else {
+          content[block.blockKey] = block.jsonValue
+        }
       } else {
         content[block.blockKey] = block.value
       }
