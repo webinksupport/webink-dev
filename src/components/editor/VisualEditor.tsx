@@ -115,6 +115,7 @@ function InlineEditScanner() {
 
       const clickHandler = (e: Event) => {
         e.stopPropagation()
+        e.preventDefault()
         const htmlEl = el as HTMLElement
         const rect = htmlEl.getBoundingClientRect()
         const blockKey = el.getAttribute('data-block')!
@@ -155,11 +156,20 @@ function InlineEditScanner() {
       el.setAttribute('contenteditable', 'true')
     })
 
+    // In edit mode, prevent all link/button navigation so text can be edited
+    const preventNavigation = (e: Event) => {
+      const target = e.target as HTMLElement
+      if (target.closest('[data-admin]') || target.closest('[data-editor-toolbar]') || target.closest('nav')) return
+      const link = target.closest('a')
+      if (link) { e.preventDefault(); e.stopPropagation() }
+    }
+    document.addEventListener('click', preventNavigation, true)
+
     updateImageOverlays()
     const onScrollResize = () => { cancelAnimationFrame(rafRef.current); rafRef.current = requestAnimationFrame(updateImageOverlays) }
     window.addEventListener('scroll', onScrollResize, { passive: true })
     window.addEventListener('resize', onScrollResize)
-    return () => { cleanup(); window.removeEventListener('scroll', onScrollResize); window.removeEventListener('resize', onScrollResize) }
+    return () => { cleanup(); document.removeEventListener('click', preventNavigation, true); window.removeEventListener('scroll', onScrollResize); window.removeEventListener('resize', onScrollResize) }
   }, [editMode, selectElement, saveBlock, pageSlug, getJsonContent, updateImageOverlays])
 
   const handleImageClick = useCallback((overlay: ImgOverlay) => {
@@ -186,23 +196,27 @@ function InlineEditScanner() {
       <SaveToast show={showSaveToast} />
       {mounted && editMode && imageOverlays.length > 0 && createPortal(
         <div className="pointer-events-none fixed inset-0 z-[9990]">
-          {imageOverlays.map((overlay, i) => (
-            <button
-              key={`${overlay.blockKey}-${i}`}
-              onClick={(e) => { e.stopPropagation(); handleImageClick(overlay) }}
-              className="pointer-events-auto absolute group"
-              style={{ top: overlay.rect.top, left: overlay.rect.left, width: overlay.rect.width, height: overlay.rect.height }}
-            >
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center rounded-lg">
-                <div className="flex items-center gap-2 bg-black/70 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
+          {imageOverlays.map((overlay, i) => {
+            const isBgOverlay = overlay.el.getAttribute('data-type') === 'background'
+            return (
+              <div
+                key={`${overlay.blockKey}-${i}`}
+                className={`absolute group ${isBgOverlay ? 'pointer-events-none' : 'pointer-events-auto'}`}
+                style={{ top: overlay.rect.top, left: overlay.rect.left, width: overlay.rect.width, height: overlay.rect.height }}
+              >
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-lg pointer-events-none" />
+                <button
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleImageClick(overlay) }}
+                  className={`pointer-events-auto absolute flex items-center gap-2 bg-black/70 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg ${isBgOverlay ? 'top-3 right-3' : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'}`}
+                >
                   <Camera size={14} className="text-[#14EAEA]" />
                   <span className="font-urbanist text-xs font-semibold text-white/90">
-                    {overlay.el.getAttribute('data-type') === 'background' ? 'Edit Background' : 'Edit Image'}
+                    {isBgOverlay ? 'Edit Background' : 'Edit Image'}
                   </span>
-                </div>
+                </button>
               </div>
-            </button>
-          ))}
+            )
+          })}
         </div>,
         document.body,
       )}

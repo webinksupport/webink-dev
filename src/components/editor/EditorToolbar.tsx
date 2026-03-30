@@ -93,8 +93,11 @@ export function EditorToolbar() {
     if (!selectedElement) return
     let success: boolean
     if (selectedElement.type === 'text') {
-      success = await saveBlock(selectedElement.pageSlug, selectedElement.blockKey, 'TEXT', textState.text, { fontSize: textState.fontSize, fontWeight: textState.fontWeight, color: textState.color, alignment: textState.alignment, effects: textState.effects })
-      if (success && selectedElement.element) selectedElement.element.textContent = textState.text
+      // Read the current text from the DOM element (user may have edited inline via contenteditable)
+      const currentText = selectedElement.element?.textContent || textState.text
+      success = await saveBlock(selectedElement.pageSlug, selectedElement.blockKey, 'TEXT', currentText, { fontSize: textState.fontSize, fontWeight: textState.fontWeight, color: textState.color, alignment: textState.alignment, effects: textState.effects })
+      // Sync textarea state with what was actually saved
+      if (success) setTextState(prev => ({ ...prev, text: currentText }))
     } else if (selectedElement.type === 'background') {
       success = await saveBlock(selectedElement.pageSlug, selectedElement.blockKey, 'JSON', bgState.src, { src: bgState.src, objectPosition: bgState.objectPosition, overlayOpacity: bgState.overlayOpacity, backgroundSize: bgState.backgroundSize })
     } else {
