@@ -108,7 +108,7 @@ function SignInForm() {
             />
           </div>
 
-          <div className="mb-6">
+          <div className="mb-2">
             <label htmlFor="password" className="block text-xs font-bold tracking-[2px] uppercase text-[#14EAEA] mb-2">
               Password
             </label>
@@ -121,6 +121,15 @@ function SignInForm() {
               className="w-full bg-[#0A0A0A] border border-[#333] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-[#14EAEA] transition-colors placeholder:text-white/20"
               placeholder="Enter your password"
             />
+          </div>
+
+          <div className="flex justify-end mb-6">
+            <Link
+              href="/auth/forgot-password"
+              className="text-[#14EAEA] text-xs hover:text-[#14EAEA]/80 transition-colors"
+            >
+              Forgot Password?
+            </Link>
           </div>
 
           <button
