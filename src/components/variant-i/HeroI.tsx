@@ -32,7 +32,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-screen overflow-hidden bg-[#0F0F0F]"
+      className="relative h-[85vh] max-h-[900px] overflow-hidden bg-[#0F0F0F]"
     >
       {/* Baja beach full-bleed background with parallax */}
       <div className="absolute inset-0 overflow-hidden" data-type="background" data-page="home" data-block="hero_bg">
@@ -59,7 +59,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
       {/* Hero text content */}
       <motion.div
         style={{ opacity: textOpacity, y: textY }}
-        className="relative z-30 min-h-screen flex flex-col justify-center max-w-[1400px] mx-auto px-6 lg:px-20 pt-32 pb-48"
+        className="relative z-30 h-[85vh] max-h-[900px] flex flex-col justify-center max-w-[1400px] md:max-w-[55%] mx-auto px-6 lg:px-20 pt-32 pb-48"
       >
         {/* Eyebrow */}
         <motion.div
@@ -247,7 +247,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
         transition={{ delay: 1.1, duration: 0.6 }}
       >
         <div className="bg-black/80 backdrop-blur-md border-t border-white/10">
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-20 py-4 flex flex-wrap items-center gap-0 divide-x divide-white/10">
+          <div className="max-w-[1400px] md:max-w-[55%] mx-auto px-6 lg:px-20 py-4 flex flex-wrap items-center gap-0 divide-x divide-white/10">
             {[
               { key: 'hero_strip_1', def: 'Sarasota & Tampa Digital Marketing', cyan: false },
               { key: 'hero_strip_2', def: 'AI-Powered Results', cyan: false },
