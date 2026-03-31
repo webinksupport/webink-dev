@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -43,6 +44,10 @@ export async function PUT(
       },
     })
 
+    // Invalidate Next.js page cache so changes appear immediately
+    revalidatePath('/' + pageSlug, 'page')
+    revalidatePath('/', 'layout')
+
     return NextResponse.json(block)
   } catch (error) {
     console.error('PUT /api/content/[blockKey] error:', error)
@@ -71,6 +76,10 @@ export async function DELETE(
         pageSlug_blockKey: { pageSlug, blockKey },
       },
     })
+
+    // Invalidate cache after deletion too
+    revalidatePath('/' + pageSlug, 'page')
+    revalidatePath('/', 'layout')
 
     return NextResponse.json({ success: true })
   } catch (error) {

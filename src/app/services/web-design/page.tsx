@@ -6,7 +6,7 @@ import WebDesignPortfolio from '@/components/services/WebDesignPortfolio'
 import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageJsonContent } from '@/lib/content'
 
-export const revalidate = 3600
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Web Design Services Sarasota & Tampa | Webink Solutions',
@@ -80,7 +80,7 @@ export default async function WebDesignPage() {
           headline={(content.hero_headline as string) || 'Websites That'}
           headlineAccent="Convert."
           subtext={(content.hero_subtext as string) || 'Custom responsive websites engineered for speed, performance, and real business growth. No templates. No shortcuts. Built from scratch for Sarasota and Tampa businesses.'}
-          heroImage={(content.hero_image as string) || '/images/services/web-design-hero.png'}
+          heroImage={((content.hero_bg as any)?.src || content.hero_bg as string) || '/images/services/web-design-hero.png'}
           photos={(content.photos as typeof defaultPhotos) || defaultPhotos}
           features={(content.features as typeof defaultFeatures) || defaultFeatures}
           processSteps={(content.process_steps as typeof defaultProcessSteps) || defaultProcessSteps}

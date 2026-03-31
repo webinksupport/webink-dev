@@ -128,6 +128,9 @@ function InlineEditScanner() {
       }
 
       const blurHandler = async () => {
+        // Skip auto-save for elements whose textContent includes child data-block text
+        // (would cause duplication on reload)
+        if (el.querySelector('[data-block]')) return
         const newText = (el as HTMLElement).textContent || ''
         const originalText = originalContents.current.get(el) || ''
         if (newText !== originalText) {

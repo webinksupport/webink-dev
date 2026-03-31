@@ -5,7 +5,7 @@ import ServicePageLayout from '@/components/services/ServicePageLayout'
 import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageJsonContent } from '@/lib/content'
 
-export const revalidate = 3600
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Social Media Marketing Sarasota & Tampa | Webink Solutions',
@@ -67,7 +67,7 @@ export default async function SocialMediaPage() {
         headline={(content.hero_headline as string) || 'Grow Your'}
         headlineAccent="Audience."
         subtext={(content.hero_subtext as string) || 'Strategic social media management that builds your brand, engages your community, and drives real business results across every major platform.'}
-        heroImage={(content.hero_image as string) || '/images/services/social-media-hero.png'}
+        heroImage={((content.hero_bg as any)?.src || content.hero_bg as string) || '/images/services/social-media-hero.png'}
         photos={(content.photos as typeof defaultPhotos) || defaultPhotos}
         features={(content.features as typeof defaultFeatures) || defaultFeatures}
         processSteps={(content.process_steps as typeof defaultProcessSteps) || defaultProcessSteps}
