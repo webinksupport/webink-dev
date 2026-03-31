@@ -54,10 +54,10 @@ export default function CTAI({ content = {}, ctaBgData }: CTAIProps = {}) {
 
       <div className="relative max-w-[1400px] mx-auto px-6 lg:px-20 text-center">
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 80, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.9 }}
+          transition={{ duration: 1.2, ease: [0.2, 0.65, 0.3, 1] }}
         >
           <div className="inline-flex items-center gap-3 mb-10">
             <span className="w-8 h-[2px] bg-[#14EAEA]" />

@@ -9,12 +9,12 @@ export default function LocalI({ content }: { content?: Record<string, string> }
     <section className="bg-white py-24 lg:py-36 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          {/* Text */}
+          {/* Text — Salient reveal-from-left */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -45, y: 20 }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, ease }}
+            transition={{ duration: 1, ease: [0.2, 0.65, 0.3, 1] }}
           >
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-[2px] bg-[#F813BE]" />
@@ -60,13 +60,14 @@ export default function LocalI({ content }: { content?: Record<string, string> }
             </div>
           </motion.div>
 
-          {/* Image */}
+          {/* Image — Salient reveal-from-right with rotation */}
           <motion.div
-            initial={{ scale: 0.92, opacity: 0, y: 20 }}
-            whileInView={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease }}
+            initial={{ scale: 0.88, opacity: 0, x: 60, rotate: 3 }}
+            whileInView={{ scale: 1, opacity: 1, x: 0, rotate: 0 }}
+            transition={{ duration: 1.1, ease: [0.2, 0.65, 0.3, 1] }}
             viewport={{ once: true, margin: '-80px' }}
             className="overflow-hidden rounded-2xl shadow-xl"
+            style={{ willChange: 'transform, opacity' }}
           >
             <Image
               data-block="local_image"

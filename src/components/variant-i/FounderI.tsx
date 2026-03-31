@@ -12,13 +12,14 @@ export default function FounderI({ content }: { content?: Record<string, string>
     <section className="bg-[#0F0F0F] py-24 lg:py-36 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-          {/* Headshot */}
+          {/* Headshot — Salient grow-in with slight rotation */}
           <motion.div
-            initial={{ scale: 0.92, opacity: 0, y: 20 }}
-            whileInView={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease }}
+            initial={{ scale: 0.75, opacity: 0, rotate: -5 }}
+            whileInView={{ scale: 1, opacity: 1, rotate: 0 }}
+            transition={{ duration: 1, ease: [0.15, 0.84, 0.35, 1.15] }}
             viewport={{ once: true, margin: '-80px' }}
             className="lg:col-span-4 flex justify-center"
+            style={{ willChange: 'transform, opacity' }}
           >
             <div className="overflow-hidden rounded-full shadow-2xl w-64 h-64 lg:w-80 lg:h-80 border-4 border-[#14EAEA]/20">
               <Image
@@ -34,12 +35,12 @@ export default function FounderI({ content }: { content?: Record<string, string>
             </div>
           </motion.div>
 
-          {/* Bio text */}
+          {/* Bio text — Salient fade-in-from-right with slide */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: 50, y: 20 }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.15, ease }}
+            transition={{ duration: 1, delay: 0.15, ease: [0.2, 0.65, 0.3, 1] }}
             className="lg:col-span-8"
           >
             <div className="flex items-center gap-3 mb-6">

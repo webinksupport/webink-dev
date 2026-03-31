@@ -91,10 +91,11 @@ export default function PricingI({ content }: { content?: Record<string, string>
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
+              initial={{ opacity: 0, y: 70, rotateY: i === 0 ? 8 : i === 2 ? -8 : 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, rotateY: 0, scale: plan.featured ? 1.05 : 1 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.95, delay: i * 0.12, ease: [0.2, 1, 0.2, 1] }}
+              style={{ perspective: '1200px', willChange: 'transform, opacity' }}
               className={`relative flex flex-col rounded-2xl ${
                 plan.featured
                   ? 'bg-[#0A0A0A] shadow-2xl scale-105 ring-2 ring-[#F813BE]/50'
