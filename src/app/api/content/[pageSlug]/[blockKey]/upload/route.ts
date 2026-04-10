@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -64,10 +63,6 @@ export async function POST(
       update: { value: url, blockType: 'IMAGE' },
       create: { pageSlug, blockKey, value: url, blockType: 'IMAGE' },
     })
-
-    // Invalidate Next.js page cache so the new image appears immediately
-    revalidatePath('/' + pageSlug, 'page')
-    revalidatePath('/', 'layout')
 
     return NextResponse.json({ url })
   } catch (error) {

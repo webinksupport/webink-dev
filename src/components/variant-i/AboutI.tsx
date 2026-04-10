@@ -23,7 +23,7 @@ export default function AboutI({ content }: { content?: Record<string, string> }
   const textY = useTransform(scrollYProgress, [0, 1], [20, -20])
 
   return (
-    <section ref={sectionRef} id="about" className="bg-[#F8F8F8] py-24 lg:py-40 overflow-hidden">
+    <section ref={sectionRef} id="about" className="bg-[#F8F8F8] py-24 lg:py-40 overflow-hidden contain-paint">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">
 
         {/* Section label */}
@@ -40,18 +40,18 @@ export default function AboutI({ content }: { content?: Record<string, string> }
 
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
 
-          {/* Image with parallax — Salient reveal-from-left with rotation */}
+          {/* Image with parallax — Baja photo */}
           <motion.div
             style={{ y: imgY }}
             className="lg:col-span-5 relative"
           >
             <motion.div
-              initial={{ scale: 0.85, opacity: 0, x: -60, rotate: -3 }}
-              whileInView={{ scale: 1, opacity: 1, x: 0, rotate: 0 }}
-              transition={{ duration: 1.2, ease: [0.2, 0.65, 0.3, 1] }}
+              initial={{ scale: 0.92, opacity: 0, y: 40, rotate: -2 }}
+              whileInView={{ scale: 1, opacity: 1, y: 0, rotate: 0 }}
+              transition={{ duration: 1.6, ease: [0.2, 0.65, 0.3, 1] }}
               viewport={{ once: true, margin: '-80px' }}
               className="overflow-hidden rounded-[24px] shadow-2xl"
-              style={{ willChange: 'transform, opacity' }}
+              style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
             >
               <div className="relative h-[500px] lg:h-[680px]">
                 <Image
@@ -69,12 +69,12 @@ export default function AboutI({ content }: { content?: Record<string, string> }
               </div>
             </motion.div>
 
-            {/* Floating stat card — Salient grow-in with overshoot */}
+            {/* Floating stat card */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.7, y: 30, rotate: 6 }}
+              initial={{ opacity: 0, scale: 0.75, y: 30, rotate: 6 }}
               whileInView={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.9, delay: 0.5, ease: [0.15, 0.84, 0.35, 1.15] }}
+              transition={{ duration: 0.9, delay: 0.4, ease: [0.15, 0.84, 0.35, 1.15] }}
               className="absolute -bottom-8 -right-6 lg:-right-10 bg-white rounded-2xl shadow-xl px-7 py-5 border border-black/5"
             >
               <div
@@ -97,16 +97,16 @@ export default function AboutI({ content }: { content?: Record<string, string> }
             <div className="absolute top-8 -left-3 w-1.5 h-32 bg-[#F813BE] rounded-full" />
           </motion.div>
 
-          {/* Text content — Salient fade-in-from-right */}
+          {/* Text content */}
           <motion.div
             style={{ y: textY }}
             className="lg:col-span-7 lg:pl-10"
           >
             <motion.div
-              initial={{ opacity: 0, x: 45, y: 20 }}
-              whileInView={{ opacity: 1, x: 0, y: 0 }}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.1, ease: [0.2, 0.65, 0.3, 1] }}
+              transition={{ duration: 1, ease: [0.15, 0.75, 0.5, 1] }}
             >
               <h2
                 data-page="home"

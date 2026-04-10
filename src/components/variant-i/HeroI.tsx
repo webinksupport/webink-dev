@@ -16,6 +16,11 @@ interface HeroIProps {
   heroBgData?: Partial<BackgroundData>
 }
 
+/* Salient premium easing curves */
+const salientEase = [0.15, 0.75, 0.5, 1] as const      // Smooth decel — Salient's #1 curve
+const salientReveal = [0.2, 1, 0.2, 1] as const          // Overshoot-smooth — Salient's #2 curve
+const salientGrowIn = [0.15, 0.84, 0.35, 1.15] as const  // Grow-in with subtle overshoot
+
 export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
   const sectionRef = useRef<HTMLElement>(null)
   const { editMode } = useEditor()
@@ -32,11 +37,14 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
   return (
     <section
       ref={sectionRef}
-      className="relative h-[85vh] max-h-[900px] overflow-hidden bg-[#0F0F0F]"
+      className="relative overflow-hidden bg-[#0F0F0F] h-[85vh] max-h-[900px]"
     >
       {/* Baja beach full-bleed background with parallax */}
       <div className="absolute inset-0 overflow-hidden" data-type="background" data-page="home" data-block="hero_bg">
-        <div className="absolute inset-0 z-0">
+        <motion.div
+          className="absolute inset-0 z-0"
+          style={{ y: bgY }}
+        >
           <Image
             src={heroBgData?.src || '/images/photos/baja-beach.jpg'}
             alt=""
@@ -51,7 +59,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
             className="absolute inset-0 transition-opacity duration-300"
             style={{ backgroundColor: `rgba(0,0,0,${heroBgData?.overlayOpacity ?? 0.55})` }}
           />
-        </div>
+        </motion.div>
         {/* Subtle gradient — darker bottom for strip transition */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/70 z-[1]" />
       </div>
@@ -59,14 +67,14 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
       {/* Hero text content */}
       <motion.div
         style={{ opacity: textOpacity, y: textY }}
-        className="relative z-30 h-[85vh] max-h-[900px] flex flex-col justify-center max-w-[1400px] md:max-w-[55%] mx-auto px-6 lg:px-20 pt-32 pb-48"
+        className="relative z-30 flex flex-col justify-center max-w-[1400px] mx-auto px-6 lg:px-20 pt-28 pb-32"
       >
-        {/* Eyebrow */}
+        {/* Eyebrow — Salient slide-in from left */}
         <motion.div
           className="flex items-center gap-3 mb-8"
-          initial={{ opacity: 0, x: -20 }}
+          initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
+          transition={{ duration: 0.9, delay: 0.2, ease: salientEase }}
         >
           <span className="w-8 h-[2px] bg-[#14EAEA]" />
           <span
@@ -78,16 +86,16 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
           </span>
         </motion.div>
 
-        {/* Main headline */}
+        {/* Main headline — Salient hinge-drop inspired entrance */}
         <motion.h1
-          className="font-urbanist font-black text-white leading-[0.88] mb-8 max-w-full md:max-w-[55%]"
+          className="font-urbanist font-black text-white leading-[0.88] mb-8 max-w-full lg:max-w-[42%]"
           style={{
             fontSize: 'clamp(2.5rem, 9vw, 9rem)',
             letterSpacing: '-0.04em',
           }}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          initial={{ opacity: 0, y: 50, rotateX: -15 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          transition={{ duration: 1.3, delay: 0.3, ease: salientReveal }}
         >
           <span
             data-page="home"
@@ -98,11 +106,11 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
           </span>
         </motion.h1>
 
-        {/* Sub-headline */}
+        {/* Sub-headline — smooth fade-in-from-bottom */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 35 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.55 }}
+          transition={{ duration: 0.9, delay: 0.65, ease: salientEase }}
         >
           <p
             data-page="home"
@@ -113,12 +121,12 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
           </p>
         </motion.div>
 
-        {/* CTAs */}
+        {/* CTAs — Salient slide-up */}
         <motion.div
           className="flex flex-wrap gap-4 items-center"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.7 }}
+          transition={{ duration: 0.8, delay: 0.85, ease: salientEase }}
         >
           <a
             href={content?.hero_cta_link || '/pricing'}
@@ -149,53 +157,53 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
         {/* Card fan hero image — right side, vertically centered */}
         <div
           className={`absolute hidden lg:block ${editMode ? '' : 'pointer-events-none'}`}
-          style={{ right: '4%', top: '50%', marginTop: '-290px', width: '460px', height: '580px', overflow: 'visible' }}
+          style={{ right: '4%', top: '50%', marginTop: '-260px', width: '420px', height: '520px', overflow: 'visible' }}
         >
-          {/* Card 1 — Cyan background card (fans in then fully tucks BEHIND photo) */}
+          {/* Card 1 — Cyan background card — Salient reveal-from-right */}
           <motion.div
             className="absolute inset-0 rounded-2xl bg-[#14EAEA]"
-            style={{ zIndex: 5 }}
-            initial={{ opacity: 0, x: 160, rotate: 0, scale: 1 }}
+            style={{ zIndex: 5, willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
+            initial={{ opacity: 0, x: 200, rotate: 0, scale: 1 }}
             animate={{
               opacity: [0, 1, 1, 0],
-              x: [160, 30, 30, 0],
+              x: [200, 30, 30, 0],
               rotate: [0, 10, 10, 0],
               scale: [1, 1, 1, 0.82],
             }}
             transition={{
-              duration: 2.4,
-              delay: 0.3,
-              ease: [0.25, 0.46, 0.45, 0.94],
+              duration: 2.3,
+              delay: 0.4,
+              ease: [0.2, 0.65, 0.3, 1],
               times: [0, 0.3, 0.6, 1],
             }}
           />
 
-          {/* Card 2 — Pink background card (fans in then fully tucks BEHIND photo) */}
+          {/* Card 2 — Pink background card — Salient reveal-from-right */}
           <motion.div
             className="absolute inset-0 rounded-2xl bg-[#F813BE]"
-            style={{ zIndex: 5 }}
-            initial={{ opacity: 0, x: 160, rotate: 0, scale: 1 }}
+            style={{ zIndex: 5, willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
+            initial={{ opacity: 0, x: 200, rotate: 0, scale: 1 }}
             animate={{
               opacity: [0, 1, 1, 0],
-              x: [160, -20, -20, 0],
+              x: [200, -20, -20, 0],
               rotate: [0, -8, -8, 0],
               scale: [1, 1, 1, 0.82],
             }}
             transition={{
-              duration: 2.4,
-              delay: 0.45,
-              ease: [0.25, 0.46, 0.45, 0.94],
+              duration: 2.3,
+              delay: 0.55,
+              ease: [0.2, 0.65, 0.3, 1],
               times: [0, 0.3, 0.6, 1],
             }}
           />
 
-          {/* Card 3 — The actual Baja photo */}
+          {/* Card 3 — The actual Baja photo — Salient grow-in with rotation */}
           <motion.div
             className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
-            style={{ zIndex: 10 }}
-            initial={{ opacity: 0, x: 80, rotate: -6 }}
-            animate={{ opacity: 1, x: 0, rotate: 0 }}
-            transition={{ duration: 1, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ zIndex: 10, willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
+            initial={{ opacity: 0, x: 100, rotate: -6, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, rotate: 0, scale: 1 }}
+            transition={{ duration: 1.3, delay: 0.7, ease: salientGrowIn }}
           >
             <Image
               data-page="home"
@@ -219,7 +227,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
             style={{ top: '-28px', width: '340px' }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 1.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.8, delay: 1.8, ease: salientGrowIn }}
           >
             {/* White logo PNG — mix-blend-mode screen on dark bg = transparent background, logo glows */}
             <Image
@@ -244,10 +252,10 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
         className="absolute bottom-0 left-0 right-0 z-30"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.1, duration: 0.6 }}
+        transition={{ delay: 1.2, duration: 0.8, ease: salientEase }}
       >
         <div className="bg-black/80 backdrop-blur-md border-t border-white/10">
-          <div className="max-w-[1400px] md:max-w-[55%] mx-auto px-6 lg:px-20 py-4 flex flex-wrap items-center gap-0 divide-x divide-white/10">
+          <div className="max-w-[1400px] mx-auto px-6 lg:px-20 py-4 flex flex-wrap items-center gap-0 divide-x divide-white/10">
             {[
               { key: 'hero_strip_1', def: 'Sarasota & Tampa Digital Marketing', cyan: false },
               { key: 'hero_strip_2', def: 'AI-Powered Results', cyan: false },
@@ -268,7 +276,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
 
       {/* Scroll indicator — center bottom */}
       <motion.div
-        className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2"
+        className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5 }}
@@ -279,12 +287,6 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
           </svg>
         </div>
       </motion.div>
-
-      <style jsx>{`
-        @keyframes highlightSweep {
-          to { transform: scaleX(1); }
-        }
-      `}</style>
     </section>
   )
 }

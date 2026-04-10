@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSetting } from '@/lib/settings'
+import { resolveCredentials, publishToPlatform, logPublishAttempt, recordActivity } from '@/lib/social/publish-utils'
 
 const SITE_URL = process.env.NEXTAUTH_URL || 'https://dev.webink.solutions'
 
@@ -36,70 +37,146 @@ export async function GET(req: NextRequest) {
     orderBy: { scheduledAt: 'asc' },
   })
 
-  if (duePosts.length === 0) {
-    return NextResponse.json({ message: 'No posts due', published: 0 })
+  // Also find FAILED posts eligible for retry (retryCount < maxRetries, failed within last 2 hours)
+  const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000)
+  const retryPosts = await prisma.socialPost.findMany({
+    where: {
+      status: 'FAILED',
+      retryCount: { lt: 3 },
+      updatedAt: { gte: twoHoursAgo },
+    },
+    orderBy: { updatedAt: 'asc' },
+    take: 5, // Limit retries per cron run
+  })
+
+  const allPosts = [...duePosts, ...retryPosts]
+
+  if (allPosts.length === 0) {
+    return NextResponse.json({ message: 'No posts due', published: 0, retried: 0 })
   }
 
-  const token = await getSetting('META_SYSTEM_USER_TOKEN') || await getSetting('FACEBOOK_ACCESS_TOKEN') || process.env.FACEBOOK_ACCESS_TOKEN
-  const igUserId = await getSetting('INSTAGRAM_ACCOUNT_ID') || '17841450255505752'
+  const results: { postId: string; success: boolean; error?: string; isRetry: boolean }[] = []
 
-  if (!token) {
-    return NextResponse.json({ error: 'Meta access token not configured', published: 0 }, { status: 500 })
-  }
-
-  const results: { postId: string; success: boolean; error?: string }[] = []
-
-  for (const post of duePosts) {
+  for (const post of allPosts) {
+    const isRetry = post.status === 'FAILED'
+    const platforms: string[] = post.platforms ? JSON.parse(post.platforms) : ['instagram']
     const caption = [post.caption, post.hashtags].filter(Boolean).join('\n\n')
     const imageUrl = post.mediaPath ? `${SITE_URL}${post.mediaPath}` : null
 
     if (!imageUrl) {
-      results.push({ postId: post.id, success: false, error: 'No image attached' })
+      await logPublishAttempt({
+        postId: post.id,
+        platform: 'instagram',
+        action: isRetry ? 'retry' : 'publish',
+        status: 'skipped',
+        errorMessage: 'No image attached',
+        attemptNumber: post.retryCount + 1,
+      })
+      results.push({ postId: post.id, success: false, error: 'No image attached', isRetry })
       continue
     }
 
     // Mark as publishing
     await prisma.socialPost.update({ where: { id: post.id }, data: { status: 'PUBLISHING' } })
 
-    try {
-      // Create IG container
-      const containerRes = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image_url: imageUrl, caption, access_token: token }),
-      })
-      const containerData = await containerRes.json()
+    let anySuccess = false
+    let lastError = ''
 
-      if (!containerData.id) {
-        await prisma.socialPost.update({ where: { id: post.id }, data: { status: 'FAILED', notes: containerData.error?.message } })
-        results.push({ postId: post.id, success: false, error: containerData.error?.message || 'Container failed' })
+    for (const platform of platforms) {
+      if (!['facebook', 'instagram', 'linkedin'].includes(platform)) continue
+
+      const creds = await resolveCredentials(post.clientId, platform as 'facebook' | 'instagram' | 'linkedin')
+      if (!creds) {
+        const error = `${platform} credentials not configured`
+        await logPublishAttempt({
+          postId: post.id,
+          platform,
+          action: isRetry ? 'retry' : 'publish',
+          status: 'failed',
+          errorMessage: error,
+          attemptNumber: post.retryCount + 1,
+        })
+        lastError = error
         continue
       }
 
-      // Publish
-      const publishRes = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media_publish`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ creation_id: containerData.id, access_token: token }),
+      const result = await publishToPlatform({
+        platform: platform as 'facebook' | 'instagram' | 'linkedin',
+        caption,
+        imageUrl,
+        accessToken: creds.accessToken,
+        accountId: creds.accountId,
       })
-      const publishData = await publishRes.json()
 
-      if (publishData.id) {
+      await logPublishAttempt({
+        postId: post.id,
+        platform,
+        action: isRetry ? 'retry' : 'publish',
+        status: result.success ? 'success' : 'failed',
+        platformPostId: result.id || null,
+        errorMessage: result.error || null,
+        attemptNumber: post.retryCount + 1,
+      })
+
+      if (result.success) {
+        anySuccess = true
+        // Update platform-specific post ID
+        const updateField = platform === 'facebook' ? 'fbPostId'
+          : platform === 'instagram' ? 'igPostId'
+          : 'liPostId'
         await prisma.socialPost.update({
           where: { id: post.id },
-          data: { status: 'PUBLISHED', publishedAt: new Date(), igPostId: publishData.id },
+          data: { [updateField]: result.id },
         })
-        results.push({ postId: post.id, success: true })
       } else {
-        await prisma.socialPost.update({ where: { id: post.id }, data: { status: 'FAILED', notes: publishData.error?.message } })
-        results.push({ postId: post.id, success: false, error: publishData.error?.message || 'Publish failed' })
+        lastError = result.error || 'Unknown error'
       }
-    } catch (error) {
-      await prisma.socialPost.update({ where: { id: post.id }, data: { status: 'FAILED', notes: String(error) } })
-      results.push({ postId: post.id, success: false, error: String(error) })
     }
+
+    if (anySuccess) {
+      await prisma.socialPost.update({
+        where: { id: post.id },
+        data: { status: 'PUBLISHED', publishedAt: new Date() },
+      })
+      await recordActivity({
+        postId: post.id,
+        type: 'status_change',
+        message: isRetry ? 'Published successfully on retry' : 'Auto-published by scheduler',
+        author: 'system',
+        oldStatus: isRetry ? 'FAILED' : 'SCHEDULED',
+        newStatus: 'PUBLISHED',
+      })
+    } else {
+      await prisma.socialPost.update({
+        where: { id: post.id },
+        data: {
+          status: 'FAILED',
+          retryCount: post.retryCount + 1,
+          notes: lastError,
+        },
+      })
+      await recordActivity({
+        postId: post.id,
+        type: 'status_change',
+        message: `Publish failed (attempt ${post.retryCount + 1}): ${lastError}`,
+        author: 'system',
+        oldStatus: 'PUBLISHING',
+        newStatus: 'FAILED',
+      })
+    }
+
+    results.push({ postId: post.id, success: anySuccess, error: anySuccess ? undefined : lastError, isRetry })
   }
 
-  const published = results.filter((r) => r.success).length
-  return NextResponse.json({ message: `Processed ${duePosts.length} posts`, published, results })
+  const published = results.filter((r) => r.success && !r.isRetry).length
+  const retried = results.filter((r) => r.isRetry).length
+  const retriedSuccess = results.filter((r) => r.success && r.isRetry).length
+
+  return NextResponse.json({
+    message: `Processed ${allPosts.length} posts`,
+    published,
+    retried,
+    retriedSuccess,
+    results,
+  })
 }

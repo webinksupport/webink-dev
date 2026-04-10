@@ -1,54 +1,51 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import Lenis from 'lenis'
 
 export default function LenisProvider({ children }: { children: React.ReactNode }) {
-  const lenisRef = useRef<Lenis | null>(null)
-
   useEffect(() => {
+    // autoRaf: false — we drive Lenis from GSAP ticker (or manual RAF fallback)
+    // This prevents double-update jitter when both Lenis and GSAP try to RAF
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      // Prevent Lenis from fighting GSAP ScrollTrigger pinned sections
-      syncTouch: false,
+      autoRaf: false,
     })
-    lenisRef.current = lenis
 
-    // Integrate with GSAP ScrollTrigger if available
-    let gsapTicker: (() => void) | null = null
-    import('gsap').then(({ gsap }) => {
-      import('gsap/ScrollTrigger').then(({ ScrollTrigger }) => {
+    let rafId: number | null = null
+
+    // Integrate Lenis with GSAP ScrollTrigger if GSAP is loaded
+    const syncScrollTrigger = async () => {
+      try {
+        const { gsap } = await import('gsap')
+        const { ScrollTrigger } = await import('gsap/ScrollTrigger')
         gsap.registerPlugin(ScrollTrigger)
 
-        // Sync Lenis scroll position with GSAP ScrollTrigger
+        // Tell ScrollTrigger to update on Lenis scroll
         lenis.on('scroll', ScrollTrigger.update)
 
-        gsapTicker = (time?: unknown) => {
-          lenis.raf((time as number) * 1000)
-        }
-        gsap.ticker.add(gsapTicker)
+        // Use GSAP ticker to drive Lenis RAF — single animation loop
+        gsap.ticker.add((time: number) => {
+          lenis.raf(time * 1000)
+        })
 
-        // Disable Lenis's internal RAF since GSAP handles it
         gsap.ticker.lagSmoothing(0)
-      })
-    }).catch(() => {
-      // Fallback to standalone RAF if GSAP isn't available
-      function raf(time: number) {
-        lenis.raf(time)
-        requestAnimationFrame(raf)
+      } catch {
+        // GSAP not available, fall back to manual RAF loop
+        const raf = (time: number) => {
+          lenis.raf(time)
+          rafId = requestAnimationFrame(raf)
+        }
+        rafId = requestAnimationFrame(raf)
       }
-      requestAnimationFrame(raf)
-    })
+    }
+
+    syncScrollTrigger()
 
     return () => {
-      if (gsapTicker) {
-        import('gsap').then(({ gsap }) => {
-          gsap.ticker.remove(gsapTicker!)
-        })
-      }
+      if (rafId !== null) cancelAnimationFrame(rafId)
       lenis.destroy()
-      lenisRef.current = null
     }
   }, [])
 

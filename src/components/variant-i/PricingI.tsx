@@ -61,7 +61,7 @@ const plans = [
 
 export default function PricingI({ content }: { content?: Record<string, string> } = {}) {
   return (
-    <section id="pricing" className="bg-[#F8F8F8] py-24 lg:py-36 border-y border-black/5">
+    <section id="pricing" className="bg-[#F8F8F8] py-24 lg:py-36 border-y border-black/5 contain-paint">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">
 
         {/* Header */}
@@ -91,11 +91,10 @@ export default function PricingI({ content }: { content?: Record<string, string>
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
-              initial={{ opacity: 0, y: 70, rotateY: i === 0 ? 8 : i === 2 ? -8 : 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, y: 0, rotateY: 0, scale: plan.featured ? 1.05 : 1 }}
+              initial={{ opacity: 0, y: 50, scale: 0.92 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.95, delay: i * 0.12, ease: [0.2, 1, 0.2, 1] }}
-              style={{ perspective: '1200px', willChange: 'transform, opacity' }}
+              transition={{ duration: 0.85, delay: i * 0.12, ease: [0.15, 0.84, 0.35, 1.15] }}
               className={`relative flex flex-col rounded-2xl ${
                 plan.featured
                   ? 'bg-[#0A0A0A] shadow-2xl scale-105 ring-2 ring-[#F813BE]/50'

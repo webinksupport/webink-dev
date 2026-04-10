@@ -57,16 +57,12 @@ function FlipCard({ t, index }: { t: typeof testimonials[0]; index: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 75, rotateX: -15, scale: 0.95 }}
-      whileInView={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 50, scale: 0.92 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: '-40px' }}
-      transition={{
-        duration: 0.95,
-        delay: index * 0.12,
-        ease: [0.2, 1, 0.2, 1],
-      }}
+      transition={{ duration: 0.85, delay: index * 0.12, ease: [0.15, 0.84, 0.35, 1.15] }}
       className="h-72 cursor-pointer select-none"
-      style={{ perspective: '1000px', willChange: 'transform, opacity' }}
+      style={{ perspective: '1000px' }}
       onClick={() => setFlipped(!flipped)}
       onMouseEnter={() => setFlipped(true)}
       onMouseLeave={() => setFlipped(false)}
@@ -168,7 +164,7 @@ function FlipCard({ t, index }: { t: typeof testimonials[0]; index: number }) {
 
 export default function TestimonialsI({ content }: { content?: Record<string, string> } = {}) {
   return (
-    <section id="testimonials" className="bg-white py-24 lg:py-36">
+    <section id="testimonials" className="bg-white py-24 lg:py-36 contain-paint">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">
 
         {/* Header */}
@@ -212,11 +208,12 @@ export default function TestimonialsI({ content }: { content?: Record<string, st
         {/* Team photo strip */}
         <div className="mt-16 grid md:grid-cols-3 gap-4">
           <motion.div
-            initial={{ scale: 0.85, opacity: 0, x: -40, rotate: -2 }}
-            whileInView={{ scale: 1, opacity: 1, x: 0, rotate: 0 }}
-            transition={{ duration: 1, ease: [0.2, 0.65, 0.3, 1] }}
+            initial={{ scale: 0.92, opacity: 0, x: -40 }}
+            whileInView={{ scale: 1, opacity: 1, x: 0 }}
+            transition={{ duration: 1.6, ease: [0.2, 0.65, 0.3, 1] }}
             viewport={{ once: true, margin: '-80px' }}
             className="overflow-hidden rounded-2xl shadow-xl"
+            style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
           >
             <div className="relative h-[200px]">
               <Image
@@ -232,12 +229,12 @@ export default function TestimonialsI({ content }: { content?: Record<string, st
             </div>
           </motion.div>
           <motion.div
-            initial={{ scale: 0.85, opacity: 0, y: 50, rotateX: -8 }}
-            whileInView={{ scale: 1, opacity: 1, y: 0, rotateX: 0 }}
-            transition={{ duration: 1, delay: 0.12, ease: [0.2, 0.65, 0.3, 1] }}
+            initial={{ scale: 0.92, opacity: 0, y: 40 }}
+            whileInView={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 1.6, delay: 0.12, ease: [0.2, 0.65, 0.3, 1] }}
             viewport={{ once: true, margin: '-80px' }}
             className="overflow-hidden rounded-2xl shadow-xl"
-            style={{ perspective: '1200px' }}
+            style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
           >
             <div className="relative h-[200px]">
               <Image
@@ -253,11 +250,12 @@ export default function TestimonialsI({ content }: { content?: Record<string, st
             </div>
           </motion.div>
           <motion.div
-            initial={{ scale: 0.85, opacity: 0, x: 40, rotate: 2 }}
-            whileInView={{ scale: 1, opacity: 1, x: 0, rotate: 0 }}
-            transition={{ duration: 1, delay: 0.24, ease: [0.2, 0.65, 0.3, 1] }}
+            initial={{ scale: 0.92, opacity: 0, x: 40 }}
+            whileInView={{ scale: 1, opacity: 1, x: 0 }}
+            transition={{ duration: 1.6, delay: 0.24, ease: [0.2, 0.65, 0.3, 1] }}
             viewport={{ once: true, margin: '-80px' }}
             className="overflow-hidden rounded-2xl shadow-xl"
+            style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
           >
             <div className="relative h-[200px]">
               <Image

@@ -22,20 +22,20 @@ Customer data is sacred. This applies to Webink's ecommerce DB (users, subscript
 ## ⚠️ DEPLOY WORKFLOW — MANDATORY (ALL AGENTS: Mason, Claude Code, anyone)
 
 ### Git Rules — NO EXCEPTIONS
-- **ALL work happens in `C:\OpenClaw\workspace-webink\webink-dev`** — the single source of truth
+- **ALL work happens in `C:\OpenClaw\projects\webink-dev`** — the single source of truth
 - **ALL changes MUST be committed and pushed to GitHub** before deploying
 - **NEVER make changes directly on the VPS** — they will be wiped on next deploy
 - **NEVER work on a separate branch** — everything goes to `master`
 - **Branch: `master`** — Mason, Claude Code, and all agents work on the SAME branch
 
 ### Before Starting ANY Work
-1. `cd C:\OpenClaw\workspace-webink\webink-dev`
+1. `cd C:\OpenClaw\projects\webink-dev`
 2. `git pull origin master` — get the latest code first
 3. `git log --oneline -5` — review recent changes to understand what others have done
 4. Check for uncommitted changes: `git status` — if dirty, commit or stash before starting
 
 ### Deploy Steps
-1. Make your changes in `C:\OpenClaw\workspace-webink\webink-dev`
+1. Make your changes in `C:\OpenClaw\projects\webink-dev`
 2. `git add -A && git commit -m "description of changes"`
 3. `git push origin master`
 4. `node deploy.js`

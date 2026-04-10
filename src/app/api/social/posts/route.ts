@@ -95,6 +95,8 @@ export async function POST(req: NextRequest) {
       originalPostId: body.originalPostId || null,
       abVariant: body.abVariant || null,
       abGroupId: body.abGroupId || null,
+      clientId: body.clientId || null,
+      creationLane: body.creationLane || 'manual',
     },
   })
 

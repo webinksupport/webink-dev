@@ -76,8 +76,9 @@ const COST_TIER_ICONS: Record<string, typeof Zap> = {
   Premium: Crown,
 }
 
-export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () => void }) {
-  const [step, setStep] = useState(1)
+export default function PostBuilder({ onGoToCalendar, initialLane = 'ai_assist' }: { onGoToCalendar?: () => void; initialLane?: 'manual' | 'ai_assist' | 'automated' }) {
+  const [step, setStep] = useState(initialLane === 'manual' ? 5 : 1)
+  const [creationLane] = useState(initialLane)
 
   // Step 1
   const [topic, setTopic] = useState('')
@@ -113,7 +114,7 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
   const [saved, setSaved] = useState(false)
 
   // Manual mode — skip AI steps, go straight to compose
-  const [manualMode, setManualMode] = useState(false)
+  const [manualMode, setManualMode] = useState(initialLane === 'manual')
   const [manualImage, setManualImage] = useState('')
   const manualFileRef = useRef<HTMLInputElement>(null)
 
@@ -343,6 +344,7 @@ export default function PostBuilder({ onGoToCalendar }: { onGoToCalendar?: () =>
           mediaPath: generatedImage,
           status: 'DRAFT',
           platforms: ['instagram', 'facebook'],
+          creationLane,
         }),
       })
       if (res.ok) setSaved(true)

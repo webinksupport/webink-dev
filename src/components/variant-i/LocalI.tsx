@@ -2,19 +2,20 @@
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 
-const ease = [0.25, 0.46, 0.45, 0.94]
+const ease = [0.15, 0.75, 0.5, 1]
 
 export default function LocalI({ content }: { content?: Record<string, string> } = {}) {
   return (
-    <section className="bg-white py-24 lg:py-36 overflow-hidden">
+    <section className="bg-white py-24 lg:py-36 overflow-hidden contain-paint">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          {/* Text — Salient reveal-from-left */}
+          {/* Text */}
           <motion.div
-            initial={{ opacity: 0, x: -45, y: 20 }}
-            whileInView={{ opacity: 1, x: 0, y: 0 }}
+            initial={{ opacity: 0, y: 40, x: -30 }}
+            whileInView={{ opacity: 1, y: 0, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 1, ease: [0.2, 0.65, 0.3, 1] }}
+            transition={{ duration: 1, ease }}
+            style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
           >
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-[2px] bg-[#F813BE]" />
@@ -60,14 +61,14 @@ export default function LocalI({ content }: { content?: Record<string, string> }
             </div>
           </motion.div>
 
-          {/* Image — Salient reveal-from-right with rotation */}
+          {/* Image */}
           <motion.div
-            initial={{ scale: 0.88, opacity: 0, x: 60, rotate: 3 }}
-            whileInView={{ scale: 1, opacity: 1, x: 0, rotate: 0 }}
-            transition={{ duration: 1.1, ease: [0.2, 0.65, 0.3, 1] }}
+            initial={{ scale: 0.92, opacity: 0, y: 40, rotate: 2 }}
+            whileInView={{ scale: 1, opacity: 1, y: 0, rotate: 0 }}
+            transition={{ duration: 1.6, ease: [0.2, 0.65, 0.3, 1] }}
             viewport={{ once: true, margin: '-80px' }}
             className="overflow-hidden rounded-2xl shadow-xl"
-            style={{ willChange: 'transform, opacity' }}
+            style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
           >
             <Image
               data-block="local_image"

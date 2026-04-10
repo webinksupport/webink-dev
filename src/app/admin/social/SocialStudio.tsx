@@ -13,6 +13,8 @@ import Intelligence from './tabs/Intelligence'
 import ClientManager from './tabs/ClientManager'
 import StoriesPlanner from './tabs/StoriesPlanner'
 import PostBuilder from './tabs/PostBuilder'
+import CreationLanes from './components/CreationLanes'
+import ConnectionStatus from './components/ConnectionStatus'
 import {
   ImageIcon,
   Calendar,
@@ -83,6 +85,10 @@ export default function SocialStudio() {
   const [imageStudioPrompt, setImageStudioPrompt] = useState('')
   const [imageStudioTopic, setImageStudioTopic] = useState('')
   const [imageStudioIdea, setImageStudioIdea] = useState('')
+
+  // Creation lane selector
+  const [showLaneSelector, setShowLaneSelector] = useState(false)
+  const [activeLane, setActiveLane] = useState<'manual' | 'ai_assist' | 'automated' | null>(null)
 
   // Client context switcher
   const [clients, setClients] = useState<SocialClient[]>([])
@@ -192,6 +198,11 @@ export default function SocialStudio() {
             </span>
           </div>
         )}
+
+        {/* Connection Status Bar */}
+        <div className="mt-3">
+          <ConnectionStatus clientId={activeClientId} />
+        </div>
       </div>
 
       {/* Tab Bar — Grouped */}
@@ -275,7 +286,29 @@ export default function SocialStudio() {
         {activeTab === 'intelligence' && <Intelligence />}
         {activeTab === 'settings' && <PublishingSettings />}
         {activeTab === 'clients' && <ClientManager />}
-        {activeTab === 'postbuilder' && <PostBuilder onGoToCalendar={() => setActiveTab('calendar')} />}
+        {activeTab === 'postbuilder' && (
+          showLaneSelector ? (
+            <CreationLanes onSelectLane={(lane) => {
+              setActiveLane(lane)
+              setShowLaneSelector(false)
+            }} />
+          ) : (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <button
+                  onClick={() => { setShowLaneSelector(true); setActiveLane(null) }}
+                  className="text-xs text-[#14EAEA] hover:text-white border border-[#282828] hover:border-[#14EAEA] rounded-lg px-3 py-1.5 transition-colors"
+                >
+                  {activeLane === 'manual' ? 'Manual Mode' : activeLane === 'automated' ? 'Automated Mode' : 'AI-Assisted Mode'} — Change
+                </button>
+              </div>
+              <PostBuilder
+                onGoToCalendar={() => setActiveTab('calendar')}
+                initialLane={activeLane || 'ai_assist'}
+              />
+            </div>
+          )
+        )}
       </div>
     </div>
   )

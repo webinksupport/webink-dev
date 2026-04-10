@@ -95,7 +95,7 @@ export function EditorToolbar() {
     setSaveError(null)
     let result: { ok: boolean; error?: string }
     if (selectedElement.type === 'text') {
-      const currentText = textState.text || selectedElement.element?.textContent || ''
+      const currentText = selectedElement.element?.textContent || textState.text
       result = await saveBlock(selectedElement.pageSlug, selectedElement.blockKey, 'TEXT', currentText, { fontSize: textState.fontSize, fontWeight: textState.fontWeight, color: textState.color, alignment: textState.alignment, effects: textState.effects })
       if (result.ok) setTextState(prev => ({ ...prev, text: currentText }))
     } else if (selectedElement.type === 'background') {

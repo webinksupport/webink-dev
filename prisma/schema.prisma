@@ -376,11 +376,18 @@ model SocialPost {
   abVariant      String?          // "A" or "B" for AB tests
   abGroupId      String?          // shared cuid linking AB variants
   notes          String?          @db.Text
+  clientId       String?          // SocialClient this post belongs to
+  creationLane   String           @default("manual") // "manual" | "ai_assist" | "automated"
+  retryCount     Int              @default(0)
+  maxRetries     Int              @default(3)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  publishLogs    PublishLog[]
+  activities     PostActivity[]
 
   @@index([status])
   @@index([scheduledAt])
+  @@index([clientId])
 }
 
 enum SocialPostStatus {
@@ -451,7 +458,29 @@ model SocialClient {
   brandProfileId  String?
   userId          String?
   status          String   @default("ACTIVE")
+  timezone        String   @default("America/New_York")
   createdAt       DateTime @default(now())
+  connections     SocialConnection[]
+}
+
+model SocialConnection {
+  id                String   @id @default(cuid())
+  clientId          String
+  client            SocialClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  platform          String   // "facebook" | "instagram" | "linkedin" | "tiktok"
+  platformAccountId String?  // e.g., IG user ID, FB page ID
+  accessToken       String?  @db.Text
+  tokenExpiresAt    DateTime?
+  status            String   @default("pending_setup") // "active" | "expired" | "pending_setup"
+  connectionMethod  String   @default("manual_token") // "manual_token" | "oauth" | "pending"
+  lastVerifiedAt    DateTime?
+  lastError         String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([clientId, platform])
+  @@index([clientId])
+  @@index([platform])
 }
 
 model SocialStory {
@@ -473,6 +502,39 @@ model SocialBrandAsset {
   assetType  String   @default("Other") // Scout, Logo, Product, Background, Other
   clientName String?
   createdAt  DateTime @default(now())
+}
+
+model PublishLog {
+  id              String   @id @default(cuid())
+  postId          String
+  post            SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  platform        String   // "facebook" | "instagram" | "linkedin"
+  action          String   // "publish" | "retry" | "dry_run"
+  status          String   // "success" | "failed" | "skipped"
+  platformPostId  String?
+  errorMessage    String?  @db.Text
+  attemptNumber   Int      @default(1)
+  dryRun          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([postId])
+  @@index([platform])
+  @@index([createdAt])
+}
+
+model PostActivity {
+  id        String   @id @default(cuid())
+  postId    String
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  type      String   // "comment" | "status_change" | "approval" | "rejection" | "edit"
+  message   String?  @db.Text
+  author    String?  // user email or "system"
+  oldStatus String?
+  newStatus String?
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+  @@index([createdAt])
 }
 
 // ─── AI Providers ──────────────────────────────────────────────────
@@ -507,18 +569,4 @@ model AiProvider {
 
   @@unique([userId, slug])
   @@index([userId])
-}
-
-// ─── Password Reset ──────────────────────────────────────────────────
-
-model PasswordResetToken {
-  id        String   @id @default(cuid())
-  email     String
-  token     String   @unique
-  expiresAt DateTime
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@index([email])
-  @@index([token])
 }

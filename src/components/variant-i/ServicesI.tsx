@@ -110,34 +110,16 @@ function ServiceCard({
 }) {
   const { editMode } = useEditor()
   const cardNum = index + 1
-  // Salient-style staggered entrance: flip-in-vertical with rotation for cards
-  // Using cubic-bezier(0.2, 1, 0.2, 1) — Salient's premium overshoot curve
-  const row = Math.floor(index / 3)
-  const col = index % 3
   return (
     <motion.a
       href={href}
       onClick={(e: React.MouseEvent) => { if (editMode) { e.preventDefault(); e.stopPropagation() } }}
-      initial={{
-        opacity: 0,
-        y: 75,
-        rotateX: -8,
-        scale: 0.96,
-      }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-        rotateX: 0,
-        scale: 1,
-      }}
+      initial={{ opacity: 0, y: 50, scale: 0.92 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: '-60px' }}
-      transition={{
-        duration: 0.85,
-        delay: row * 0.15 + col * 0.1,
-        ease: [0.2, 1, 0.2, 1],
-      }}
+      transition={{ duration: 0.75, delay: index * 0.12, ease: [0.15, 0.84, 0.35, 1.15] }}
       className="group relative flex flex-col bg-white rounded-2xl p-8 border border-[#E5E5E5] hover:border-[#14EAEA] hover:shadow-lg transition-all duration-300 cursor-pointer"
-      style={{ '--accent': color, perspective: '1200px', willChange: 'transform, opacity' } as React.CSSProperties}
+      style={{ '--accent': color, willChange: 'transform, opacity', backfaceVisibility: 'hidden' } as React.CSSProperties}
     >
       {/* Icon circle */}
       <div
@@ -217,13 +199,11 @@ function HorizontalProcess({ content }: { content?: Record<string, string> }) {
         scrollTrigger: {
           trigger: section,
           pin: true,
-          scrub: 0.8,
+          scrub: 1,
           start: 'top top',
           end: () => `+=${totalWidth - panelWidth}`,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-          // Reduce pinSpacing jitter
-          pinSpacing: true,
         },
       })
     }
@@ -268,7 +248,7 @@ function HorizontalProcess({ content }: { content?: Record<string, string> }) {
       <div
         ref={trackRef}
         className="flex h-full"
-        style={{ willChange: 'transform' }}
+        style={{ willChange: 'transform', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
       >
         {processPanels.map((panel, i) => (
           <div
@@ -363,17 +343,11 @@ export default function ServicesI({ content }: { content?: Record<string, string
   return (
     <>
       {/* ── SERVICES GRID SECTION ── */}
-      <section id="services" className="bg-white py-24 lg:py-36">
+      <section id="services" className="bg-white py-24 lg:py-36 contain-paint">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-20">
 
-          {/* Section label — Salient-style fade-in-from-left */}
-          <motion.div
-            className="flex items-center gap-3 mb-6"
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: [0.2, 0.65, 0.3, 1] }}
-          >
+          {/* Section label */}
+          <div className="flex items-center gap-3 mb-6">
             <span className="w-8 h-[2px] bg-[#F813BE]" />
             <span
               data-page="home"
@@ -382,39 +356,25 @@ export default function ServicesI({ content }: { content?: Record<string, string
             >
               {content?.services_eyebrow || 'Our Services'}
             </span>
-          </motion.div>
+          </div>
 
-          {/* Heading — Salient reveal-from-bottom with slight rotation */}
+          {/* Heading */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16">
-            <motion.div
-              initial={{ opacity: 0, y: 60, rotate: 2 }}
-              whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, ease: [0.2, 0.65, 0.3, 1] }}
+            <h2
+              data-page="home"
+              data-block="services_heading"
+              className="font-urbanist font-black text-[#0F0F0F] leading-[0.88]"
+              style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)', letterSpacing: '-0.04em' }}
             >
-              <h2
-                data-page="home"
-                data-block="services_heading"
-                className="font-urbanist font-black text-[#0F0F0F] leading-[0.88]"
-                style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)', letterSpacing: '-0.04em' }}
-              >
-                {content?.services_heading || 'Full-Service Digital Agency.'}
-              </h2>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.15, ease: [0.2, 1, 0.2, 1] }}
+              {content?.services_heading || 'Full-Service Digital Agency.'}
+            </h2>
+            <p
+              data-page="home"
+              data-block="services_subtext"
+              className="font-urbanist text-[#333]/50 text-lg leading-relaxed max-w-sm lg:text-right"
             >
-              <p
-                data-page="home"
-                data-block="services_subtext"
-                className="font-urbanist text-[#333]/50 text-lg leading-relaxed max-w-sm lg:text-right"
-              >
-                {content?.services_subtext || 'Everything your business needs to dominate the digital landscape — under one roof.'}
-              </p>
-            </motion.div>
+              {content?.services_subtext || 'Everything your business needs to dominate the digital landscape — under one roof.'}
+            </p>
           </div>
 
           {/* 3×2 card grid */}

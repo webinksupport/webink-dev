@@ -154,8 +154,10 @@ export default function ServicePageLayout({
             className="font-urbanist font-black text-white leading-[0.92] mb-6"
             style={{ fontSize: 'clamp(2.75rem, 7vw, 5.5rem)', letterSpacing: '-0.04em' }}
           >
-            <span data-page={pageSlug || 'services'} data-block="hero_headline">{headline}</span>
-              {headlineAccent && <>{' '}<span className="text-[#14EAEA]">{headlineAccent}</span></>}
+            <span data-page={pageSlug || 'services'} data-block="hero_headline">
+              {headline}{' '}
+              <span className="text-[#14EAEA]">{headlineAccent}</span>
+            </span>
           </motion.h1>
 
           <motion.div

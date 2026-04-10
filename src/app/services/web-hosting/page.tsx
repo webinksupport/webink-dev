@@ -5,7 +5,7 @@ import ServicePageLayout from '@/components/services/ServicePageLayout'
 import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageJsonContent } from '@/lib/content'
 
-export const revalidate = 60
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Managed Web Hosting Sarasota | 3 Tiers from $31/mo | Webink Solutions',
@@ -69,7 +69,7 @@ export default async function WebHostingPage() {
         headline={(content.hero_headline as string) || 'Hosting That Just'}
         headlineAccent="Works."
         subtext={(content.hero_subtext as string) || 'Fully managed web hosting built for speed, security, and peace of mind. We handle the servers so you can focus on your business.'}
-        heroImage={((content.hero_bg as any)?.src || content.hero_bg as string) || '/images/services/web-design-hero.png'}
+        heroImage={(content.hero_image as string) || '/images/services/web-design-hero.png'}
         photos={(content.photos as typeof defaultPhotos) || defaultPhotos}
         features={(content.features as typeof defaultFeatures) || defaultFeatures}
         processSteps={(content.process_steps as typeof defaultProcessSteps) || defaultProcessSteps}

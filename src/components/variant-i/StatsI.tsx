@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
 import { useEditor } from '@/components/editor/EditorContext'
 
 interface StatData {
@@ -65,13 +64,10 @@ function StatCard({ value, suffix, label, sublabel, delay, underlineColor }: {
   }, [])
 
   return (
-    <motion.div
+    <div
       ref={ref}
       className="text-center lg:text-left"
-      initial={{ opacity: 0, y: 60, scale: 0.9 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.9, delay: delay / 1000, ease: [0.2, 1, 0.2, 1] }}
+      style={{ transitionDelay: `${delay}ms` }}
     >
       <div
         className="font-urbanist font-black text-white leading-none mb-3"
@@ -83,7 +79,7 @@ function StatCard({ value, suffix, label, sublabel, delay, underlineColor }: {
       <div className="font-urbanist font-bold text-white text-xl mb-1">{label}</div>
       <div className="font-urbanist text-white/35 text-sm">{sublabel}</div>
       <div className="mt-4 w-12 h-0.5 mx-auto lg:mx-0" style={{ backgroundColor: underlineColor }} />
-    </motion.div>
+    </div>
   )
 }
 

@@ -5,7 +5,7 @@ import ServicePageLayout from '@/components/services/ServicePageLayout'
 import PageEditorWrapper from '@/components/editor/PageEditorWrapper'
 import { getPageJsonContent } from '@/lib/content'
 
-export const revalidate = 60
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'AI-Powered Marketing & AI Website Build | Webink Solutions Sarasota',
@@ -84,7 +84,7 @@ export default async function AiMarketingPage() {
         headline={(content.hero_headline as string) || 'Marketing at the'}
         headlineAccent="Speed of AI."
         subtext={(content.hero_subtext as string) || 'We leverage AI to automate repetitive tasks, uncover insights humans miss, and scale your marketing beyond what traditional agencies can deliver.'}
-        heroImage={((content.hero_bg as any)?.src || content.hero_bg as string) || '/images/services/ai-marketing-hero.png'}
+        heroImage={(content.hero_image as string) || '/images/services/ai-marketing-hero.png'}
         photos={(content.photos as typeof defaultPhotos) || defaultPhotos}
         features={(content.features as typeof defaultFeatures) || defaultFeatures}
         processSteps={(content.process_steps as typeof defaultProcessSteps) || defaultProcessSteps}
