@@ -37,7 +37,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#0F0F0F] h-[85vh] max-h-[900px]"
+      className="relative overflow-hidden bg-[#0F0F0F] min-h-[100svh]"
     >
       {/* Baja beach full-bleed background with parallax */}
       <div className="absolute inset-0 overflow-hidden" data-type="background" data-page="home" data-block="hero_bg">
@@ -67,7 +67,7 @@ export default function HeroI({ content, heroBgData }: HeroIProps = {}) {
       {/* Hero text content */}
       <motion.div
         style={{ opacity: textOpacity, y: textY }}
-        className="relative z-30 flex flex-col justify-center max-w-[1400px] mx-auto px-6 lg:px-20 pt-28 pb-32"
+        className="relative z-30 min-h-[100svh] flex flex-col justify-center max-w-[1400px] mx-auto px-6 lg:px-20 py-20 sm:py-24"
       >
         {/* Eyebrow — Salient slide-in from left */}
         <motion.div
